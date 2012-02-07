@@ -1,9 +1,3 @@
-
-
-
-The Project
-===========
-
 OpEc (Operational Ecology) will use the EU’s Global Monitoring for Environment and Security Marine Service as 
 a framework and feed directly into the research and development of innovative global monitoring products or 
 applications. This in turn will advise policies such as the European Marine Strategy Framework Directive and 
