@@ -1,4 +1,5 @@
 from netCDF4 import Dataset
+from numpy.core.numeric import array
 
 class NetCDFFacade:
 
@@ -35,10 +36,29 @@ class NetCDFFacade:
         dimensionString = dimensionString.strip()
         return dimensionString
 
+    def getDimLength(self, variableName, index):
+        variable = self.getVariable(variableName)
+        variableDimensions = variable._getdims()
+        for i in range(len(variableDimensions)):
+            if i == index:
+                dimName = variableDimensions[i]
+                return self.getDimSize(dimName)
+
     def getData(self, variableName, origin, shape):
         variable = self.getVariable(variableName)
-        return variable[1, 2]
-#        return variable[origin[0], origin[1], shape[0]]
+        dimCount = len(variable._getdims())
+        if dimCount != len(origin) or dimCount != len(shape):
+            raise ValueError("len(origin) and len(shape) must be equal to number of dimensions of variable '" + variableName + "'")
+        indexArray = range(0, dimCount)
+        for dimIdx in range(dimCount):
+            j = 0
+            innerArray = range(0, shape[dimIdx])
+            for index in range(origin[dimIdx], origin[dimIdx] + shape[dimIdx]):
+                innerArray[j] = index
+                j += 1
+            indexArray[dimIdx] = innerArray
+        return variable[indexArray]
+
 
     def close(self):
         self.dataSet.close()

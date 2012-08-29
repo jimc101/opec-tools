@@ -1,4 +1,6 @@
 import unittest
+from numpy.core.numeric import array
+from numpy.testing.utils import assert_array_equal
 from netcdf_facade import NetCDFFacade
 
 class NetCDFFacadeTest(unittest.TestCase):
@@ -26,7 +28,27 @@ class NetCDFFacadeTest(unittest.TestCase):
     def testGetDimensionString(self):
         self.assertEqual("longitude", self.netcdf.getDimensionString("longitude"))
         self.assertEqual("latitude", self.netcdf.getDimensionString("latitude"))
-        self.assertEqual("latitude longitude", self.netcdf.getDimensionString("chlorophyll_concentration_in_sea_water"))
+        self.assertEqual("time", self.netcdf.getDimensionString("time"))
+        self.assertEqual("time latitude longitude", self.netcdf.getDimensionString("chlorophyll_concentration_in_sea_water"))
 
-    def testGetSingleVariableValue(self):
-        self.assertEqual(7, self.netcdf.getData("chlorophyll_concentration_in_sea_water", [1, 2], [1, 1]))
+    def testGetDimLength(self):
+        self.assertEqual(2, self.netcdf.getDimLength("chlorophyll_concentration_in_sea_water", 0))
+        self.assertEqual(4, self.netcdf.getDimLength("chlorophyll_concentration_in_sea_water", 1))
+        self.assertEqual(4, self.netcdf.getDimLength("chlorophyll_concentration_in_sea_water", 2))
+
+    def testGetDataViaOriginAndShape(self):
+        assert_array_equal(array([
+            [[7, 8], [11, 12]],
+            [[17, 18], [111, 112]]
+        ]), self.netcdf.getData("chlorophyll_concentration_in_sea_water", [0, 1, 2], [2, 2, 2]))
+
+        assert_array_equal(array([
+            [[1, 2, 3, 4], [5, 6, 7, 8]]
+        ]), self.netcdf.getData("chlorophyll_concentration_in_sea_water", [0, 0, 0], [1, 2, 4]))
+
+        assert_array_equal(array([
+            [[11, 12, 13, 14],
+             [15, 16, 17, 18],
+             [19, 110, 111, 112],
+             [113, 114, 115, 116]]
+        ]), self.netcdf.getData("chlorophyll_concentration_in_sea_water", [1, 0, 0], [1, 4, 4]))

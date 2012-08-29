@@ -86,3 +86,8 @@ class NumpyArrayTest(unittest.TestCase):
             [[14, 15], [18, 19]]
         ]), chl[:, 1:3, 0:2])
 
+    def testFancyIndexing(self):
+        a = array([1, 2, 3, 4, 5, 6])
+        assert_array_equal(array([2, 5, 6]), a[array([1, 4, 5])])
+        assert_array_equal(array([[1, 2], [3, 4]]), a[array([[0, 1], [2, 3]])])
+
