@@ -59,6 +59,5 @@ class NetCDFFacade:
             indexArray[dimIdx] = innerArray
         return variable[indexArray]
 
-
     def close(self):
         self.dataSet.close()
