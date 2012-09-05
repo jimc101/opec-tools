@@ -1,4 +1,5 @@
 from numpy import sqrt, mean
+import numpy
 
 def computeRmsd(values, referenceValues):
     if len(values) != len(referenceValues):
@@ -15,10 +16,4 @@ def computeUnbiasedRmsd(values, referenceValues):
     return sqrt(sum(squaredDifferences))
 
 def computeCorrelation(values, referenceValues):
-    meanValues = mean(values)
-    meanReference = mean(referenceValues)
-
-    numerator = sum((values - meanValues) * (referenceValues - meanReference))
-    denominator = sqrt(sum((values - meanValues) ** 2) * sum((referenceValues - meanReference) ** 2))
-
-    return numerator / denominator
+    return numpy.corrcoef(values, referenceValues)[0, 1]
