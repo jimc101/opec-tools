@@ -1,4 +1,5 @@
 from netCDF4 import Dataset
+import numpy
 from numpy.core.numeric import array
 
 class NetCDFFacade:
@@ -58,6 +59,14 @@ class NetCDFFacade:
                 j += 1
             indexArray[dimIdx] = innerArray
         return variable[indexArray]
+
+    def getDataForLatLonTime(self, variableName, minTime, maxTime, minLat, maxLat, minLon, maxLon):
+        variable = self.getVariable(variableName)
+        time = numpy.array(self.getVariable("time"))
+        lat = numpy.array(self.getVariable("latitude"))
+        lon = numpy.array(self.getVariable("longitude"))
+
+        return variable[(minTime <= time) & (time <= maxTime), (minLat <= lat) & (lat <= maxLat), (minLon <= lon) & (lon <= maxLon)]
 
     def close(self):
         self.dataSet.close()

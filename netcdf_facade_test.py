@@ -52,3 +52,9 @@ class NetCDFFacadeTest(unittest.TestCase):
              [19, 110, 111, 112],
              [113, 114, 115, 116]]
         ]), self.netcdf.getData("chlorophyll_concentration_in_sea_water", [1, 0, 0], [1, 4, 4]))
+
+    def testGetDataViaLatLonTime(self):
+        assert_array_equal(array([
+            [[110, 111],
+             [114, 115]]
+        ]), self.netcdf.getDataForLatLonTime("chlorophyll_concentration_in_sea_water", 20, 20, 55.7, 56, 9.3, 9.7))
