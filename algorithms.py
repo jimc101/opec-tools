@@ -18,7 +18,7 @@ def computeCorrelation(values, referenceValues):
     meanValues = mean(values)
     meanReference = mean(referenceValues)
 
-    temp = (values - meanValues) * (referenceValues - meanReference)
-    numerator = sum(temp)
+    numerator = sum((values - meanValues) * (referenceValues - meanReference))
     denominator = sqrt(sum((values - meanValues) ** 2) * sum((referenceValues - meanReference) ** 2))
+
     return numerator / denominator
