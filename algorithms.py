@@ -13,3 +13,12 @@ def computeUnbiasedRmsd(values, referenceValues):
     squaredDifferences = ((values - mean(values)) - (referenceValues - mean(referenceValues))) ** 2
     squaredDifferences /= len(values)
     return sqrt(sum(squaredDifferences))
+
+def computeCorrelation(values, referenceValues):
+    meanValues = mean(values)
+    meanReference = mean(referenceValues)
+
+    temp = (values - meanValues) * (referenceValues - meanReference)
+    numerator = sum(temp)
+    denominator = sqrt(sum((values - meanValues) ** 2) * sum((referenceValues - meanReference) ** 2))
+    return numerator / denominator

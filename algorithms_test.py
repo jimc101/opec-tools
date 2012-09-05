@@ -1,7 +1,7 @@
 import unittest
 from numpy import array
 import numpy
-from algorithms import computeRmsd, computeBias, computeUnbiasedRmsd
+from algorithms import computeRmsd, computeBias, computeUnbiasedRmsd, computeCorrelation
 from netcdf_facade import NetCDFFacade
 
 class AlgorithmTest(unittest.TestCase):
@@ -44,3 +44,8 @@ class AlgorithmTest(unittest.TestCase):
         bias = computeBias(values, referenceData)
         unbiasedRmsd = computeUnbiasedRmsd(values, referenceData)
         self.assertAlmostEqual(rms ** 2, bias ** 2 + unbiasedRmsd ** 2, 5)
+
+    def testCorrelation(self):
+        values = array(range(1, 5, 1)) # [1, 2, 3, 4]
+        referenceData = array([1.8, 1.9, 3.01, 4.0])
+        self.assertAlmostEqual(0.958659, computeCorrelation(values, referenceData), 5)
