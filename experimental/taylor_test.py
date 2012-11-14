@@ -1,7 +1,7 @@
 import os
 import unittest
 from numpy.core.numeric import array
-from taylor import exportTaylorDiagram
+from experimental.taylor import exportTaylorDiagram
 
 class NetCDFFacadeTest(unittest.TestCase):
 

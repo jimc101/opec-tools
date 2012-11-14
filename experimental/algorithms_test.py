@@ -1,8 +1,8 @@
 import unittest
 from numpy import array
 import numpy
-from algorithms import computeRmsd, computeBias, computeUnbiasedRmsd, computeCorrelation
-from netcdf_facade import NetCDFFacade
+from experimental.algorithms import computeRmsd, computeBias, computeUnbiasedRmsd, computeCorrelation
+from experimental.netcdf_facade import NetCDFFacade
 
 class AlgorithmTest(unittest.TestCase):
 
@@ -22,7 +22,7 @@ class AlgorithmTest(unittest.TestCase):
 
     def testRMSDOnActualValues(self):
         netcdf = NetCDFFacade('resources\\test.nc')
-        data = netcdf.getData('chlorophyll_concentration_in_sea_water', [1, 0, 0], [1, 2, 4])
+        data = netcdf.getData('chl', [1, 0, 0], [1, 2, 4])
         data = data.reshape(-1)
         referenceData = array([14, 14, 14, 14, 14, 14, 14, 14])
         self.assertAlmostEqual(2.345208, computeRmsd(data, referenceData), 5)
