@@ -1,5 +1,5 @@
 from array import array
-from netCDF4 import Dataset
+import netCDF4
 import numpy
 
 class NetCDFFacade:
