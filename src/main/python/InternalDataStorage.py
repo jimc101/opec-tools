@@ -4,7 +4,7 @@ from src.main.python.NetcdfFacade import NetCDFFacade
 import os
 import numpy
 
-class DataStorage(object):
+class InternalDataStorage(object):
 
     def __init__(self, *args, **kwargs):
         if 'inputFile' in kwargs:
@@ -18,9 +18,13 @@ class DataStorage(object):
         self.__create_geophysical_tables(netcdfFile)
         self.__fill_geophysical_tables(netcdfFile)
 
+    def __del__(self):
+        self.close()
+
     def close(self):
-        self.h5file.close()
-        os.remove(self.filename)
+        if os.path.exists(self.filename):
+            self.h5file.close()
+            os.remove(self.filename)
 
     def __create_storage_file(self):
         self.filename = 'temp_' + str(uuid.uuid4()) + '.h5' # TODO - replace by temporary file read from configuration
@@ -72,6 +76,17 @@ class DataStorage(object):
                 record.append()
         self.h5file.flush()
 
+    def get_model_vars(self):
+        model_vars = []
+        for var in self.geophysicalTables:
+            model_vars.append(var)
+        return model_vars
+
+    def get_ref_vars(self):
+        ref_vars = []
+        for var in self.geophysicalTables:
+            ref_vars.append(var)
+        return ref_vars
 
 # todo - check if more datatypes are needed
 class GeophysicalVariable(IsDescription):

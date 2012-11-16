@@ -1,17 +1,17 @@
 import os
 import unittest
 import numpy
-from src.main.python.DataStorage import DataStorage
+from src.main.python.InternalDataStorage import InternalDataStorage
 from src.main.python.Main import parse_arguments
 
-class DataStorageTest(unittest.TestCase):
+class InternalDataStorageTest(unittest.TestCase):
 
     def test_initialisation_with_string(self):
-        self.dataStorage = DataStorage(inputFile="../resources/test.nc")
+        self.dataStorage = InternalDataStorage(inputFile="../resources/test.nc")
 
     def test_initialisation(self):
         args = parse_arguments(["../resources/test.nc"])
-        self.dataStorage = DataStorage(args)
+        self.dataStorage = InternalDataStorage(args)
         self.__assert_coordinate_tables_created()
         self.__assert_coordinate_tables_filled()
         self.__assert_geophysical_tables_created()
