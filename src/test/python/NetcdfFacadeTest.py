@@ -13,40 +13,40 @@ class NetCDFFacadeTest(unittest.TestCase):
     def tearDown(self):
         self.netcdf.close()
 
-    def testGetDimSize(self):
-        self.assertEqual(2, self.netcdf.getDimSize("time"))
-        self.assertEqual(2, self.netcdf.getDimSize("depth"))
-        self.assertEqual(2, self.netcdf.getDimSize("lat"))
-        self.assertEqual(4, self.netcdf.getDimSize("lon"))
+    def test_get_dim_size(self):
+        self.assertEqual(2, self.netcdf.get_dim_size("time"))
+        self.assertEqual(2, self.netcdf.get_dim_size("depth"))
+        self.assertEqual(2, self.netcdf.get_dim_size("lat"))
+        self.assertEqual(4, self.netcdf.get_dim_size("lon"))
 
-    def testGetGlobalAttributeValue(self):
-        self.assertEqual("some title", self.netcdf.getGlobalAttribute("title"))
-        self.assertEqual("institution code", self.netcdf.getGlobalAttribute("institution"))
-        self.assertEqual("links to references", self.netcdf.getGlobalAttribute("references"))
-        self.assertEqual("method of production", self.netcdf.getGlobalAttribute("source"))
-        self.assertEqual("CF-1.6", self.netcdf.getGlobalAttribute("Conventions"))
-        self.assertEqual("audit trail", self.netcdf.getGlobalAttribute("history"))
-        self.assertEqual("comment", self.netcdf.getGlobalAttribute("comment"))
+    def test_get_global_attribute_value(self):
+        self.assertEqual("some title", self.netcdf.get_global_attribute("title"))
+        self.assertEqual("institution code", self.netcdf.get_global_attribute("institution"))
+        self.assertEqual("links to references", self.netcdf.get_global_attribute("references"))
+        self.assertEqual("method of production", self.netcdf.get_global_attribute("source"))
+        self.assertEqual("CF-1.6", self.netcdf.get_global_attribute("Conventions"))
+        self.assertEqual("audit trail", self.netcdf.get_global_attribute("history"))
+        self.assertEqual("comment", self.netcdf.get_global_attribute("comment"))
 
-    def testGetVariableAttribute(self):
-        self.assertEqual("longitude", self.netcdf.getVariableAttribute("lon", "long_name"))
-        self.assertAlmostEqual(-180.0, self.netcdf.getVariableAttribute("lon", "valid_min"), 5)
+    def test_get_variable_attribute(self):
+        self.assertEqual("longitude", self.netcdf.get_variable_attribute("lon", "long_name"))
+        self.assertAlmostEqual(-180.0, self.netcdf.get_variable_attribute("lon", "valid_min"), 5)
 
-    def testGetDimensionString(self):
-        self.assertEqual("lon", self.netcdf.getDimensionString("lon"))
-        self.assertEqual("lat", self.netcdf.getDimensionString("lat"))
-        self.assertEqual("time", self.netcdf.getDimensionString("time"))
-        self.assertEqual("time depth lat lon", self.netcdf.getDimensionString("chl"))
+    def test_get_dimension_string(self):
+        self.assertEqual("lon", self.netcdf.get_dimension_string("lon"))
+        self.assertEqual("lat", self.netcdf.get_dimension_string("lat"))
+        self.assertEqual("time", self.netcdf.get_dimension_string("time"))
+        self.assertEqual("time depth lat lon", self.netcdf.get_dimension_string("chl"))
 
-    def testGetDimLength(self):
-        self.assertEqual(2, self.netcdf.getDimLength("chl", 0))
-        self.assertEqual(2, self.netcdf.getDimLength("chl", 1))
-        self.assertEqual(2, self.netcdf.getDimLength("chl", 2))
-        self.assertEqual(4, self.netcdf.getDimLength("chl", 3))
+    def test_get_dim_length(self):
+        self.assertEqual(2, self.netcdf.get_dim_length("chl", 0))
+        self.assertEqual(2, self.netcdf.get_dim_length("chl", 1))
+        self.assertEqual(2, self.netcdf.get_dim_length("chl", 2))
+        self.assertEqual(4, self.netcdf.get_dim_length("chl", 3))
 
-    def testGetDataViaOriginAndShape(self):
+    def test_get_data_via_origin_and_shape(self):
         assert_array_equal(array([0.1111], dtype='float32'),
-            self.netcdf.getData("chl", [0, 0, 0, 0], [1, 1, 1, 1]))
+            self.netcdf.get_data("chl", [0, 0, 0, 0], [1, 1, 1, 1]))
 
         assert_array_equal(array([
             [
@@ -58,16 +58,16 @@ class NetCDFFacadeTest(unittest.TestCase):
               [[ 0.1114, 0.2114], [ 0.1124, 0.2124]]
             ]
         ],
-            dtype='float32'), self.netcdf.getData("chl", [0, 0, 0, 0], [2, 2, 2, 2]))
+            dtype='float32'), self.netcdf.get_data("chl", [0, 0, 0, 0], [2, 2, 2, 2]))
 
-    def testGetDimensions(self):
-        assert_array_equal(["time", "depth", "lat", "lon", "record_num"], self.netcdf.getDimensions())
+    def test_get_dimensions(self):
+        assert_array_equal(["time", "depth", "lat", "lon", "record_num"], self.netcdf.get_dimensions())
 
-    def testGetGeophysicalVariables(self):
-        assert_array_equal(['chl', 'sst'], self.netcdf.getGeophysicalVariables())
+    def test_get_geophysical_variables(self):
+        assert_array_equal(['chl', 'sst'], self.netcdf.get_geophysical_variables())
 
-    def testReadVariableFully(self):
-        fullyReadChl = self.netcdf.readVariableFully('chl')
+    def test_read_variable_fully(self):
+        fullyReadChl = self.netcdf.read_variable_fully('chl')
         assert_array_equal(
             array(
             [[[[0.1111, 0.2111, 0.1211, 0.2211],
@@ -80,11 +80,11 @@ class NetCDFFacadeTest(unittest.TestCase):
                [0.1124, 0.2124, 0.1224, 0.2224]]]], dtype='float32'),
             fullyReadChl)
 
-    def testGetVariableSize(self):
-        self.assertEqual(2, self.netcdf.getVariableSize('lat'))
-        self.assertEqual(4, self.netcdf.getVariableSize('lon'))
-        self.assertEqual(2, self.netcdf.getVariableSize('time'))
-        self.assertEqual(32, self.netcdf.getVariableSize('chl'))
-        self.assertEqual(32, self.netcdf.getVariableSize('sst'))
-        self.assertEqual(32, self.netcdf.getVariableSize('sst'))
-        self.assertEqual(3, self.netcdf.getVariableSize('chl_ref'))
+    def test_get_variable_size(self):
+        self.assertEqual(2, self.netcdf.get_variable_size('lat'))
+        self.assertEqual(4, self.netcdf.get_variable_size('lon'))
+        self.assertEqual(2, self.netcdf.get_variable_size('time'))
+        self.assertEqual(32, self.netcdf.get_variable_size('chl'))
+        self.assertEqual(32, self.netcdf.get_variable_size('sst'))
+        self.assertEqual(32, self.netcdf.get_variable_size('sst'))
+        self.assertEqual(3, self.netcdf.get_variable_size('chl_ref'))

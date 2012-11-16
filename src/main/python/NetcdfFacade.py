@@ -1,51 +1,51 @@
 from netCDF4 import Dataset
 
-class NetCDFFacade:
+class NetCDFFacade(object):
 
     def __init__(self, filename):
         self.dataSet = Dataset(filename, 'r', format='NETCDF4_CLASSIC')
 
-    def getDimSize(self, dimName):
+    def get_dim_size(self, dimName):
         dimensions = self.dataSet.dimensions
         for currentDimName in dimensions:
             if currentDimName == dimName:
                 return len(dimensions[currentDimName])
 
-    def getGlobalAttribute(self, attributeName):
+    def get_global_attribute(self, attributeName):
         globalAttributes = self.dataSet.ncattrs
         for currentAttribute in globalAttributes():
             if currentAttribute == attributeName:
                 return self.dataSet.__getattribute__(attributeName)
 
-    def getVariable(self, variableName):
+    def get_variable(self, variableName):
         variables = self.dataSet.variables
         for currentVarName in variables:
             if currentVarName == variableName:
                 return variables[currentVarName]
         return None
 
-    def getVariableAttribute(self, variableName, attributeName):
-        variable = self.getVariable(variableName)
+    def get_variable_attribute(self, variableName, attributeName):
+        variable = self.get_variable(variableName)
         return variable.__getattribute__(attributeName)
 
-    def getDimensionString(self, variableName):
-        variable = self.getVariable(variableName)
+    def get_dimension_string(self, variableName):
+        variable = self.get_variable(variableName)
         dimensionString = ""
         for dimName in variable._getdims():
             dimensionString = dimensionString + dimName + " "
         dimensionString = dimensionString.strip()
         return dimensionString
 
-    def getDimLength(self, variableName, index):
-        variable = self.getVariable(variableName)
+    def get_dim_length(self, variableName, index):
+        variable = self.get_variable(variableName)
         variableDimensions = variable._getdims()
         for i in range(len(variableDimensions)):
             if i == index:
                 dimName = variableDimensions[i]
-                return self.getDimSize(dimName)
+                return self.get_dim_size(dimName)
 
-    def getData(self, variableName, origin, shape):
-        variable = self.getVariable(variableName)
+    def get_data(self, variableName, origin, shape):
+        variable = self.get_variable(variableName)
         dimCount = len(variable._getdims())
         if dimCount != len(origin) or dimCount != len(shape):
             raise ValueError("len(origin) and len(shape) must be equal to number of dimensions of variable '" + variableName + "'")
@@ -62,25 +62,25 @@ class NetCDFFacade:
     def close(self):
         self.dataSet.close()
 
-    def getDimensions(self):
+    def get_dimensions(self):
         result = []
         for dimension in self.dataSet.dimensions:
             result.append(dimension)
         return result
 
-    def getGeophysicalVariables(self):
+    def get_geophysical_variables(self):
         result = []
         for variableName in self.dataSet.variables:
-            ncVariable = self.getVariable(variableName)
+            ncVariable = self.get_variable(variableName)
             isCoordinateVariable = len(ncVariable._getdims()) == 1
             if not isCoordinateVariable:
                 result.append(variableName)
         return result
 
-    def readVariableFully(self, variableName):
-        return self.getVariable(variableName)
+    def read_variable_fully(self, variableName):
+        return self.get_variable(variableName)
 
-    def getVariableSize(self, variableName):
+    def get_variable_size(self, variableName):
         shape = self.dataSet.variables[variableName].shape
         return reduce(lambda x, y: x * y, shape)
 

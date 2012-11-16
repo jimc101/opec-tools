@@ -22,7 +22,7 @@ class AlgorithmTest(unittest.TestCase):
 
     def testRMSDOnActualValues(self):
         netcdf = NetCDFFacade('resources\\test.nc')
-        data = netcdf.getData('chl', [1, 0, 0], [1, 2, 4])
+        data = netcdf.get_data('chl', [1, 0, 0], [1, 2, 4])
         data = data.reshape(-1)
         referenceData = array([14, 14, 14, 14, 14, 14, 14, 14])
         self.assertAlmostEqual(2.345208, computeRmsd(data, referenceData), 5)

@@ -2,28 +2,28 @@ import os
 import unittest
 import numpy
 from src.main.python.DataStorage import DataStorage
-from src.main.python.Main import parseArguments
+from src.main.python.Main import parse_arguments
 
 class DataStorageTest(unittest.TestCase):
 
-    def testInitialisationWithString(self):
+    def test_initialisation_with_string(self):
         self.dataStorage = DataStorage(inputFile="../resources/test.nc")
 
-    def testInitialisation(self):
-        args = parseArguments(["../resources/test.nc"])
+    def test_initialisation(self):
+        args = parse_arguments(["../resources/test.nc"])
         self.dataStorage = DataStorage(args)
-        self.assertCoordinateTablesCreated()
-        self.assertCoordinateTablesFilled()
-        self.assertGeophysicalTablesCreated()
-        self.assertGeophysicalTablesFilled()
+        self.__assert_coordinate_tables_created()
+        self.__assert_coordinate_tables_filled()
+        self.__assert_geophysical_tables_created()
+        self.__assert_geophysical_tables_filled()
 
-    def assertCoordinateTablesCreated(self):
+    def __assert_coordinate_tables_created(self):
         self.assertIsNotNone(self.dataStorage.latitude)
         self.assertIsNotNone(self.dataStorage.longitude)
         self.assertIsNotNone(self.dataStorage.depth)
         self.assertIsNotNone(self.dataStorage.time)
 
-    def assertCoordinateTablesFilled(self):
+    def __assert_coordinate_tables_filled(self):
         latitudes = self.dataStorage.latitude.read()
         self.assertEqual(numpy.ndarray, type(latitudes))
         self.assertEqual((2,), latitudes.shape)
@@ -51,13 +51,13 @@ class DataStorageTest(unittest.TestCase):
         self.dataStorage.close()
         self.assertFalse(os.path.exists(self.dataStorage.filename))
 
-    def assertGeophysicalTablesCreated(self):
+    def __assert_geophysical_tables_created(self):
         self.assertIsNotNone(self.dataStorage.geophysicalTables)
         self.assertEqual(2, len(self.dataStorage.geophysicalTables))
         self.assertIsNotNone(self.dataStorage.geophysicalTables['chl'])
         self.assertIsNotNone(self.dataStorage.geophysicalTables['sst'])
 
-    def assertGeophysicalTablesFilled(self):
+    def __assert_geophysical_tables_filled(self):
         chlData = self.dataStorage.geophysicalTables['chl'].read()
         self.assertEqual(numpy.ndarray, type(chlData))
         self.assertEqual((32,), chlData.shape)

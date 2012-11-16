@@ -1,7 +1,7 @@
 from argparse import ArgumentParser
 import os
 
-def parseArguments(arguments):
+def parse_arguments(arguments):
     parser = MyArgumentParser(description='Process some integers.')
     parser.add_argument('-a', help='Path to the algorithm specification file', metavar='Algorithm specification file', default=DefaultAlgorithmSpec())
     parser.add_argument('-o', help='Path to the target directory', metavar='Target directory', default=os.getcwd())
@@ -15,4 +15,5 @@ class MyArgumentParser(ArgumentParser):
         raise ValueError(self.format_usage())
 
 class DefaultAlgorithmSpec(object):
+    # todo - implement
     pass

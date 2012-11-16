@@ -1,27 +1,27 @@
 import os
 import unittest
-from src.main.python.Main import parseArguments, DefaultAlgorithmSpec
+from src.main.python.Main import parse_arguments, DefaultAlgorithmSpec
 
 class MainTest(unittest.TestCase):
 
-    def testParsing(self):
-        args = parseArguments(["-a /path/to/algorithm/spec.ini", "-o /path/to/target/directory", "-p target_prefix", "MyModelOutput.nc"])
+    def test_parsing(self):
+        args = parse_arguments(["-a /path/to/algorithm/spec.ini", "-o /path/to/target/directory", "-p target_prefix", "MyModelOutput.nc"])
         self.assertEqual("/path/to/algorithm/spec.ini", args.a.lstrip().rstrip())
         self.assertEqual("/path/to/target/directory", args.o.lstrip().rstrip())
         self.assertEqual("target_prefix", args.p.lstrip().rstrip())
         self.assertEqual("MyModelOutput.nc", args.path.lstrip().rstrip())
 
-    def testDefaultValues(self):
-        args = parseArguments(["MyModelOutput.nc"])
+    def test_default_values(self):
+        args = parse_arguments(["MyModelOutput.nc"])
         self.assertEqual("MyModelOutput.nc", args.path.lstrip().rstrip())
         self.assertIsInstance(args.a, DefaultAlgorithmSpec)
         self.assertEqual(os.getcwd(), args.o)
         self.assertEqual("benchmark_", args.p)
 
-    def testUsage(self):
+    def test_usage(self):
         message = ""
         try:
-            parseArguments("")
+            parse_arguments("")
         except ValueError, e:
             message = e.message
 

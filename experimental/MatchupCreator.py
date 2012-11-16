@@ -7,12 +7,12 @@ class MatchupCreator:
     def __init__(self, filename):
         self.netcdf = NetcdfFacade.NetCDFFacade(filename)
         self.coordinateVariables = []
-        dimensions = self.netcdf.getDimensions()
+        dimensions = self.netcdf.get_dimensions()
         for dimension in dimensions:
-            if self.netcdf.getVariable(dimension) is not None:
+            if self.netcdf.get_variable(dimension) is not None:
                 origin = [0]
-                shape = [self.netcdf.getDimSize(dimension)]
-                values = self.netcdf.getData(dimension, origin, shape)
+                shape = [self.netcdf.get_dim_size(dimension)]
+                values = self.netcdf.get_data(dimension, origin, shape)
                 coordinateVariable = CoordinateVariable(dimension, values)
                 self.coordinateVariables.append(coordinateVariable)
 
