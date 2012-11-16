@@ -7,17 +7,17 @@ from src.main.python.Main import parseArguments
 class DataStorageTest(unittest.TestCase):
 
     def testInitialisationWithString(self):
-        self.dataStorage = DataStorage(inputFile = "../resources/test.nc")
+        self.dataStorage = DataStorage(inputFile="../resources/test.nc")
 
     def testInitialisation(self):
         args = parseArguments(["../resources/test.nc"])
         self.dataStorage = DataStorage(args)
-        self.assertCreationOfCoordinateTables()
+        self.assertCoordinateTablesCreated()
         self.assertCoordinateTablesFilled()
         self.assertGeophysicalTablesCreated()
         self.assertGeophysicalTablesFilled()
 
-    def assertCreationOfCoordinateTables(self):
+    def assertCoordinateTablesCreated(self):
         self.assertIsNotNone(self.dataStorage.latitude)
         self.assertIsNotNone(self.dataStorage.longitude)
         self.assertIsNotNone(self.dataStorage.depth)
@@ -52,7 +52,17 @@ class DataStorageTest(unittest.TestCase):
         self.assertFalse(os.path.exists(self.dataStorage.filename))
 
     def assertGeophysicalTablesCreated(self):
-        pass
+        self.assertIsNotNone(self.dataStorage.geophysicalTables)
+        self.assertEqual(2, len(self.dataStorage.geophysicalTables))
+        self.assertIsNotNone(self.dataStorage.geophysicalTables['chl'])
+        self.assertIsNotNone(self.dataStorage.geophysicalTables['sst'])
 
     def assertGeophysicalTablesFilled(self):
-        pass
+        chlData = self.dataStorage.geophysicalTables['chl'].read()
+        self.assertEqual(numpy.ndarray, type(chlData))
+        self.assertEqual((32,), chlData.shape)
+        self.assertAlmostEqual(0.1111, chlData[0][0], 4)
+        self.assertAlmostEqual(0.2111, chlData[1][0], 4)
+        self.assertAlmostEqual(0.1121, chlData[4][0], 4)
+        self.assertAlmostEqual(0.2224, chlData[31][0], 4)
+

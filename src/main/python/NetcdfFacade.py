@@ -1,6 +1,4 @@
-from array import array
-import netCDF4
-import numpy
+from netCDF4 import Dataset
 
 class NetCDFFacade:
 
@@ -69,3 +67,20 @@ class NetCDFFacade:
         for dimension in self.dataSet.dimensions:
             result.append(dimension)
         return result
+
+    def getGeophysicalVariables(self):
+        result = []
+        for variableName in self.dataSet.variables:
+            ncVariable = self.getVariable(variableName)
+            isCoordinateVariable = len(ncVariable._getdims()) == 1
+            if not isCoordinateVariable:
+                result.append(variableName)
+        return result
+
+    def readVariableFully(self, variableName):
+        return self.getVariable(variableName)
+
+    def getVariableSize(self, variableName):
+        shape = self.dataSet.variables[variableName].shape
+        return reduce(lambda x, y: x * y, shape)
+

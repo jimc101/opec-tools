@@ -1,11 +1,11 @@
-from experimental import netcdf_facade
+from src.main.python import NetcdfFacade
 
 __author__ = 'Thomas Storm'
 
 class MatchupCreator:
 
     def __init__(self, filename):
-        self.netcdf = netcdf_facade.NetCDFFacade(filename)
+        self.netcdf = NetcdfFacade.NetCDFFacade(filename)
         self.coordinateVariables = []
         dimensions = self.netcdf.getDimensions()
         for dimension in dimensions:

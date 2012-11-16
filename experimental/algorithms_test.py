@@ -2,7 +2,7 @@ import unittest
 from numpy import array
 import numpy
 from experimental.algorithms import computeRmsd, computeBias, computeUnbiasedRmsd, computeCorrelation
-from experimental.netcdf_facade import NetCDFFacade
+from src.main.python.NetcdfFacade import NetCDFFacade
 
 class AlgorithmTest(unittest.TestCase):
 

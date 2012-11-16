@@ -1,6 +1,8 @@
+import uuid
 from tables import *
-from experimental.netcdf_facade import NetCDFFacade
+from src.main.python.NetcdfFacade import NetCDFFacade
 import os
+import numpy
 
 class DataStorage:
 
@@ -14,13 +16,14 @@ class DataStorage:
         self.createCoordinateTables()
         self.fillCoordinateTables(netcdfFile)
         self.createGeophysicalTables(netcdfFile)
+        self.fillGeophysicalTables(netcdfFile)
 
     def close(self):
         self.h5file.close()
         os.remove(self.filename)
 
     def createStorageFile(self):
-        self.filename = "test.h5" # TODO - replace by temporary file read from configuration
+        self.filename = 'temp_' + str(uuid.uuid4()) + '.h5' # TODO - replace by temporary file read from configuration
         self.h5file = openFile(self.filename, mode="w", title="temporary data storage")
 
     def createCoordinateTables(self):
@@ -55,11 +58,22 @@ class DataStorage:
         self.h5file.flush()
 
     def createGeophysicalTables(self, netcdfFile):
-        self.geophysicalTables = []
+        self.geophysicalTables = {}
         for var in netcdfFile.getGeophysicalVariables():
-            self.geophysicalTables.append(self.h5file.createTable("/", var, GeophysicalVariable))
+            self.geophysicalTables[var] = self.h5file.createTable("/", var, GeophysicalVariable)
 
-# todo - check if datatypes are needed
+    def fillGeophysicalTables(self, netcdfFile):
+        for var in self.geophysicalTables:
+            variableData = netcdfFile.readVariableFully(var)
+            variableData = numpy.reshape(variableData, netcdfFile.getVariableSize(var))
+            record = self.geophysicalTables[var].row
+            for value in variableData:
+                record['geophysicalVar'] = value
+                record.append()
+        self.h5file.flush()
+
+
+# todo - check if more datatypes are needed
 class GeophysicalVariable(IsDescription):
     geophysicalVar = Float32Col()
 
