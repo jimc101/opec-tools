@@ -22,3 +22,26 @@ Prerequisites for building:
 - nose 1.2.1
 - numexpr 2.0.1
 - argparse 1.1
+
+Coding Conventions (loosely based on http://www.python.org/dev/peps/pep-0008/ and http://google-styleguide.googlecode.com/svn/trunk/pyguide.html):
+
+# Use 4 spaces per indentation level
+# Never mix tabs and spaces
+# Imports should usually be on separate lines
+# However, *from subprocess import Popen, PIPE* is ok, too
+# Imports are always put at the top of the file
+# Avoid extraneous whitespace
+# Use parentheses sparingly
+# This does not apply to binary operators
+# Don't use spaces around the = sign when used to indicate a keyword argument or a default parameter value
+# Don't put an if/for/while with a small body on a single line
+# Do not terminate your lines with semi-colons and do not use semi-colons to put two commands on the same line
+# If a class inherits from no other base classes, explicitly inherit from object. This also applies to nested classes.
+# As to naming conventions, generally Java conventions apply
+# Function names should be lowercase, underscore separated
+# Names of functions considered private shall start with two underscores
+# Use lambda expressions only for one-liners (else: hard to read and to debug)
+# Use properties for accessing or setting data where you would normally have used simple, lightweight accessor or setter methods
+# Avoid fancy features such as metaclasses, access to bytecode, on-the-fly compilation, dynamic inheritance, object reparenting, import hacks, reflection, modification of system internals as far as possible
+# Explicitly close files and sockets when done with them
+# Use TODO comments for code that is temporary, a short-term solution, or good-enough but not perfect
