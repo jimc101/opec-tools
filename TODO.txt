@@ -1,1 +1,5 @@
-- exchange argparse by newer API
+- replace getters by direct field access (which can in turn be backed by a function)
+- add test case where variable have no depth dimension
+- implement classes Matchup + MatchupCreator
+- add logging facility
+- extend interface of DataStorage by methods that manipulate data
