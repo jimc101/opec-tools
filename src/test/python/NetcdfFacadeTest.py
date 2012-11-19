@@ -66,6 +66,9 @@ class NetCDFFacadeTest(unittest.TestCase):
     def test_get_geophysical_variables(self):
         assert_array_equal(['chl', 'sst'], self.netcdf.get_geophysical_variables())
 
+    def test_get_reference_variables(self):
+        assert_array_equal(['chl_ref'], self.netcdf.get_reference_variables())
+
     def test_read_variable_fully(self):
         fullyReadChl = self.netcdf.read_variable_fully('chl')
         assert_array_equal(

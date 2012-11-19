@@ -9,26 +9,15 @@ class UserFriendlyInteractiveDataStorageTest(unittest.TestCase):
         self.userFriendlyInteractiveDataStorage = UserFriendlyInteractiveDataStorage(inputFile='../resources/test.nc')
 
     def test_list_model_vars(self):
-        printStream = MyPrintStream()
-        self.userFriendlyInteractiveDataStorage.list_model_vars(printStream)
-        assert_array_equal(array(['sst', 'chl']), printStream.printedValue)
-
-    def test_list_model_vars_to_stdout(self):
-        self.userFriendlyInteractiveDataStorage.list_model_vars()
+        model_vars = self.userFriendlyInteractiveDataStorage.list_model_vars()
+        assert_array_equal(array(['sst', 'chl']), model_vars)
 
     def test_list_ref_vars(self):
-        printStream = MyPrintStream()
-        self.userFriendlyInteractiveDataStorage.list_ref_vars(printStream)
-        assert_array_equal(array(['sst', 'chl']), printStream.printedValue)
+        ref_vars = self.userFriendlyInteractiveDataStorage.list_ref_vars()
+        assert_array_equal(array(['chl_ref']), ref_vars)
 
 #    def test_var_access(self):
 #        pass
 
     def tearDown(self):
         self.userFriendlyInteractiveDataStorage.close()
-
-class MyPrintStream(object):
-
-    def write(self, value):
-        self.printedValue = value
-        print self.printedValue

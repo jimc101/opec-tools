@@ -1,4 +1,5 @@
 from netCDF4 import Dataset
+import netCDF4
 
 class NetCDFFacade(object):
 
@@ -68,12 +69,15 @@ class NetCDFFacade(object):
             result.append(dimension)
         return result
 
+    def is_coordinate_or_reference_variable(self, ncVariable):
+        isCoordinateOrReferenceVariable = len(ncVariable._getdims()) == 1
+        return isCoordinateOrReferenceVariable
+
     def get_geophysical_variables(self):
         result = []
         for variableName in self.dataSet.variables:
             ncVariable = self.get_variable(variableName)
-            isCoordinateVariable = len(ncVariable._getdims()) == 1
-            if not isCoordinateVariable:
+            if not self.is_coordinate_or_reference_variable(ncVariable):
                 result.append(variableName)
         return result
 
@@ -83,4 +87,19 @@ class NetCDFFacade(object):
     def get_variable_size(self, variableName):
         shape = self.dataSet.variables[variableName].shape
         return reduce(lambda x, y: x * y, shape)
+
+    def get_reference_variables(self):
+        result = []
+        for variableName in self.dataSet.variables:
+            ncVariable = self.get_variable(variableName)
+            isReferenceVariable = self.is_coordinate_or_reference_variable(ncVariable) and self.hasCoordinatesAttribute(ncVariable)
+            if isReferenceVariable:
+                result.append(variableName)
+        return result
+
+    def hasCoordinatesAttribute(self, ncVariable):
+        for attribute in ncVariable.ncattrs():
+            if str(attribute) == 'coordinates':
+                return True
+        return False
 

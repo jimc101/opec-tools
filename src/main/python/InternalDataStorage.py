@@ -17,6 +17,8 @@ class InternalDataStorage(object):
         self.__fill_coordinate_tables(netcdfFile)
         self.__create_geophysical_tables(netcdfFile)
         self.__fill_geophysical_tables(netcdfFile)
+        self.__create_reference_tables(netcdfFile)
+        self.__fill_reference_tables(netcdfFile)
 
     def __del__(self):
         self.close()
@@ -76,21 +78,38 @@ class InternalDataStorage(object):
                 record.append()
         self.h5file.flush()
 
+    def __create_reference_tables(self, netcdfFile):
+        self.referenceTables = {}
+        for var in netcdfFile.get_reference_variables():
+            self.referenceTables[var] = self.h5file.createTable("/", var, ReferenceVariable)
+
+    def __fill_reference_tables(self, netcdfFile):
+        for var in self.referenceTables:
+            variableData = netcdfFile.read_variable_fully(var)
+            record = self.referenceTables[var].row
+            for value in variableData:
+                record['referenceVar'] = value
+                record.append()
+        self.h5file.flush()
+
     def get_model_vars(self):
-        model_vars = []
-        for var in self.geophysicalTables:
-            model_vars.append(var)
-        return model_vars
+        return self.get_vars(self.geophysicalTables)
 
     def get_ref_vars(self):
-        ref_vars = []
-        for var in self.geophysicalTables:
-            ref_vars.append(var)
-        return ref_vars
+        return self.get_vars(self.referenceTables)
+
+    def get_vars(self, tables):
+        vars = []
+        for var in tables:
+            vars.append(var)
+        return vars
 
 # todo - check if more datatypes are needed
 class GeophysicalVariable(IsDescription):
     geophysicalVar = Float32Col()
+
+class ReferenceVariable(IsDescription):
+    referenceVar = Float32Col()
 
 class Latitude(IsDescription):
     lat = Float32Col()
