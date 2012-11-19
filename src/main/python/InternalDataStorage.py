@@ -93,12 +93,12 @@ class InternalDataStorage(object):
         self.h5file.flush()
 
     def get_model_vars(self):
-        return self.get_vars(self.geophysicalTables)
+        return self.__get_vars(self.geophysicalTables)
 
     def get_ref_vars(self):
-        return self.get_vars(self.referenceTables)
+        return self.__get_vars(self.referenceTables)
 
-    def get_vars(self, tables):
+    def __get_vars(self, tables):
         vars = []
         for var in tables:
             vars.append(var)
