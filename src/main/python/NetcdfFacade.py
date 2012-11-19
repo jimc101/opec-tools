@@ -73,7 +73,7 @@ class NetCDFFacade(object):
         isCoordinateOrReferenceVariable = len(ncVariable._getdims()) == 1
         return isCoordinateOrReferenceVariable
 
-    def get_geophysical_variables(self):
+    def get_model_variables(self):
         result = []
         for variableName in self.dataSet.variables:
             ncVariable = self.get_variable(variableName)

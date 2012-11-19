@@ -14,11 +14,9 @@ class InternalDataStorage(object):
 
         self.__create_storage_file()
         self.__create_coordinate_tables(netcdfFile)
-        self.__fill_coordinate_tables(netcdfFile)
-        self.__create_geophysical_tables(netcdfFile)
-        self.__fill_geophysical_tables(netcdfFile)
+        self.__create_model_tables(netcdfFile)
         self.__create_reference_tables(netcdfFile)
-        self.__fill_reference_tables(netcdfFile)
+        self.__fill_tables(netcdfFile)
 
     def __del__(self):
         self.close()
@@ -39,69 +37,42 @@ class InternalDataStorage(object):
         if 'depth' in netcdfFile.get_coordinate_variables():
             self.coordinateTables['depth'] = self.h5file.createTable("/", 'depth', Depth)
 
-    def __fill_coordinate_tables(self, netcdfFile):
-        for var in netcdfFile.get_coordinate_variables():
-            dimLength = netcdfFile.get_dim_length(var)
-            record = self.coordinateTables[var].row
-            for i in xrange(dimLength):
-                record[var] = netcdfFile.get_data(var, [i], [1]) # todo - optimise: this is maximally non-performant
-                record.append()
+    def __create_model_tables(self, netcdfFile):
+        self.modelTables = {}
+        for var in netcdfFile.get_model_variables():
+            self.modelTables[var] = self.h5file.createTable("/", var, ModelVariable)
 
-#        latDimLength = netcdfFile.get_dim_length("lat")
-#        lonDimLength = netcdfFile.get_dim_length("lon")
-#        depthDimLength = netcdfFile.get_dim_length("depth")
-#        timeDimLength = netcdfFile.get_dim_length("time")
-#        record = self.coordinateTables['latitude'].row
-#        for i in xrange(latDimLength):
-#            record['lat'] = netcdfFile.get_data("lat", [i], [1]) # todo - optimise: this is maximally non-performant
-#            record.append()
-#        record = self.coordinateTables['longitude'].row
-#        for i in xrange(lonDimLength):
-#            record['lon'] = netcdfFile.get_data("lon", [i], [1])
-#            record.append()
-#        self.h5file.flush()
-#        record = self.coordinateTables['depth'].row
-#        for i in xrange(depthDimLength):
-#            record['depth'] = netcdfFile.get_data("depth", [i], [1])
-#            record.append()
-#        self.h5file.flush()
-#        record = self.coordinateTables['time'].row
-#        for i in xrange(timeDimLength):
-#            record['time'] = netcdfFile.get_data("time", [i], [1])
-#            record.append()
-#        self.h5file.flush()
-
-    def __create_geophysical_tables(self, netcdfFile):
-        self.geophysicalTables = {}
-        for var in netcdfFile.get_geophysical_variables():
-            self.geophysicalTables[var] = self.h5file.createTable("/", var, GeophysicalVariable)
-
-    def __fill_geophysical_tables(self, netcdfFile):
-        for var in self.geophysicalTables:
-            variableData = netcdfFile.read_variable_fully(var)
-            variableData = numpy.reshape(variableData, netcdfFile.get_variable_size(var))
-            record = self.geophysicalTables[var].row
-            for value in variableData:
-                record['geophysicalVar'] = value
-                record.append()
+    def __fill_tables(self, netcdfFile):
+        self.__fill_measurement_tables(netcdfFile, self.modelTables, 'modelVar')
+        self.__fill_measurement_tables(netcdfFile, self.referenceTables, 'referenceVar')
+        self.__fill_table(netcdfFile, self.coordinateTables['lat'], 'lat')
+        self.__fill_table(netcdfFile, self.coordinateTables['lon'], 'lon')
+        self.__fill_table(netcdfFile, self.coordinateTables['time'], 'time')
+        if 'depth' in netcdfFile.get_coordinate_variables():
+            self.__fill_table(netcdfFile, self.coordinateTables['depth'], 'depth')
         self.h5file.flush()
+
+    def __fill_measurement_tables(self, netcdfFile, measurementTables, fieldName):
+        for variableName in measurementTables:
+            self.__fill_table(netcdfFile, measurementTables[variableName], fieldName, variableName)
+
+    def __fill_table(self, netcdfFile, table, fieldName, variableName=None):
+        if variableName is None:
+            variableName = fieldName
+        record = table.row
+        variableData = netcdfFile.read_variable_fully(variableName)
+        variableData = numpy.reshape(variableData, netcdfFile.get_variable_size(variableName))
+        for value in variableData:
+            record[fieldName] = value
+            record.append()
 
     def __create_reference_tables(self, netcdfFile):
         self.referenceTables = {}
         for var in netcdfFile.get_reference_variables():
             self.referenceTables[var] = self.h5file.createTable("/", var, ReferenceVariable)
 
-    def __fill_reference_tables(self, netcdfFile):
-        for var in self.referenceTables:
-            variableData = netcdfFile.read_variable_fully(var)
-            record = self.referenceTables[var].row
-            for value in variableData:
-                record['referenceVar'] = value
-                record.append()
-        self.h5file.flush()
-
     def get_model_vars(self):
-        return self.__get_vars(self.geophysicalTables)
+        return self.__get_vars(self.modelTables)
 
     def get_ref_vars(self):
         return self.__get_vars(self.referenceTables)
@@ -113,8 +84,8 @@ class InternalDataStorage(object):
         return vars
 
 # todo - check if more datatypes are needed
-class GeophysicalVariable(IsDescription):
-    geophysicalVar = Float32Col()
+class ModelVariable(IsDescription):
+    modelVar = Float32Col()
 
 class ReferenceVariable(IsDescription):
     referenceVar = Float32Col()

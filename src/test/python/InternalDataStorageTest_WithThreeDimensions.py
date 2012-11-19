@@ -10,10 +10,10 @@ class InternalDataStorageTest_WithThreeDimensions(unittest.TestCase):
         args = parse_arguments(["../resources/test_without_depth.nc"])
         self.dataStorage = InternalDataStorage(args)
         self.__assert_coordinate_tables_created()
-        self.__assert_coordinate_tables_filled()
-        self.__assert_geophysical_tables_created()
-        self.__assert_geophysical_tables_filled()
+        self.__assert_model_tables_created()
         self.__assert_reference_tables_created()
+        self.__assert_coordinate_tables_filled()
+        self.__assert_model_tables_filled()
         self.__assert_reference_tables_filled()
 
     def __assert_coordinate_tables_created(self):
@@ -45,14 +45,14 @@ class InternalDataStorageTest_WithThreeDimensions(unittest.TestCase):
         self.dataStorage.close()
         self.assertFalse(os.path.exists(self.dataStorage.filename))
 
-    def __assert_geophysical_tables_created(self):
-        self.assertIsNotNone(self.dataStorage.geophysicalTables)
-        self.assertEqual(2, len(self.dataStorage.geophysicalTables))
-        self.assertIsNotNone(self.dataStorage.geophysicalTables['chl'])
-        self.assertIsNotNone(self.dataStorage.geophysicalTables['sst'])
+    def __assert_model_tables_created(self):
+        self.assertIsNotNone(self.dataStorage.modelTables)
+        self.assertEqual(2, len(self.dataStorage.modelTables))
+        self.assertIsNotNone(self.dataStorage.modelTables['chl'])
+        self.assertIsNotNone(self.dataStorage.modelTables['sst'])
 
-    def __assert_geophysical_tables_filled(self):
-        chlData = self.dataStorage.geophysicalTables['chl'].read()
+    def __assert_model_tables_filled(self):
+        chlData = self.dataStorage.modelTables['chl'].read()
         self.assertEqual(numpy.ndarray, type(chlData))
         self.assertEqual((16,), chlData.shape)
         self.assertAlmostEqual(0.111, chlData[0][0], 4)
@@ -60,7 +60,7 @@ class InternalDataStorageTest_WithThreeDimensions(unittest.TestCase):
         self.assertAlmostEqual(0.121, chlData[4][0], 4)
         self.assertAlmostEqual(0.224, chlData[15][0], 4)
 
-        sstData = self.dataStorage.geophysicalTables['sst'].read()
+        sstData = self.dataStorage.modelTables['sst'].read()
         self.assertEqual(numpy.ndarray, type(sstData))
         self.assertEqual((16,), sstData.shape)
         self.assertAlmostEqual(1.111, sstData[0][0], 4)

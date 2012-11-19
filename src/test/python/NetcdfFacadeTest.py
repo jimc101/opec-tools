@@ -1,5 +1,4 @@
 import unittest
-import numpy
 from numpy.core.numeric import array
 from numpy.testing.utils import assert_array_equal
 from src.main.python.NetcdfFacade import NetCDFFacade
@@ -63,8 +62,8 @@ class NetCDFFacadeTest(unittest.TestCase):
     def test_get_dimensions(self):
         assert_array_equal(["time", "depth", "lat", "lon", "record_num"], self.netcdf.get_dimensions())
 
-    def test_get_geophysical_variables(self):
-        assert_array_equal(['chl', 'sst'], self.netcdf.get_geophysical_variables())
+    def test_get_model_variables(self):
+        assert_array_equal(['chl', 'sst'], self.netcdf.get_model_variables())
 
     def test_get_reference_variables(self):
         assert_array_equal(['chl_ref'], self.netcdf.get_reference_variables())

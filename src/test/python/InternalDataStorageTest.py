@@ -14,8 +14,8 @@ class InternalDataStorageTest(unittest.TestCase):
         self.dataStorage = InternalDataStorage(args)
         self.__assert_coordinate_tables_created()
         self.__assert_coordinate_tables_filled()
-        self.__assert_geophysical_tables_created()
-        self.__assert_geophysical_tables_filled()
+        self.__assert_model_tables_created()
+        self.__assert_model_tables_filled()
         self.__assert_reference_tables_created()
         self.__assert_reference_tables_filled()
 
@@ -53,14 +53,14 @@ class InternalDataStorageTest(unittest.TestCase):
         self.dataStorage.close()
         self.assertFalse(os.path.exists(self.dataStorage.filename))
 
-    def __assert_geophysical_tables_created(self):
-        self.assertIsNotNone(self.dataStorage.geophysicalTables)
-        self.assertEqual(2, len(self.dataStorage.geophysicalTables))
-        self.assertIsNotNone(self.dataStorage.geophysicalTables['chl'])
-        self.assertIsNotNone(self.dataStorage.geophysicalTables['sst'])
+    def __assert_model_tables_created(self):
+        self.assertIsNotNone(self.dataStorage.modelTables)
+        self.assertEqual(2, len(self.dataStorage.modelTables))
+        self.assertIsNotNone(self.dataStorage.modelTables['chl'])
+        self.assertIsNotNone(self.dataStorage.modelTables['sst'])
 
-    def __assert_geophysical_tables_filled(self):
-        chlData = self.dataStorage.geophysicalTables['chl'].read()
+    def __assert_model_tables_filled(self):
+        chlData = self.dataStorage.modelTables['chl'].read()
         self.assertEqual(numpy.ndarray, type(chlData))
         self.assertEqual((32,), chlData.shape)
         self.assertAlmostEqual(0.1111, chlData[0][0], 4)
@@ -68,7 +68,7 @@ class InternalDataStorageTest(unittest.TestCase):
         self.assertAlmostEqual(0.1121, chlData[4][0], 4)
         self.assertAlmostEqual(0.2224, chlData[31][0], 4)
 
-        sstData = self.dataStorage.geophysicalTables['sst'].read()
+        sstData = self.dataStorage.modelTables['sst'].read()
         self.assertEqual(numpy.ndarray, type(sstData))
         self.assertEqual((32,), sstData.shape)
         self.assertAlmostEqual(1.1111, sstData[0][0], 4)
