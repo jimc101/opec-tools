@@ -1,4 +1,1 @@
 - exchange argparse by newer API
-- output to stdout must work
-- add tables for point data
-- make tests run
