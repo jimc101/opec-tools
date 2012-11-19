@@ -1,12 +1,12 @@
 import unittest
 from numpy import array
 from numpy.testing import assert_array_equal
-from src.main.python.UserFriendlyInteractiveDataStorage import UserFriendlyInteractiveDataStorage
+from src.main.python.DataStorage import DataStorage
 
-class UserFriendlyInteractiveDataStorageTest(unittest.TestCase):
+class DataStorageTest(unittest.TestCase):
 
     def setUp(self):
-        self.userFriendlyInteractiveDataStorage = UserFriendlyInteractiveDataStorage(inputFile='../resources/test.nc')
+        self.userFriendlyInteractiveDataStorage = DataStorage(inputFile='../resources/test.nc')
 
     def test_list_model_vars(self):
         model_vars = self.userFriendlyInteractiveDataStorage.list_model_vars()

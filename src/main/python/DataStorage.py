@@ -1,7 +1,7 @@
 from __future__ import print_function
 from src.main.python.InternalDataStorage import InternalDataStorage
 
-class UserFriendlyInteractiveDataStorage(object):
+class DataStorage(object):
 
     def __init__(self, *args, **kwargs):
         self.internalDataStorage = InternalDataStorage(*args, **kwargs)
