@@ -91,3 +91,11 @@ class NetCDFFacadeTest(unittest.TestCase):
         self.assertEqual(32, self.netcdf.get_variable_size('sst'))
         self.assertEqual(32, self.netcdf.get_variable_size('sst'))
         self.assertEqual(3, self.netcdf.get_variable_size('chl_ref'))
+
+    def test_get_coordinate_variables(self):
+        coordinate_variables = self.netcdf.get_coordinate_variables()
+        self.assertEqual(4, len(coordinate_variables))
+        self.assertTrue('lat' in coordinate_variables)
+        self.assertTrue('lon' in coordinate_variables)
+        self.assertTrue('time' in coordinate_variables)
+        self.assertTrue('depth' in coordinate_variables)

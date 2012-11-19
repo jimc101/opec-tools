@@ -13,7 +13,7 @@ class InternalDataStorage(object):
             netcdfFile = NetCDFFacade(args[0].path)
 
         self.__create_storage_file()
-        self.__create_coordinate_tables()
+        self.__create_coordinate_tables(netcdfFile)
         self.__fill_coordinate_tables(netcdfFile)
         self.__create_geophysical_tables(netcdfFile)
         self.__fill_geophysical_tables(netcdfFile)
@@ -32,36 +32,44 @@ class InternalDataStorage(object):
         self.filename = 'temp_' + str(uuid.uuid4()) + '.h5' # TODO - replace by temporary file read from configuration
         self.h5file = openFile(self.filename, mode="w", title="temporary data storage")
 
-    def __create_coordinate_tables(self):
-        self.latitude = self.h5file.createTable("/", 'lat', Latitude)
-        self.longitude = self.h5file.createTable("/", 'lon', Longitude)
-        self.depth = self.h5file.createTable("/", 'depth', Depth)
-        self.time = self.h5file.createTable("/", 'time', Time)
+    def __create_coordinate_tables(self, netcdfFile):
+        self.coordinateTables = {'lat': self.h5file.createTable("/", 'lat', Latitude),
+                                 'lon': self.h5file.createTable("/", 'lon', Longitude),
+                                 'time': self.h5file.createTable("/", 'time', Time)}
+        if 'depth' in netcdfFile.get_coordinate_variables():
+            self.coordinateTables['depth'] = self.h5file.createTable("/", 'depth', Depth)
 
     def __fill_coordinate_tables(self, netcdfFile):
-        latDimLength = netcdfFile.get_dim_length("lat", 0)
-        lonDimLength = netcdfFile.get_dim_length("lon", 0)
-        depthDimLength = netcdfFile.get_dim_length("depth", 0)
-        timeDimLength = netcdfFile.get_dim_length("time", 0)
-        record = self.latitude.row
-        for i in xrange(latDimLength):
-            record['lat'] = netcdfFile.get_data("lat", [i], [1]) # todo - optimise: this is maximally non-performant
-            record.append()
-        record = self.longitude.row
-        for i in xrange(lonDimLength):
-            record['lon'] = netcdfFile.get_data("lon", [i], [1])
-            record.append()
-        self.h5file.flush()
-        record = self.depth.row
-        for i in xrange(depthDimLength):
-            record['depth'] = netcdfFile.get_data("depth", [i], [1])
-            record.append()
-        self.h5file.flush()
-        record = self.time.row
-        for i in xrange(timeDimLength):
-            record['time'] = netcdfFile.get_data("time", [i], [1])
-            record.append()
-        self.h5file.flush()
+        for var in netcdfFile.get_coordinate_variables():
+            dimLength = netcdfFile.get_dim_length(var)
+            record = self.coordinateTables[var].row
+            for i in xrange(dimLength):
+                record[var] = netcdfFile.get_data(var, [i], [1]) # todo - optimise: this is maximally non-performant
+                record.append()
+
+#        latDimLength = netcdfFile.get_dim_length("lat")
+#        lonDimLength = netcdfFile.get_dim_length("lon")
+#        depthDimLength = netcdfFile.get_dim_length("depth")
+#        timeDimLength = netcdfFile.get_dim_length("time")
+#        record = self.coordinateTables['latitude'].row
+#        for i in xrange(latDimLength):
+#            record['lat'] = netcdfFile.get_data("lat", [i], [1]) # todo - optimise: this is maximally non-performant
+#            record.append()
+#        record = self.coordinateTables['longitude'].row
+#        for i in xrange(lonDimLength):
+#            record['lon'] = netcdfFile.get_data("lon", [i], [1])
+#            record.append()
+#        self.h5file.flush()
+#        record = self.coordinateTables['depth'].row
+#        for i in xrange(depthDimLength):
+#            record['depth'] = netcdfFile.get_data("depth", [i], [1])
+#            record.append()
+#        self.h5file.flush()
+#        record = self.coordinateTables['time'].row
+#        for i in xrange(timeDimLength):
+#            record['time'] = netcdfFile.get_data("time", [i], [1])
+#            record.append()
+#        self.h5file.flush()
 
     def __create_geophysical_tables(self, netcdfFile):
         self.geophysicalTables = {}

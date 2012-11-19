@@ -37,7 +37,7 @@ class NetCDFFacade(object):
         dimensionString = dimensionString.strip()
         return dimensionString
 
-    def get_dim_length(self, variableName, index):
+    def get_dim_length(self, variableName, index=0):
         variable = self.get_variable(variableName)
         variableDimensions = variable._getdims()
         for i in range(len(variableDimensions)):
@@ -103,3 +103,10 @@ class NetCDFFacade(object):
                 return True
         return False
 
+    def get_coordinate_variables(self):
+        result = []
+        for var in self.dataSet.variables:
+            dimensionStringIsVarName = self.get_dimension_string(var) == var
+            if dimensionStringIsVarName:
+                result.append(var)
+        return result

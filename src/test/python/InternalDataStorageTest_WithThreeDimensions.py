@@ -4,13 +4,10 @@ import numpy
 from src.main.python.InternalDataStorage import InternalDataStorage
 from src.main.python.Main import parse_arguments
 
-class InternalDataStorageTest(unittest.TestCase):
-
-    def test_initialisation_with_string(self):
-        self.dataStorage = InternalDataStorage(inputFile="../resources/test.nc")
+class InternalDataStorageTest_WithThreeDimensions(unittest.TestCase):
 
     def test_initialisation(self):
-        args = parse_arguments(["../resources/test.nc"])
+        args = parse_arguments(["../resources/test_without_depth.nc"])
         self.dataStorage = InternalDataStorage(args)
         self.__assert_coordinate_tables_created()
         self.__assert_coordinate_tables_filled()
@@ -20,9 +17,9 @@ class InternalDataStorageTest(unittest.TestCase):
         self.__assert_reference_tables_filled()
 
     def __assert_coordinate_tables_created(self):
+        self.assertEqual(3, len(self.dataStorage.coordinateTables))
         self.assertIsNotNone(self.dataStorage.coordinateTables['lat'])
         self.assertIsNotNone(self.dataStorage.coordinateTables['lon'])
-        self.assertIsNotNone(self.dataStorage.coordinateTables['depth'])
         self.assertIsNotNone(self.dataStorage.coordinateTables['time'])
 
     def __assert_coordinate_tables_filled(self):
@@ -38,11 +35,6 @@ class InternalDataStorageTest(unittest.TestCase):
         self.assertAlmostEqual(5.8, longitudes[1][0], 4)
         self.assertAlmostEqual(6.3, longitudes[2][0], 4)
         self.assertAlmostEqual(6.8, longitudes[3][0], 4)
-        depths = self.dataStorage.coordinateTables['depth'].read()
-        self.assertEqual(numpy.ndarray, type(depths))
-        self.assertEqual((2,), depths.shape)
-        self.assertAlmostEqual(0.001, depths[0][0], 4)
-        self.assertAlmostEqual(0.002, depths[1][0], 4)
         times = self.dataStorage.coordinateTables['time'].read()
         self.assertEqual(numpy.ndarray, type(times))
         self.assertEqual((2,), times.shape)
@@ -62,19 +54,19 @@ class InternalDataStorageTest(unittest.TestCase):
     def __assert_geophysical_tables_filled(self):
         chlData = self.dataStorage.geophysicalTables['chl'].read()
         self.assertEqual(numpy.ndarray, type(chlData))
-        self.assertEqual((32,), chlData.shape)
-        self.assertAlmostEqual(0.1111, chlData[0][0], 4)
-        self.assertAlmostEqual(0.2111, chlData[1][0], 4)
-        self.assertAlmostEqual(0.1121, chlData[4][0], 4)
-        self.assertAlmostEqual(0.2224, chlData[31][0], 4)
+        self.assertEqual((16,), chlData.shape)
+        self.assertAlmostEqual(0.111, chlData[0][0], 4)
+        self.assertAlmostEqual(0.112, chlData[1][0], 4)
+        self.assertAlmostEqual(0.121, chlData[4][0], 4)
+        self.assertAlmostEqual(0.224, chlData[15][0], 4)
 
         sstData = self.dataStorage.geophysicalTables['sst'].read()
         self.assertEqual(numpy.ndarray, type(sstData))
-        self.assertEqual((32,), sstData.shape)
-        self.assertAlmostEqual(1.1111, sstData[0][0], 4)
-        self.assertAlmostEqual(1.2111, sstData[1][0], 4)
-        self.assertAlmostEqual(1.1121, sstData[4][0], 4)
-        self.assertAlmostEqual(1.2224, sstData[31][0], 4)
+        self.assertEqual((16,), sstData.shape)
+        self.assertAlmostEqual(1.111, sstData[0][0], 4)
+        self.assertAlmostEqual(1.112, sstData[1][0], 4)
+        self.assertAlmostEqual(1.121, sstData[4][0], 4)
+        self.assertAlmostEqual(1.224, sstData[15][0], 4)
 
     def __assert_reference_tables_created(self):
         self.assertIsNotNone(self.dataStorage.referenceTables)
