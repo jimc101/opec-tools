@@ -1,5 +1,6 @@
+import functools
 from netCDF4 import Dataset
-import netCDF4
+from numpy import *
 
 class NetCDFFacade(object):
 
@@ -50,14 +51,9 @@ class NetCDFFacade(object):
         dimCount = len(variable._getdims())
         if dimCount != len(origin) or dimCount != len(shape):
             raise ValueError("len(origin) and len(shape) must be equal to number of dimensions of variable '" + variableName + "'")
-        indexArray = range(0, dimCount)
-        for dimIdx in range(dimCount):
-            j = 0
-            innerArray = range(0, shape[dimIdx])
-            for index in range(origin[dimIdx], origin[dimIdx] + shape[dimIdx]):
-                innerArray[j] = index
-                j += 1
-            indexArray[dimIdx] = innerArray
+        indexArray = []
+        for dimIndex in range(0, dimCount):
+            indexArray.append(range(origin[dimIndex], origin[dimIndex] + shape[dimIndex]))
         return variable[indexArray]
 
     def close(self):
@@ -86,7 +82,7 @@ class NetCDFFacade(object):
 
     def get_variable_size(self, variableName):
         shape = self.dataSet.variables[variableName].shape
-        return reduce(lambda x, y: x * y, shape)
+        return functools.reduce(lambda x, y: x * y, shape)
 
     def get_reference_variables(self):
         result = []

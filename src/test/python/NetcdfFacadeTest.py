@@ -1,7 +1,7 @@
 import unittest
 from numpy.core.numeric import array
 from numpy.testing.utils import assert_array_equal
-from src.main.python.NetcdfFacade import NetCDFFacade
+from src.main.python.NetCDFFacade import NetCDFFacade
 
 class NetCDFFacadeTest(unittest.TestCase):
 
