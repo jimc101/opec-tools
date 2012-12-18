@@ -28,6 +28,7 @@ Coding Conventions (loosely based on http://www.python.org/dev/peps/pep-0008/ an
 # Never mix tabs and spaces
 # Imports should usually be on separate lines
 # However, *from subprocess import Popen, PIPE* is ok, too
+# from module import * is not ok, though; rather, use from module import name
 # Imports are always put at the top of the file
 # Avoid extraneous whitespace
 # Use parentheses sparingly
@@ -38,7 +39,7 @@ Coding Conventions (loosely based on http://www.python.org/dev/peps/pep-0008/ an
 # If a class inherits from no other base classes, explicitly inherit from object. This also applies to nested classes.
 # As to naming conventions, generally Java conventions apply
 # Function names should be lowercase, underscore separated
-# Names of functions considered private shall start with two underscores
+# Names of members considered private shall start with two underscores
 # Use lambda expressions only for one-liners (else: hard to read and to debug)
 # Use properties for accessing or setting data where you would normally have used simple, lightweight accessor or setter methods
 # Avoid fancy features such as metaclasses, access to bytecode, on-the-fly compilation, dynamic inheritance, object reparenting, import hacks, reflection, modification of system internals as far as possible
