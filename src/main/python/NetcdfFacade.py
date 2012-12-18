@@ -59,11 +59,14 @@ class NetCDFFacade(object):
     def close(self):
         self.dataSet.close()
 
-    def get_dimensions(self):
+    def get_dimensions(self, variable_name=None):
         result = []
-        for dimension in self.dataSet.dimensions:
-            result.append(dimension)
-        return result
+        if variable_name is None:
+            for dimension in self.dataSet.dimensions:
+                result.append(dimension)
+            return result
+        variable = self.get_variable(variable_name)
+        return variable._getdims()
 
     def is_coordinate_or_reference_variable(self, ncVariable):
         isCoordinateOrReferenceVariable = len(ncVariable._getdims()) == 1
@@ -88,12 +91,12 @@ class NetCDFFacade(object):
         result = []
         for variableName in self.dataSet.variables:
             ncVariable = self.get_variable(variableName)
-            isReferenceVariable = self.is_coordinate_or_reference_variable(ncVariable) and self.hasCoordinatesAttribute(ncVariable)
+            isReferenceVariable = self.is_coordinate_or_reference_variable(ncVariable) and self.has_coordinates_attribute(ncVariable)
             if isReferenceVariable:
                 result.append(variableName)
         return result
 
-    def hasCoordinatesAttribute(self, ncVariable):
+    def has_coordinates_attribute(self, ncVariable):
         for attribute in ncVariable.ncattrs():
             if str(attribute) == 'coordinates':
                 return True

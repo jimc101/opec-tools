@@ -61,6 +61,7 @@ class NetCDFFacadeTest(unittest.TestCase):
 
     def test_get_dimensions(self):
         assert_array_equal(["time", "depth", "lat", "lon", "record_num"], self.netcdf.get_dimensions())
+        self.assertEqual(4, len(self.netcdf.get_dimensions('chl')))
 
     def test_get_model_variables(self):
         assert_array_equal(['chl', 'sst'], self.netcdf.get_model_variables())
