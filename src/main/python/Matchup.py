@@ -1,12 +1,10 @@
 class Matchup(object):
 
-    def __init__(self, variable_name, ref_value, model_value, ref_lat, ref_lon, ref_time, lat_delta, lon_delta, time_delta, ref_depth=None, depth_delta=None):
+    def __init__(self, ref_variable_name, model_variable_name, ref_value, model_value, ref_lat, ref_lon, ref_time, lat_delta, lon_delta, time_delta, ref_depth=None, depth_delta=None):
         """
-       __init__(**kwargs)
-
        Constructs a matchup object.
 
-       @param variable_name: The name of the variable.
+       @param ref_variable_name: The name of the variable.
 
        @param ref_value: The value of the reference measurement.
 
@@ -29,7 +27,8 @@ class Matchup(object):
        @param depth_delta the difference between reference depth and the model depth; None by default.
         """
 
-        self.__variable_name = variable_name
+        self.__ref_variable_name = ref_variable_name
+        self.__model_variable_name = model_variable_name
         self.__ref_value = ref_value
         self.__model_value = model_value
         self.__ref_lat = ref_lat
@@ -41,7 +40,6 @@ class Matchup(object):
         self.__time_delta = time_delta
         self.__depth_delta = depth_delta
 
-        pass
 
     def get_ref_value(self):
         return self.__ref_value

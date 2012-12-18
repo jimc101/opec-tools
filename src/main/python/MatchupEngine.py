@@ -16,7 +16,9 @@ class MatchupEngine(object):
     def __init__(self, netcdf):
         self.netcdf = netcdf
 
-    def find_matchups(self, reference_record, macro_pixel_size=3, max_geographical_delta=50000, max_time_delta=31536000, max_depth_delta=10):
+    def find_matchups(self, reference_record, model_variable_name=None, macro_pixel_size=3, max_geographical_delta=50000, max_time_delta=31536000, max_depth_delta=10):
+        if model_variable_name is None:
+            model_variable_name = reference_record.variable_name
         matchup_positions = self.find_matchup_positions(reference_record.lat, reference_record.lon, macro_pixel_size, max_geographical_delta)
         matchup_times = self.find_matchup_times(reference_record.time, max_time_delta)
         matchup_depths = self.find_matchup_depths(reference_record.depth, max_depth_delta)
@@ -31,32 +33,28 @@ class MatchupEngine(object):
                         origin.append(matchup_depth[0]) # second dimension: depth (if existing)
                         shape.append(1)
                         depth_delta = fabs(matchup_depth[1] - reference_record.depth)
-                    origin.append(matchup_position[1]) # third dimension: lat
-                    origin.append(matchup_position[0]) # fourth dimension: lon
+                    origin.append(matchup_position[1]) # second or third dimension: lat
+                    origin.append(matchup_position[0]) # third or fourth dimension: lon
 
                     lon_delta = fabs(matchup_position[2] - reference_record.lon)
                     lat_delta = fabs(matchup_position[3] - reference_record.lat)
                     time_delta = fabs(matchup_time[1] - reference_record.time)
-                    model_value = self.netcdf.get_data(reference_record.variable_name, origin, shape)[0]
-                    matchups.append(Matchup(reference_record.variable_name, reference_record.value, model_value, reference_record.lat, reference_record.lon, reference_record.time, lat_delta, lon_delta, time_delta, reference_record.depth, depth_delta))
+                    model_value = self.netcdf.get_data(model_variable_name, origin, shape)[0]
+                    matchups.append(Matchup(reference_record.variable_name, model_variable_name, reference_record.value, model_value, reference_record.lat, reference_record.lon, reference_record.time, lat_delta, lon_delta, time_delta, reference_record.depth, depth_delta))
 
         return matchups
+
+    def find_position(self, dimension, target_value):
+        dim_size = self.netcdf.get_dim_size(dimension)
+        first_two_pixels = self.netcdf.get_data(dimension, [0], [2])
+        pixel_size = first_two_pixels[1] - first_two_pixels[0]
+        return self.normalise((target_value - first_two_pixels[0]) / pixel_size, dim_size - 1)
 
     def normalise(self, n, max):
         number = int(fabs(n))
         if number > max:
             return max
         return number
-
-    def delta(self, lat_position, lon_position, lat, lon):
-        return pow(lat - lat_position, 2) + pow(lon - lon_position, 2)
-
-    def find_position(self, dimension, target):
-        dim_size = self.netcdf.get_dim_size(dimension)
-        first_two_pixels = self.netcdf.get_data(dimension, [0], [2])
-        pixel_size = first_two_pixels[1] - first_two_pixels[0]
-        target_pixel = self.normalise((target - first_two_pixels[0]) / pixel_size, dim_size - 1)
-        return target_pixel
 
     def find_matchup_positions(self, ref_lat, ref_lon, macro_pixel_size, max_geographical_delta):
         offset = int(macro_pixel_size / 2)
@@ -81,24 +79,23 @@ class MatchupEngine(object):
 
         return pixel_positions
 
-    def find_matchup_times(self, time, max_delta):
-        time_data = self.netcdf.read_variable_fully('time')
-        index = 0
-        matchup_times = []
-        for t in time_data:
-            if fabs(time - t) < max_delta:
-                matchup_times.append((index, t))
-            index += 1
-        return matchup_times
+    def delta(self, lat_position, lon_position, lat, lon):
+        return pow(lat - lat_position, 2) + pow(lon - lon_position, 2)
 
-    def find_matchup_depths(self, depth, max_delta):
+    def find_matchup_times(self, ref_time, max_delta):
+        return self.find_matchup_indices('time', ref_time, max_delta)
+
+    def find_matchup_depths(self, ref_depth, max_delta):
         if self.netcdf.get_variable('depth') is None:
             return [None]
-        depth_data = self.netcdf.read_variable_fully('depth')
+        return self.find_matchup_indices('depth', ref_depth, max_delta)
+
+    def find_matchup_indices(self, dim, ref, max_delta):
+        data = self.netcdf.read_variable_fully(dim)
         index = 0
-        matchup_depths = []
-        for t in depth_data:
-            if fabs(depth - t) < max_delta:
-                matchup_depths.append((index, t))
+        matchup_indices = []
+        for d in data:
+            if fabs(ref - d) < max_delta:
+                matchup_indices.append((index, d))
             index += 1
-        return matchup_depths
+        return matchup_indices
