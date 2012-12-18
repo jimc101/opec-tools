@@ -1,6 +1,6 @@
 from unittest import TestCase
 import numpy.testing as np
-from src.main.python.MatchupEngine import MatchupEngine, ReferenceRecord
+from src.main.python.MatchupEngine import MatchupEngine, ReferenceRecord, find_ref_coordinate_names
 from src.main.python.NetCDFFacade import NetCDFFacade
 
 class MatchupEngineTest(TestCase):
@@ -102,7 +102,7 @@ class MatchupEngineTest(TestCase):
         self.nc = NetCDFFacade('../resources/test_without_depth.nc')
         self.me = MatchupEngine(self.nc)
 
-        reference_record = ReferenceRecord('chl_ref', 1234.5678, 55.20123, 6.30048, 1261447205)
+        reference_record = ReferenceRecord('chl_ref', 1234.5678, 55.20123, 6.30048, 1261447205, None)
         matchups = self.me.find_matchups(reference_record, 'chl', 7, 0.1, 10)
         self.assertIsNotNone(matchups)
         self.assertEqual(1, len(matchups))
@@ -119,3 +119,17 @@ class MatchupEngineTest(TestCase):
 
         self.assertAlmostEqual(1234.5678, matchup.ref_value)
         self.assertAlmostEqual(0.213, matchup.model_value)
+
+    def test_find_reference_records(self):
+        reference_records = self.me.find_reference_records('chl_ref')
+        self.assertEqual(3, len(reference_records))
+        reference_records = self.me.find_reference_records('sst_ref')
+        self.assertEqual(0, len(reference_records))
+
+    def test_find_ref_coordinate_names(self):
+        rcv = ['lat_ref', 'ref_lon', 'reftime']
+        lat, lon, time, depth = find_ref_coordinate_names(rcv)
+        self.assertEqual('lat_ref', lat)
+        self.assertEqual('ref_lon', lon)
+        self.assertEqual('reftime', time)
+        self.assertEqual(None, depth)

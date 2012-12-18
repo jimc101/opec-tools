@@ -69,8 +69,7 @@ class NetCDFFacade(object):
         return variable._getdims()
 
     def is_coordinate_or_reference_variable(self, ncVariable):
-        isCoordinateOrReferenceVariable = len(ncVariable._getdims()) == 1
-        return isCoordinateOrReferenceVariable
+        return len(ncVariable._getdims()) == 1
 
     def get_model_variables(self):
         result = []
@@ -87,14 +86,25 @@ class NetCDFFacade(object):
         shape = self.dataSet.variables[variableName].shape
         return functools.reduce(lambda x, y: x * y, shape)
 
+    def is_reference_variable(self, ncVariable):
+        return self.is_coordinate_or_reference_variable(ncVariable) and self.has_coordinates_attribute(ncVariable)
+
+    def is_coordinate_variable(self, ncVariable):
+        return self.is_coordinate_or_reference_variable(ncVariable) and not self.has_coordinates_attribute(ncVariable)
+
     def get_reference_variables(self):
         result = []
         for variableName in self.dataSet.variables:
             ncVariable = self.get_variable(variableName)
-            isReferenceVariable = self.is_coordinate_or_reference_variable(ncVariable) and self.has_coordinates_attribute(ncVariable)
-            if isReferenceVariable:
+            if self.is_reference_variable(ncVariable):
                 result.append(variableName)
         return result
+
+    def get_reference_variable(self, variable_name):
+        nc_variable = self.get_variable(variable_name)
+        if nc_variable is None or not self.is_reference_variable(nc_variable):
+            return None
+        return nc_variable
 
     def has_coordinates_attribute(self, ncVariable):
         for attribute in ncVariable.ncattrs():
@@ -109,3 +119,15 @@ class NetCDFFacade(object):
             if dimensionStringIsVarName:
                 result.append(var)
         return result
+
+    def get_ref_coordinate_variables(self):
+        ref_variable = self.get_reference_variables()[0]
+        ref_coordinate_variables = []
+        dimension_string = self.get_dimension_string(ref_variable)
+        for var in self.dataSet.variables:
+            if self.get_dimension_string(var) == dimension_string and self.is_coordinate_variable(self.dataSet.variables[var]):
+                ref_coordinate_variables.append(var)
+        return ref_coordinate_variables
+
+    def has_variable(self, variable_name):
+        return variable_name in self.dataSet.variables

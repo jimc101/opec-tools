@@ -69,6 +69,10 @@ class NetCDFFacadeTest(unittest.TestCase):
     def test_get_reference_variables(self):
         assert_array_equal(['chl_ref'], self.netcdf.get_reference_variables())
 
+    def test_get_reference_variable(self):
+        self.assertIsNone(self.netcdf.get_reference_variable('sst_ref'))
+        self.assertIsNotNone(self.netcdf.get_reference_variable('chl_ref'))
+
     def test_read_variable_fully(self):
         fullyReadChl = self.netcdf.read_variable_fully('chl')
         assert_array_equal(
@@ -99,3 +103,16 @@ class NetCDFFacadeTest(unittest.TestCase):
         self.assertTrue('lon' in coordinate_variables)
         self.assertTrue('time' in coordinate_variables)
         self.assertTrue('depth' in coordinate_variables)
+
+    def test_get_ref_coordinate_variables(self):
+        ref_coordinate_variables = self.netcdf.get_ref_coordinate_variables()
+        self.assertEqual(4, len(ref_coordinate_variables))
+        self.assertEqual('time_ref', ref_coordinate_variables[0])
+        self.assertEqual('depth_ref', ref_coordinate_variables[1])
+        self.assertEqual('lat_ref', ref_coordinate_variables[2])
+        self.assertEqual('lon_ref', ref_coordinate_variables[3])
+
+    def test_has_variable(self):
+        self.assertTrue(self.netcdf.has_variable('time'))
+        self.assertTrue(self.netcdf.has_variable('chl_ref'))
+        self.assertFalse(self.netcdf.has_variable('kaesemauken'))

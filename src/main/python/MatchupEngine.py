@@ -3,7 +3,7 @@ from src.main.python.Matchup import Matchup
 
 class ReferenceRecord(object):
 
-    def __init__(self, variable_name, value, lat, lon, time, depth=None):
+    def __init__(self, variable_name, value, lat, lon, time, depth):
         self.variable_name = variable_name
         self.value = value
         self.lat = lat
@@ -15,6 +15,25 @@ class MatchupEngine(object):
 
     def __init__(self, netcdf):
         self.netcdf = netcdf
+
+    def find_reference_records(self, variable_name):
+        reference_records = []
+        if not self.netcdf.has_variable(variable_name):
+            return reference_records
+        ref_coordinate_variables = self.netcdf.get_ref_coordinate_variables()
+        ref_lat_variable_name, ref_lon_variable_name, ref_time_variable_name, ref_depth_variable_name = find_ref_coordinate_names(ref_coordinate_variables)
+        for i in range(self.netcdf.get_dim_size(self.netcdf.get_dimension_string(variable_name))):
+            ref_value = self.netcdf.get_data(variable_name, [i], [1])
+            ref_lat = self.netcdf.get_data(ref_lat_variable_name, [i], [1])
+            ref_lon = self.netcdf.get_data(ref_lon_variable_name, [i], [1])
+            ref_time = self.netcdf.get_data(ref_time_variable_name, [i], [1])
+            if ref_depth_variable_name is not None:
+                ref_depth = self.netcdf.get_data(ref_depth_variable_name, [i], [1])
+            else:
+                ref_depth = None
+            rr = ReferenceRecord(variable_name, ref_value, ref_lat, ref_lon, ref_time, ref_depth)
+            reference_records.append(rr)
+        return reference_records
 
     def find_matchups(self, reference_record, model_variable_name=None, macro_pixel_size=3, max_geographical_delta=50000, max_time_delta=31536000, max_depth_delta=10):
         if model_variable_name is None:
@@ -48,13 +67,7 @@ class MatchupEngine(object):
         dim_size = self.netcdf.get_dim_size(dimension)
         first_two_pixels = self.netcdf.get_data(dimension, [0], [2])
         pixel_size = first_two_pixels[1] - first_two_pixels[0]
-        return self.normalise((target_value - first_two_pixels[0]) / pixel_size, dim_size - 1)
-
-    def normalise(self, n, max):
-        number = int(fabs(n))
-        if number > max:
-            return max
-        return number
+        return normalise((target_value - first_two_pixels[0]) / pixel_size, dim_size - 1)
 
     def find_matchup_positions(self, ref_lat, ref_lon, macro_pixel_size, max_geographical_delta):
         offset = int(macro_pixel_size / 2)
@@ -99,3 +112,27 @@ class MatchupEngine(object):
                 matchup_indices.append((index, d))
             index += 1
         return matchup_indices
+
+def find_ref_coordinate_names(ref_coordinate_variables):
+    lat = None
+    lon = None
+    time = None
+    depth = None
+
+    for var in ref_coordinate_variables:
+        if 'lat' in var:
+            lat = var
+        if 'lon' in var:
+            lon = var
+        if 'time' in var:
+            time = var
+        if 'depth' in var:
+            depth = var
+
+    return lat, lon, time, depth
+
+def normalise(n, max):
+    number = int(fabs(n))
+    if number > max:
+        return max
+    return number
