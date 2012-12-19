@@ -43,3 +43,20 @@ class ProcessorTest(TestCase):
         self.assertAlmostEqual(0.9588759, basic_statistics['model_efficiency'], 5)
 
         self.assertAlmostEqual(basic_statistics['rmsd'] ** 2, basic_statistics['bias'] ** 2 + basic_statistics['unbiased_rmsd'] ** 2, 5)
+
+    def test_compute_basic_statistics_with_nan(self):
+        model_values = np.array(np.arange(1.0, 5.0, 1)) # [1, 2, 3, 4]
+        model_values[2] = np.nan
+        ref_values = np.array([1.1, 2.2, 2.9, 3.7])
+        basic_statistics = compute_basic_statistics(reference_values=ref_values, model_values=model_values)
+        self.assertIsNotNone(basic_statistics)
+        self.assertEqual(7, len(basic_statistics))
+        self.assertAlmostEqual(0.216024, basic_statistics['unbiased_rmsd'], 5)
+        self.assertAlmostEqual(0.216024, basic_statistics['rmsd'], 5)
+        self.assertAlmostEqual(6.344131e-15, basic_statistics['pbias'], 5)
+        self.assertAlmostEqual(0.0, basic_statistics['bias'], 5)
+        self.assertAlmostEqual(0.99484975, basic_statistics['corrcoeff'], 5)
+        self.assertAlmostEqual(1.039815, basic_statistics['reliability_index'], 5)
+        self.assertAlmostEqual(0.9589041, basic_statistics['model_efficiency'], 5)
+
+        self.assertAlmostEqual(basic_statistics['rmsd'] ** 2, basic_statistics['bias'] ** 2 + basic_statistics['unbiased_rmsd'] ** 2, 5)
