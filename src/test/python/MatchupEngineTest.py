@@ -126,6 +126,14 @@ class MatchupEngineTest(TestCase):
         reference_records = self.me.find_reference_records('sst_ref')
         self.assertEqual(0, len(reference_records))
 
+    def test_find_reference_records_no_depth(self):
+        self.nc = NetCDFFacade('../resources/test_without_depth.nc')
+        self.me = MatchupEngine(self.nc)
+        reference_records = self.me.find_reference_records('chl_ref')
+        self.assertEqual(3, len(reference_records))
+        reference_records = self.me.find_reference_records('sst_ref')
+        self.assertEqual(0, len(reference_records))
+
     def test_find_ref_coordinate_names(self):
         rcv = ['lat_ref', 'ref_lon', 'reftime']
         lat, lon, time, depth = find_ref_coordinate_names(rcv)

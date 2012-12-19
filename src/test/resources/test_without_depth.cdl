@@ -53,14 +53,6 @@ variables:
                 time_ref:calendar = "standard" ;
                 time_ref:_CoordinateAxisType = "Time" ;
                 time_ref:_FillValue = -999 ;
-        float depth_ref(record_num) ;
-                depth_ref:units = "m" ;
-                depth_ref:long_name = "depth of the reference observations" ;
-                depth_ref:positive = "down" ;
-                depth_ref:axis = "Z" ;
-                depth_ref:valid_min = 0.f ;
-                depth_ref:_CoordinateAxisType = "Height" ;
-                depth_ref:_CoordinateZisPositive = "down" ;
         float lat_ref(record_num) ;
                 lat_ref:units = "degrees_north" ;
                 lat_ref:long_name = "latitude of the reference observations" ;
@@ -112,8 +104,6 @@ data:
   1.221, 1.222, 1.223, 1.224 ;
 
 time_ref = 1261440250, 1261440300, 1261447000 ;
-
-depth_ref = 0.0012, 0.0013, 0.0021 ;
 
 lat_ref = 55.21, 55.8, 56.12 ;
 
