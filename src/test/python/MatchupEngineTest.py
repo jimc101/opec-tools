@@ -60,7 +60,7 @@ class MatchupEngineTest(TestCase):
         self.assertAlmostEqual(0.13, self.me.delta(55.2, 5.3, 55, 5))
         self.assertAlmostEqual(6.48, self.me.delta(56.8, 6.8, 55, 5))
 
-    def test_find_all_matchups(self):
+    def test_find_matchups_all(self):
         reference_record = ReferenceRecord('chl', 0.1, 55.1, 5.5, 1261440252, 0.0012)
         matchups = self.me.find_matchups(reference_record, None, 7)
         self.assertIsNotNone(matchups)
@@ -79,7 +79,7 @@ class MatchupEngineTest(TestCase):
         self.assertAlmostEqual(0.1111, matchup.model_value)
         self.assertAlmostEqual(0.1, matchup.ref_value)
 
-    def test_find_single_matchup(self):
+    def test_find_matchups_single(self):
         reference_record = ReferenceRecord('chl', 1234.5678, 55.20123, 6.30048, 1261447205, 0.0020015)
         matchups = self.me.find_matchups(reference_record, None, 7, 0.1, 10, 0.0001)
         self.assertIsNotNone(matchups)
@@ -98,7 +98,7 @@ class MatchupEngineTest(TestCase):
         self.assertAlmostEqual(1234.5678, matchup.ref_value)
         self.assertAlmostEqual(0.1214, matchup.model_value)
 
-    def test_find_single_matchup_no_depth(self):
+    def test_find_matchups_single_no_depth(self):
         self.nc = NetCDFFacade('../resources/test_without_depth.nc')
         self.me = MatchupEngine(self.nc)
 
@@ -141,3 +141,24 @@ class MatchupEngineTest(TestCase):
         self.assertEqual('ref_lon', lon)
         self.assertEqual('reftime', time)
         self.assertEqual(None, depth)
+
+    def test_find_all_matchups(self):
+        ref_variable_name = 'chl_ref'
+        model_variable_name = 'chl'
+        all_matchups = self.me.find_all_matchups(ref_variable_name, model_variable_name, 9)
+        self.assertIsNotNone(all_matchups)
+        expected_matchup_count = 2 * 2 * 2 * 4 * 3 # time * depth * lat * lon * #reference_records
+        self.assertEqual(expected_matchup_count, len(all_matchups))
+        matchup = all_matchups[0]
+        self.assertEqual(55.21, matchup.ref_lat)
+        self.assertEqual(5.31, matchup.ref_lon)
+        self.assertEqual(1261440250, matchup.ref_time)
+        self.assertEqual(0.0012, matchup.ref_depth)
+
+        self.assertAlmostEqual(0.01, matchup.lat_delta, 5)
+        self.assertAlmostEqual(0.01, matchup.lon_delta, 5)
+        self.assertEqual(250, matchup.time_delta)
+        self.assertAlmostEqual(0.0002, matchup.depth_delta, 5)
+
+        self.assertAlmostEqual(0.1111, matchup.model_value)
+        self.assertAlmostEqual(0.1, matchup.ref_value)

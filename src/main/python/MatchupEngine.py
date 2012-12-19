@@ -113,6 +113,14 @@ class MatchupEngine(object):
             index += 1
         return matchup_indices
 
+    def find_all_matchups(self, ref_variable_name, model_variable_name, macro_pixel_size=3, max_geographical_delta=50000, max_time_delta=31536000, max_depth_delta=10):
+        reference_records = self.find_reference_records(ref_variable_name)
+        all_matchups = []
+        for rr in reference_records:
+            matchups = self.find_matchups(rr, model_variable_name, macro_pixel_size, max_geographical_delta, max_time_delta, max_depth_delta)
+            all_matchups.extend(matchups)
+        return all_matchups
+
 def find_ref_coordinate_names(ref_coordinate_variables):
     lat = None
     lon = None
