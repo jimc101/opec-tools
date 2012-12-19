@@ -3,7 +3,7 @@ from src.main.python.NetCDFFacade import NetCDFFacade
 class Data(object):
 
     def __init__(self, inputFile):
-        self.netcdf = NetCDFFacade(inputFile)
+        self.__netcdf = NetCDFFacade(inputFile)
 
     def model_vars(self):
         return self.netcdf.get_model_variables()
@@ -14,3 +14,7 @@ class Data(object):
     def ref_vars(self):
         return self.netcdf.get_reference_variables()
 
+    def get_netcdf(self):
+        return self.__netcdf
+
+    netcdf = property(get_netcdf)

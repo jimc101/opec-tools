@@ -13,8 +13,8 @@ class ReferenceRecord(object):
 
 class MatchupEngine(object):
 
-    def __init__(self, netcdf):
-        self.netcdf = netcdf
+    def __init__(self, data):
+        self.netcdf = data.netcdf
 
     def find_reference_records(self, variable_name):
         reference_records = []

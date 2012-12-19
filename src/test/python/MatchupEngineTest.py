@@ -1,16 +1,16 @@
 from unittest import TestCase
 import numpy.testing as np
 from src.main.python.MatchupEngine import MatchupEngine, ReferenceRecord, find_ref_coordinate_names
-from src.main.python.NetCDFFacade import NetCDFFacade
+from src.main.python.Data import Data
 
 class MatchupEngineTest(TestCase):
 
     def setUp(self):
-        self.nc = NetCDFFacade('../resources/test.nc')
-        self.me = MatchupEngine(self.nc)
+        self.data = Data('../resources/test.nc')
+        self.me = MatchupEngine(self.data)
 
     def tearDown(self):
-        self.nc.close()
+        self.data.close()
 
     def test_find_pixel_positions_macro_pixel_size_3_small_max_delta(self):
         pixel_positions = self.me.find_matchup_positions(55, 6.0, 3, 0.1)
@@ -99,8 +99,8 @@ class MatchupEngineTest(TestCase):
         self.assertAlmostEqual(0.1214, matchup.model_value)
 
     def test_find_matchups_single_no_depth(self):
-        self.nc = NetCDFFacade('../resources/test_without_depth.nc')
-        self.me = MatchupEngine(self.nc)
+        self.data = Data('../resources/test_without_depth.nc')
+        self.me = MatchupEngine(self.data)
 
         reference_record = ReferenceRecord('chl_ref', 1234.5678, 55.20123, 6.30048, 1261447205, None)
         matchups = self.me.find_matchups(reference_record, 'chl', 7, 0.1, 10)
@@ -127,16 +127,16 @@ class MatchupEngineTest(TestCase):
         self.assertEqual(0, len(reference_records))
 
     def test_find_reference_records_no_depth(self):
-        self.nc = NetCDFFacade('../resources/test_without_depth.nc')
-        self.me = MatchupEngine(self.nc)
+        self.data = Data('../resources/test_without_depth.nc')
+        self.me = MatchupEngine(self.data)
         reference_records = self.me.find_reference_records('chl_ref')
         self.assertEqual(3, len(reference_records))
         reference_records = self.me.find_reference_records('sst_ref')
         self.assertEqual(0, len(reference_records))
 
     def test_find_ref_coordinate_names(self):
-        rcv = ['lat_ref', 'ref_lon', 'reftime']
-        lat, lon, time, depth = find_ref_coordinate_names(rcv)
+        ref_coord_variable_names = ['lat_ref', 'ref_lon', 'reftime']
+        lat, lon, time, depth = find_ref_coordinate_names(ref_coord_variable_names)
         self.assertEqual('lat_ref', lat)
         self.assertEqual('ref_lon', lon)
         self.assertEqual('reftime', time)
