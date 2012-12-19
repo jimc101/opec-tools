@@ -150,10 +150,10 @@ class MatchupEngineTest(TestCase):
         expected_matchup_count = 2 * 2 * 2 * 4 * 3 # time * depth * lat * lon * #reference_records
         self.assertEqual(expected_matchup_count, len(all_matchups))
         matchup = all_matchups[0]
-        self.assertEqual(55.21, matchup.ref_lat)
-        self.assertEqual(5.31, matchup.ref_lon)
+        self.assertAlmostEqual(55.21, matchup.ref_lat, 5)
+        self.assertAlmostEqual(5.31, matchup.ref_lon, 5)
         self.assertEqual(1261440250, matchup.ref_time)
-        self.assertEqual(0.0012, matchup.ref_depth)
+        self.assertAlmostEqual(0.0012, matchup.ref_depth, 5)
 
         self.assertAlmostEqual(0.01, matchup.lat_delta, 5)
         self.assertAlmostEqual(0.01, matchup.lon_delta, 5)

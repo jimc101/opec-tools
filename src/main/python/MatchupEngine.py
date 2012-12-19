@@ -23,12 +23,12 @@ class MatchupEngine(object):
         ref_coordinate_variables = self.netcdf.get_ref_coordinate_variables()
         ref_lat_variable_name, ref_lon_variable_name, ref_time_variable_name, ref_depth_variable_name = find_ref_coordinate_names(ref_coordinate_variables)
         for i in range(self.netcdf.get_dim_size(self.netcdf.get_dimension_string(variable_name))):
-            ref_value = self.netcdf.get_data(variable_name, [i], [1])
-            ref_lat = self.netcdf.get_data(ref_lat_variable_name, [i], [1])
-            ref_lon = self.netcdf.get_data(ref_lon_variable_name, [i], [1])
-            ref_time = self.netcdf.get_data(ref_time_variable_name, [i], [1])
+            ref_value = self.netcdf.get_data(variable_name, [i], [1])[0]
+            ref_lat = self.netcdf.get_data(ref_lat_variable_name, [i], [1])[0]
+            ref_lon = self.netcdf.get_data(ref_lon_variable_name, [i], [1])[0]
+            ref_time = self.netcdf.get_data(ref_time_variable_name, [i], [1])[0]
             if ref_depth_variable_name is not None:
-                ref_depth = self.netcdf.get_data(ref_depth_variable_name, [i], [1])
+                ref_depth = self.netcdf.get_data(ref_depth_variable_name, [i], [1])[0]
             else:
                 ref_depth = None
             rr = ReferenceRecord(variable_name, ref_value, ref_lat, ref_lon, ref_time, ref_depth)
