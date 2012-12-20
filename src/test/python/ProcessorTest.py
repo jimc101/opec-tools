@@ -1,8 +1,9 @@
 from unittest import TestCase
 import numpy as np
+from numpy.testing import assert_array_equal
 from src.main.python.Data import Data
 from src.main.python.MatchupEngine import MatchupEngine
-from src.main.python.Processor import compute_basic_statistics
+from src.main.python.Processor import compute_basic_statistics, cleanup
 
 class ProcessorTest(TestCase):
 
@@ -60,3 +61,18 @@ class ProcessorTest(TestCase):
         self.assertAlmostEqual(0.9589041, basic_statistics['model_efficiency'], 5)
 
         self.assertAlmostEqual(basic_statistics['rmsd'] ** 2, basic_statistics['bias'] ** 2 + basic_statistics['unbiased_rmsd'] ** 2, 5)
+
+    def test_cleanup_1(self):
+        model_values = np.array(np.arange(1.0, 5.0, 1)) # [1, 2, 3, 4]
+        model_values[2] = np.nan
+        ref_values = np.array([1.1, 2.2, 2.9, 3.7])
+        ref_values, model_values = cleanup(ref_values, model_values)
+        assert_array_equal(np.array([1, 2, 4]), model_values)
+        assert_array_equal(np.array([1.1, 2.2, 3.7]), ref_values)
+
+    def test_cleanup_2(self):
+        model_values = np.array(np.arange(1.0, 5.0, 1)) # [1, 2, 3, 4]
+        ref_values = np.array([np.nan, 2.2, 2.9, 3.7])
+        ref_values, model_values = cleanup(ref_values, model_values)
+        assert_array_equal(np.array([2, 3, 4]), model_values)
+        assert_array_equal(np.array([2.2, 2.9, 3.7]), ref_values)

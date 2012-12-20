@@ -53,9 +53,26 @@ def compute_model_efficiency(reference_values, model_values):
     """
     return 1 - np.sum(np.power(reference_values - model_values, 2)) / np.sum(np.power(reference_values - np.mean(reference_values), 2))
 
+
+def find_nan_indices(indices, values):
+    index = 0
+    for value in values:
+        if np.isnan(value):
+            indices.append(index)
+        index += 1
+
+def cleanup(reference_values, model_values):
+    indices = []
+    find_nan_indices(indices, reference_values)
+    find_nan_indices(indices, model_values)
+    reference_values = np.delete(reference_values, indices)
+    model_values = np.delete(model_values, indices)
+    return reference_values, model_values
+
 def compute_basic_statistics(matchups=None, reference_values=None, model_values=None):
     if reference_values is None or model_values is None:
         reference_values, model_values = extract_values(matchups)
+    reference_values, model_values = cleanup(reference_values, model_values)
     basic_statistics = dict()
     basic_statistics['rmsd'] = compute_rmsd(reference_values, model_values)
     basic_statistics['unbiased_rmsd'] = compute_unbiased_rmsd(reference_values, model_values)
@@ -65,3 +82,4 @@ def compute_basic_statistics(matchups=None, reference_values=None, model_values=
     basic_statistics['reliability_index'] = compute_reliability_index(reference_values, model_values)
     basic_statistics['model_efficiency'] = compute_model_efficiency(reference_values, model_values)
     return basic_statistics
+
