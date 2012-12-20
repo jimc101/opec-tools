@@ -6,15 +6,23 @@ class Data(object):
         self.__netcdf = NetCDFFacade(inputFile)
 
     def model_vars(self):
-        return self.netcdf.get_model_variables()
+        return self.__netcdf.get_model_variables()
 
     def close(self):
-        self.netcdf.close()
+        self.__netcdf.close()
 
     def ref_vars(self):
-        return self.netcdf.get_reference_variables()
+        return self.__netcdf.get_reference_variables()
 
-    def get_netcdf(self):
-        return self.__netcdf
+    def has_variable(self, variable_name):
+        return self.__netcdf.has_variable(variable_name)
 
-    netcdf = property(get_netcdf)
+    def reference_coordinate_variables(self):
+        return self.__netcdf.get_ref_coordinate_variables()
+
+    def dim_size(self, dim_name):
+        return self.__netcdf.get_dim_size(dim_name)
+
+    def dimension_string(self, variable_name):
+        return self.__netcdf.get_dimension_string(variable_name)
+

@@ -15,16 +15,16 @@ class ReferenceRecord(object):
 class MatchupEngine(object):
 
     def __init__(self, data):
-        self.netcdf = data.netcdf
+        self.data = data
 
     def find_reference_records(self, variable_name):
         reference_records = []
-        if not self.netcdf.has_variable(variable_name):
+        if not self.data.has_variable(variable_name):
             return reference_records
-        ref_coordinate_variables = self.netcdf.get_ref_coordinate_variables()
+        ref_coordinate_variables = self.data.reference_coordinate_variables()
         ref_lat_variable_name, ref_lon_variable_name, ref_time_variable_name, ref_depth_variable_name = find_ref_coordinate_names(ref_coordinate_variables)
-        for i in range(self.netcdf.get_dim_size(self.netcdf.get_dimension_string(variable_name))):
-            ref_value = self.netcdf.get_data(variable_name, [i], [1])[0]
+        for i in range(self.data.dim_size(self.data.dimension_string(variable_name))):
+            ref_value = self.data.get_variable_data(variable_name, [i], [1])[0]
             if ref_value is ma.masked:
                 continue
             ref_lat = self.netcdf.get_data(ref_lat_variable_name, [i], [1])[0]
