@@ -1,5 +1,6 @@
 from math import fabs
 from src.main.python.Matchup import Matchup
+import numpy.ma as ma
 
 class ReferenceRecord(object):
 
@@ -24,6 +25,8 @@ class MatchupEngine(object):
         ref_lat_variable_name, ref_lon_variable_name, ref_time_variable_name, ref_depth_variable_name = find_ref_coordinate_names(ref_coordinate_variables)
         for i in range(self.netcdf.get_dim_size(self.netcdf.get_dimension_string(variable_name))):
             ref_value = self.netcdf.get_data(variable_name, [i], [1])[0]
+            if ref_value is ma.masked:
+                continue
             ref_lat = self.netcdf.get_data(ref_lat_variable_name, [i], [1])[0]
             ref_lon = self.netcdf.get_data(ref_lon_variable_name, [i], [1])[0]
             ref_time = self.netcdf.get_data(ref_time_variable_name, [i], [1])[0]
@@ -55,10 +58,12 @@ class MatchupEngine(object):
                     origin.append(matchup_position[1]) # second or third dimension: lat
                     origin.append(matchup_position[0]) # third or fourth dimension: lon
 
+                    model_value = self.netcdf.get_data(model_variable_name, origin, shape)[0]
+                    if model_value is ma.masked:
+                        continue
                     lon_delta = fabs(matchup_position[2] - reference_record.lon)
                     lat_delta = fabs(matchup_position[3] - reference_record.lat)
                     time_delta = fabs(matchup_time[1] - reference_record.time)
-                    model_value = self.netcdf.get_data(model_variable_name, origin, shape)[0]
                     matchups.append(Matchup(reference_record.variable_name, model_variable_name, reference_record.value, model_value, reference_record.lat, reference_record.lon, reference_record.time, lat_delta, lon_delta, time_delta, reference_record.depth, depth_delta))
 
         return matchups

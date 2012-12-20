@@ -162,3 +162,12 @@ class MatchupEngineTest(TestCase):
 
         self.assertAlmostEqual(0.1111, matchup.model_value)
         self.assertAlmostEqual(0.1, matchup.ref_value)
+
+    def test_find_matchups_in_file_containing_fill_values(self):
+        self.data = Data('../resources/test_including_fill_values.nc')
+        self.me = MatchupEngine(self.data)
+        all_matchups = self.me.find_all_matchups('chl_ref', 'chl', 1, 10, 1000, 0.00021)
+        self.assertEqual(0, len(all_matchups))
+
+        all_matchups = self.me.find_all_matchups('chl_ref', 'chl', 11)
+        self.assertEqual(60, len(all_matchups))
