@@ -1,0 +1,15 @@
+Requirements:
+
+1) allow easy access for user, including write access to data
+2) don't read each pixel from disk
+
+ad 1):
+- ideally a dictionary would be kept in data
+- structure: varName -> numpyArray
+- parts of array are filled when requested
+- array is deleted when running out of space
+- but: possibly user-edited values must not be thrown away
+- so set a lock if users edit data
+
+ad 2):
+- read variables always in chunks
