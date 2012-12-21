@@ -1,8 +1,10 @@
 from src.main.python.NetCDFFacade import NetCDFFacade
+import numpy as np
 
-class Data(object):
+class Data(dict):
 
     def __init__(self, inputFile):
+        super().__init__()
         self.__netcdf = NetCDFFacade(inputFile)
 
     def model_vars(self):
@@ -26,3 +28,16 @@ class Data(object):
     def dimension_string(self, variable_name):
         return self.__netcdf.get_dimension_string(variable_name)
 
+    def reference_records_count(self):
+        ref_vars = self.ref_vars()
+        if len(ref_vars) == 0:
+            return 0
+        return self.dim_size(self.dimension_string(ref_vars[0]))
+
+    def variable(self, variable_name, origin=None, shape=None):
+        if variable_name not in self:
+            if origin is None and shape is None:
+                self[variable_name] = self.__netcdf.get_variable(variable_name)[:]
+            else:
+                self[variable_name] = self.__netcdf.get_data(variable_name, origin, shape)
+        return self[variable_name]

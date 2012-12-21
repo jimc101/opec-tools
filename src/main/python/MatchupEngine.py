@@ -23,15 +23,15 @@ class MatchupEngine(object):
             return reference_records
         ref_coordinate_variables = self.data.reference_coordinate_variables()
         ref_lat_variable_name, ref_lon_variable_name, ref_time_variable_name, ref_depth_variable_name = find_ref_coordinate_names(ref_coordinate_variables)
-        for i in range(self.data.dim_size(self.data.dimension_string(variable_name))):
-            ref_value = self.data.get_variable_data(variable_name, [i], [1])[0]
+        for i in range(self.data.reference_records_count()):
+            ref_value = self.data[variable_name]([i], [1])[0]
             if ref_value is ma.masked:
                 continue
-            ref_lat = self.netcdf.get_data(ref_lat_variable_name, [i], [1])[0]
-            ref_lon = self.netcdf.get_data(ref_lon_variable_name, [i], [1])[0]
-            ref_time = self.netcdf.get_data(ref_time_variable_name, [i], [1])[0]
+            ref_lat = self.data[ref_lat_variable_name], [i], [1])[0]
+            ref_lon = self.data.get_data(ref_lon_variable_name, [i], [1])[0]
+            ref_time = self.data.get_data(ref_time_variable_name, [i], [1])[0]
             if ref_depth_variable_name is not None:
-                ref_depth = self.netcdf.get_data(ref_depth_variable_name, [i], [1])[0]
+                ref_depth = self.data.get_data(ref_depth_variable_name, [i], [1])[0]
             else:
                 ref_depth = None
             rr = ReferenceRecord(variable_name, ref_value, ref_lat, ref_lon, ref_time, ref_depth)

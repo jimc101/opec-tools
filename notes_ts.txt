@@ -4,12 +4,17 @@ Requirements:
 2) don't read each pixel from disk
 
 ad 1):
-- ideally a dictionary would be kept in data
+- ideally, data would BE a dictionary
 - structure: varName -> numpyArray
 - parts of array are filled when requested
 - array is deleted when running out of space
 - but: possibly user-edited values must not be thrown away
 - so set a lock if users edit data
-
+- difference to direct netcdf-access: users can edit
+- that is NOT possible on netcdf-arrays in read mode (see test case NetcdfFcadeTest.test_change_variable_values)
 ad 2):
 - read variables always in chunks
+
+- in Data: method 'variables' needs at least one parameter (var_name)
+- then, the full array is returned
+- with origin and shape supplied: read with origin and shape

@@ -1,6 +1,7 @@
 import unittest
 from numpy.core.numeric import array
 from numpy.testing.utils import assert_array_equal
+from numpy import nan
 from src.main.python.NetCDFFacade import NetCDFFacade
 
 class NetCDFFacadeTest(unittest.TestCase):
@@ -116,3 +117,10 @@ class NetCDFFacadeTest(unittest.TestCase):
         self.assertTrue(self.netcdf.has_variable('time'))
         self.assertTrue(self.netcdf.has_variable('chl_ref'))
         self.assertFalse(self.netcdf.has_variable('kaesemauken'))
+
+    def test_change_variable_values(self):
+        chl = self.netcdf.get_variable('chl')
+        self.assertAlmostEqual(0.1111, chl[:][0][0][0][0])
+
+        chl[0][0][0][0] = nan
+        self.assertAlmostEqual(0.1111, chl[:][0][0][0][0])
