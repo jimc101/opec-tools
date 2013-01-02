@@ -40,7 +40,6 @@ class Data(dict):
             self[variable_name] = self.__netcdf.get_variable(variable_name)[:]
         else:
             self[variable_name] = self.__netcdf.get_data(variable_name, origin, shape)
-        return self[variable_name]
 
     def clear(self, variable_name=None):
         if variable_name is None:
