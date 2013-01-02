@@ -1,4 +1,5 @@
 from src.main.python.NetCDFFacade import NetCDFFacade
+import numpy as np
 
 class Data(dict):
 
@@ -33,10 +34,15 @@ class Data(dict):
             return 0
         return self.dim_size(self.dimension_string(ref_vars[0]))
 
-    def variable(self, variable_name, origin=None, shape=None):
-        if variable_name not in self:
-            if origin is None and shape is None:
-                self[variable_name] = self.__netcdf.get_variable(variable_name)[:]
-            else:
-                self[variable_name] = self.__netcdf.get_data(variable_name, origin, shape)
+    def read(self, variable_name, origin=None, shape=None):
+        # TODO - optimise: don't read all over again each time this method is called
+        if origin is None and shape is None:
+            self[variable_name] = self.__netcdf.get_variable(variable_name)[:]
+        else:
+            self[variable_name] = self.__netcdf.get_data(variable_name, origin, shape)
         return self[variable_name]
+
+    def clear(self, variable_name=None):
+        if variable_name is None:
+            super(Data, self).clear()
+        self[variable_name] = np.array([])

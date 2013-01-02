@@ -1,6 +1,6 @@
 from unittest import TestCase
 import numpy.testing as np
-from src.main.python.MatchupEngine import MatchupEngine, ReferenceRecord, find_ref_coordinate_names
+from src.main.python.MatchupEngine import MatchupEngine, ReferenceRecord, find_ref_coordinate_names, delta, normalise
 from src.main.python.Data import Data
 
 class MatchupEngineTest(TestCase):
@@ -57,8 +57,8 @@ class MatchupEngineTest(TestCase):
         np.assert_array_almost_equal((1, 1261447200), time_positions[0])
 
     def test_delta(self):
-        self.assertAlmostEqual(0.13, self.me.delta(55.2, 5.3, 55, 5))
-        self.assertAlmostEqual(6.48, self.me.delta(56.8, 6.8, 55, 5))
+        self.assertAlmostEqual(0.13, delta(55.2, 5.3, 55, 5))
+        self.assertAlmostEqual(6.48, delta(56.8, 6.8, 55, 5))
 
     def test_find_matchups_all(self):
         reference_record = ReferenceRecord('chl', 0.1, 55.1, 5.5, 1261440252, 0.0012)
@@ -171,3 +171,10 @@ class MatchupEngineTest(TestCase):
 
         all_matchups = self.me.find_all_matchups('chl_ref', 'chl', 11)
         self.assertEqual(60, len(all_matchups))
+
+    def test_normalise(self):
+        self.assertEqual(type(3), type(normalise(2.5, 3)))
+        self.assertEqual(3, normalise(10.5, 3))
+        self.assertEqual(1, normalise(0.5, 10))
+        self.assertEqual(3, normalise(2.500001, 10))
+        self.assertEqual(2, normalise(2.499999, 10))

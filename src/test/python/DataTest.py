@@ -25,11 +25,17 @@ class DataTest(unittest.TestCase):
         self.data.close()
 
     def test_var_access(self):
-        chl_variable = self.data.variable('chl', [0, 0, 0, 0], [1, 1, 1, 1])
-        self.assertEqual(np.ndarray, type(chl_variable))
-        self.assertEqual(1, chl_variable.size)
-        self.assertAlmostEqual(0.1111, chl_variable[0])
+        self.data.read('chl', [0, 0, 0, 0], [1, 1, 1, 1])
+        chl_data = self.data['chl']
+        self.assertEqual(np.ndarray, type(chl_data))
+        self.assertEqual(1, chl_data.size)
+        self.assertAlmostEqual(0.1111, chl_data[0])
 
-        chl_variable = self.data.variable('chl')
-        self.assertEqual(np.ndarray, type(chl_variable))
-        self.assertEqual(32, chl_variable.size)
+        self.data.read('chl')
+        chl_data = self.data['chl']
+        self.assertEqual(np.ndarray, type(chl_data))
+        self.assertEqual(32, chl_data.size)
+
+        self.data.clear('chl')
+        chl_data = self.data['chl']
+        self.assertEqual(0, len(chl_data))
