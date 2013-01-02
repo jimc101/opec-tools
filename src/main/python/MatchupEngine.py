@@ -1,4 +1,4 @@
-from math import fabs, floor
+from math import fabs, floor, sqrt
 from src.main.python.Matchup import Matchup
 import numpy.ma as ma
 
@@ -180,4 +180,5 @@ def normalise(n, max):
     return number
 
 def delta(lat_position, lon_position, lat, lon):
-    return pow(lat - lat_position, 2) + pow(lon - lon_position, 2)
+    # returns the euclidean distance; sufficient here
+    return sqrt(pow(lat - lat_position, 2) + pow(lon - lon_position, 2))

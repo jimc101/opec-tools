@@ -1,4 +1,5 @@
 from unittest import TestCase
+import math
 import numpy.testing as np
 from src.main.python.MatchupEngine import MatchupEngine, ReferenceRecord, find_ref_coordinate_names, delta, normalise
 from src.main.python.Data import Data
@@ -13,7 +14,7 @@ class MatchupEngineTest(TestCase):
         self.data.close()
 
     def test_find_pixel_positions_macro_pixel_size_3_small_max_delta(self):
-        pixel_positions = self.me.find_matchup_positions(55, 6.0, 3, 0.1)
+        pixel_positions = self.me.find_matchup_positions(55, 6.0, 3, 0.3)
         self.assertEqual(1, len(pixel_positions))
         np.assert_array_almost_equal((1, 0, 5.8, 55.2), pixel_positions[0])
 
@@ -28,7 +29,7 @@ class MatchupEngineTest(TestCase):
         np.assert_array_almost_equal((2, 1, 6.3, 56.8), pixel_positions[5])
 
     def test_find_pixel_positions_macro_pixel_size_5_small_max_delta(self):
-        pixel_positions = self.me.find_matchup_positions(55, 6.0, 5, 0.1)
+        pixel_positions = self.me.find_matchup_positions(55, 6.0, 5, 0.3)
         self.assertEqual(1, len(pixel_positions))
         np.assert_array_almost_equal((1, 0, 5.8, 55.2), pixel_positions[0])
 
@@ -57,8 +58,8 @@ class MatchupEngineTest(TestCase):
         np.assert_array_almost_equal((1, 1261447200), time_positions[0])
 
     def test_delta(self):
-        self.assertAlmostEqual(0.13, delta(55.2, 5.3, 55, 5))
-        self.assertAlmostEqual(6.48, delta(56.8, 6.8, 55, 5))
+        self.assertAlmostEqual(math.sqrt(0.13), delta(55.2, 5.3, 55, 5))
+        self.assertAlmostEqual(math.sqrt(6.48), delta(56.8, 6.8, 55, 5))
 
     def test_find_matchups_all(self):
         reference_record = ReferenceRecord('chl', 0.1, 55.1, 5.5, 1261440252, 0.0012)
