@@ -69,7 +69,7 @@ class MatchupEngine(object):
                     origin.append(matchup_position[1]) # second or third dimension: lat
                     origin.append(matchup_position[0]) # third or fourth dimension: lon
 
-                    self.data.read(model_variable_name, origin, shape)
+                    self.data.read(model_variable_name, origin, shape) # TODO: here, only a single is pixel is read. Pull this outside!
                     model_value = self.data[model_variable_name][0]
                     if model_value is ma.masked:
                         continue
@@ -82,13 +82,12 @@ class MatchupEngine(object):
 
     def find_position(self, dimension, target_value):
         dim_size = self.data.dim_size(dimension)
-        self.data.read(dimension, [0], [2])
-        first_two_pixels = self.data[dimension]
-        pixel_size = first_two_pixels[1] - first_two_pixels[0]
-        self.data.clear(dimension)
-        return normalise((target_value - first_two_pixels[0]) / pixel_size, dim_size - 1)
+        pixel_size = self.data[dimension][1] - self.data[dimension][0]
+        return normalise((target_value - self.data[dimension][0]) / pixel_size, dim_size - 1)
 
     def find_matchup_positions(self, ref_lat, ref_lon, macro_pixel_size, max_geographical_delta):
+        self.__prepare_lat_lon_data()
+
         offset = int(macro_pixel_size / 2)
 
         pixel_x = self.find_position('lon', ref_lon)
@@ -103,17 +102,20 @@ class MatchupEngine(object):
         min_y = max(pixel_y - offset, 0)
         max_y = min(pixel_y + offset, y_size - 1)
 
-        self.data.read('lon', [min_x], [max_x - min_x + 1]) # TODO - move outside!
-        self.data.read('lat', [min_y], [max_y - min_y + 1])
-
-        for x in range(0, len(self.data['lon'])):
+        for x in range(min_x, max_x + 1):
             current_lon = self.data['lon'][x]
-            for y in range(0, len(self.data['lat'])):
+            for y in range(min_y, max_y + 1):
                 current_lat = self.data['lat'][y]
                 if delta(current_lat, current_lon, ref_lat, ref_lon) < max_geographical_delta:
                     pixel_positions.append((x, y, current_lon, current_lat))
 
         return pixel_positions
+
+    def __prepare_lat_lon_data(self):
+        if not 'lon' in self.data:
+            self.data.read('lon')
+        if not 'lat' in self.data:
+            self.data.read('lat')
 
     def find_matchup_times(self, ref_time, max_delta):
         return self.find_matchup_indices('time', ref_time, max_delta)
@@ -170,7 +172,9 @@ def find_ref_coordinate_names(ref_coordinate_variables):
     return lat, lon, time, depth
 
 def normalise(n, max):
-    number = int(floor(n + 0.5)) # don't use built-in round because for x.5 it rounds to the next even integer, not to the next higher one
+    # don't use built-in round because for x.5 it rounds to the next even integer, not to the next higher one
+    # example: round(2.5) -> 2, round(3.5) -> 4
+    number = int(floor(n + 0.5))
     if number > max:
         return max
     return number
