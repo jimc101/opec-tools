@@ -1,0 +1,77 @@
+netcdf test {
+dimensions:
+        time = 2 ;
+        lat = 2 ;
+        lon = 4 ;
+variables:
+        int time(time) ;
+                time:units = "seconds since 1960-01-01 00:00:00" ;
+                time:long_name = "time" ;
+                time:standard_name = "time" ;
+                time:axis = "T" ;
+                time:calendar = "standard" ;
+                time:_CoordinateAxisType = "Time" ;
+                time:_FillValue = -999 ;
+        float lat(lat) ;
+                lat:units = "degrees_north" ;
+                lat:long_name = "latitude" ;
+                lat:standard_name = "latitude" ;
+                lat:axis = "Y" ;
+                lat:valid_min = -90.f ;
+                lat:valid_max = 90.f ;
+                lat:_CoordinateAxisType = "Lat" ;
+        float lon(lon) ;
+                lon:units = "degrees_east" ;
+                lon:long_name = "longitude" ;
+                lon:standard_name = "longitude" ;
+                lon:axis = "X" ;
+                lon:valid_min = -180.f ;
+                lon:valid_max = 180.f ;
+                lon:_CoordinateAxisType = "Lon" ;
+        float chl(time, lat, lon) ;
+                chl:_CoordinateAxes = "time lat lon" ;
+                chl:_FillValue = -1.f ;
+                chl:missing_value = -1.f ;
+                chl:units = "milligram m-3" ;
+                chl:long_name = "Concentration of Chlorophyll in sea water" ;
+                chl:standard_name = "concentration_of_chlorophyll_in_sea_water" ;
+                chl:coordinates = "time depth latitude longitude" ;
+                chl:source = "my_chlorophyll_model" ;
+        float sst(time, lat, lon) ;
+                sst:_CoordinateAxes = "time lat lon" ;
+                sst:_FillValue = -1.f ;
+                sst:units = "kelvin" ;
+                sst:long_name = "Sea surface temperature" ;
+                sst:standard_name = "sea_surface_temperature" ;
+                sst:coordinates = "time latitude longitude" ;
+                sst:source = "my_sst_model" ;
+
+// global attributes:
+                :Conventions = "CF-1.6" ;
+                :title = "some title" ;
+                :institution = "institution code" ;        
+                :references = "links to references" ;
+                :source = "method of production" ;
+                :history = "audit trail" ;
+                :comment = "comment" ;
+data:
+
+ time = 1261440000, 1261447200 ;
+
+ lat = 55.2, 56.8 ;
+
+ lon = 5.3, 5.8, 6.3, 6.8 ;
+
+ chl =
+  0.111, 0.112, 0.113, 0.114,
+  0.121, 0.122, 0.123, 0.124,  
+  0.211, 0.212, 0.213, 0.214,
+  0.221, 0.222, 0.223, 0.224 ;
+
+ sst =
+  1.111, 1.112, 1.113, 1.114,
+  1.121, 1.122, 1.123, 1.124,  
+  1.211, 1.212, 1.213, 1.214,
+  1.221, 1.222, 1.223, 1.224 ;
+
+}  

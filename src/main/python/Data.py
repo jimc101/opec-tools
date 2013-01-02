@@ -1,5 +1,4 @@
 from src.main.python.NetCDFFacade import NetCDFFacade
-import numpy as np
 
 class Data(dict):
 
@@ -30,7 +29,7 @@ class Data(dict):
 
     def reference_records_count(self):
         ref_vars = self.ref_vars()
-        if len(ref_vars) == 0:
+        if not ref_vars:
             return 0
         return self.dim_size(self.dimension_string(ref_vars[0]))
 

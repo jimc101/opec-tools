@@ -18,6 +18,8 @@ class DataTest(unittest.TestCase):
 
     def test_reference_records_count(self):
         self.assertEqual(3, self.data.reference_records_count())
+        self.data = Data('../resources/test_without_records.nc')
+        self.assertEqual(0, self.data.reference_records_count())
 
     def tearDown(self):
         self.data.close()
