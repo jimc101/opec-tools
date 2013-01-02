@@ -49,7 +49,7 @@ class MatchupEngine(object):
             ref_time_variable_name, variable_name)
         return reference_records
 
-    def find_matchups(self, reference_record, model_variable_name=None, macro_pixel_size=3, max_geographical_delta=50000, max_time_delta=31536000, max_depth_delta=10):
+    def find_matchups(self, reference_record, model_variable_name=None, macro_pixel_size=1, max_geographical_delta=10, max_time_delta=86400, max_depth_delta=10):
         if model_variable_name is None:
             model_variable_name = reference_record.variable_name
         matchup_positions = self.find_matchup_positions(reference_record.lat, reference_record.lon, macro_pixel_size, max_geographical_delta)
