@@ -35,7 +35,6 @@ class Data(dict):
         return self.dim_size(self.dimension_string(ref_vars[0]))
 
     def read(self, variable_name, origin=None, shape=None):
-        # TODO - optimise: don't read all over again each time this method is called
         if origin is None and shape is None:
             self[variable_name] = self.__netcdf.get_variable(variable_name)[:]
         else:
