@@ -3,6 +3,7 @@ General TODO:
 - add parameters for percentile, stddev computation
 - add comment about how the statistics have been computed
 - add parameter which allows to not write this comment or to write it to an additional file
+- add logging; add log level parameter
 
 Requirements:
 
