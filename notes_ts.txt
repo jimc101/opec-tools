@@ -14,6 +14,23 @@ don't read each pixel from disk:
 - read variables always in chunks
 - easy with structure described above
 
+Matchup Strategy:
+- user can specify a macro pixel size, a maximum geographic delta, a maximum time delta and a maximum depth delta
+- for each reference record r from the file, the following is done:
+    - in model data, find pixel closest to lat/lon position of r
+    - take macro pixel
+    - check all pixels of the macro pixel if they are inside the geographic, time and depth bounds
+    - if yes: create matchup with reference value from r and model value from the pixel
+    - thus: many model values may have the same reference value
+    - put all matchups into a list
+
+Benchmarks are computed like this:
+- take all matchups
+- create two arrays: one contains all reference values, the other all model values
+- the same index in the arrays mean that the values belong together
+- compute the benchmarks on these arrays
+- thus: for each benchmarked variable, a single set of benchmarks (containing one value of RMSD, Bias, ...) is computed
+
 proposed output format:
 - CSV containing statistics
 - PNG images of target/taylor diagrams
@@ -34,8 +51,5 @@ proposed output format:
 #    maximum time delta = 20000 seconds
 #    maximum depth delta = 10 meters
 #
-# Number of matchups: 10
-#
-variable_name   reference_variable_name lat lon time    depth   ref_lat ref_lon ref_time    ref_depth   rmsd    unbiased_rmsd   bias    pbias   correlation_coefficient reliability_index   model_efficiency
-chl-a   chl_ref 55.2    5.3 1261440000  0.001   55.3    5.31    1261440020  0.0012  0.1 0.2 0.3 0.4 0.5 0.6 0.7
-...
+variable_name   reference_variable_name matchup_count   min max mean    stddev  median  p90 p95 ref_min ref_max ref_mean    ref_stddev  ref_median  ref_p90 ref_p95 rmsd    unbiased_rmsd   bias    pbias   correlation_coefficient reliability_index   model_efficiency
+chl-a   chl_ref 10 0.1 0.2 0.3 0.4 0.5 0.6 0.7

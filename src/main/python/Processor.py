@@ -1,6 +1,8 @@
 import numpy as np
 import numpy.ma as ma
 
+# TODO: compute mean, stddev, median, p90, p95, min, max
+
 def extract_values(matchups):
     reference_values = np.empty(len(matchups))
     model_values = np.empty(len(matchups))
@@ -60,7 +62,7 @@ def create_masked_array(reference_values):
         reference_values = ma.array(reference_values, mask=false_mask)
     return reference_values
 
-def cleanup(reference_values, model_values):
+def harmonise(reference_values, model_values):
     reference_values = create_masked_array(reference_values)
     model_values = create_masked_array(model_values)
     reference_values.mask = reference_values.mask | model_values.mask
@@ -70,7 +72,7 @@ def cleanup(reference_values, model_values):
 def compute_basic_statistics(matchups=None, reference_values=None, model_values=None):
     if reference_values is None or model_values is None:
         reference_values, model_values = extract_values(matchups)
-    reference_values, model_values = cleanup(reference_values, model_values)
+    reference_values, model_values = harmonise(reference_values, model_values)
     basic_statistics = dict()
     basic_statistics['rmsd'] = compute_rmsd(reference_values, model_values)
     basic_statistics['unbiased_rmsd'] = compute_unbiased_rmsd(reference_values, model_values)

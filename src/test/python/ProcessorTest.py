@@ -4,7 +4,7 @@ import numpy.ma as ma
 from numpy.testing import assert_array_equal
 from src.main.python.Data import Data
 from src.main.python.MatchupEngine import MatchupEngine
-from src.main.python.Processor import compute_basic_statistics, cleanup
+from src.main.python.Processor import compute_basic_statistics, harmonise
 
 class ProcessorTest(TestCase):
 
@@ -47,7 +47,7 @@ class ProcessorTest(TestCase):
         self.assertAlmostEqual(basic_statistics['rmsd'] ** 2, basic_statistics['bias'] ** 2 + basic_statistics['unbiased_rmsd'] ** 2, 5)
 
     def test_compute_basic_statistics_with_masked_values(self):
-        model_values = ma.array(np.arange(1.0, 5.0, 1), mask=np.array([False, False, True, False])) # [1, 2, 3, 4]
+        model_values = ma.array(np.arange(1.0, 5.0, 1), mask=np.array([False, False, True, False])) # [1, 2, --, 4]
         ref_values = np.array([1.1, 2.2, 2.9, 3.7])
         basic_statistics = compute_basic_statistics(reference_values=ref_values, model_values=model_values)
         self.assertIsNotNone(basic_statistics)
@@ -65,7 +65,7 @@ class ProcessorTest(TestCase):
     def test_cleanup_1(self):
         model_values = ma.array(np.arange(1.0, 5.0, 1), mask=np.array([False, False, True, False])) # [1, --, 3, 4]
         ref_values = np.array([1.1, 2.2, 2.9, 3.7])
-        ref_values, model_values = cleanup(ref_values, model_values)
+        ref_values, model_values = harmonise(ref_values, model_values)
 
         # Note: assert_array_equals does not tests if masks are equal
         # and there is no dedicated method for this
@@ -80,7 +80,7 @@ class ProcessorTest(TestCase):
     def test_cleanup_2(self):
         model_values = np.array(np.arange(1.0, 5.0, 1)) # [1, 2, 3, 4]
         ref_values = ma.array(np.array([1.1, 2.2, 2.9, 3.7]), mask=np.array([True, False, False, False]))
-        ref_values, model_values = cleanup(ref_values, model_values)
+        ref_values, model_values = harmonise(ref_values, model_values)
 
         # Note: assert_array_equals does not tests if masks are equal
         # and there is no dedicated method for this
@@ -95,7 +95,7 @@ class ProcessorTest(TestCase):
     def test_cleanup_3(self):
         model_values = ma.array(np.arange(1.0, 5.0, 1), mask=np.array([False, False, True, False])) # [1, 2, --, 4]
         ref_values = ma.array([1.1, 2.2, 2.9, 3.7], mask=np.array([True, False, False, False]))
-        ref_values, model_values = cleanup(ref_values, model_values)
+        ref_values, model_values = harmonise(ref_values, model_values)
 
         # Note: assert_array_equals does not tests if masks are equal
         # and there is no dedicated method for this
