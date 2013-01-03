@@ -5,7 +5,7 @@ from src.main.python.MatchupEngine import MatchupEngine
 
 class Output(object):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         """Constructs a new instance of Output, tied to a set of statistics.
         Note that either a 'statistics' or a 'data' object needs to be passed.
 
@@ -69,18 +69,20 @@ class Output(object):
         lines.append(separator.join(self.header_line_items()))
         lines.append(separator.join(self.data_items()))
 
+        if target_file is not None:
+            self.write_to_file(target_file, lines)
+
         return '\n'.join(lines)
 
     def write_header(self, lines):
         source = '' if self.source_file is None else ' of file \'{}\''.format(self.source_file)
-        now = datetime.now()
         lines.append('##############################################################')
         lines.append('#')
         lines.append('# Benchmarking results' + source)
         lines.append('#')
         lines.append('##############################################################')
         lines.append('#')
-        lines.append("# Created on {} {}, {} at {}:{}:{}".format(now.month, now.day, now.year, now.hour, now.minute, now.second))
+        lines.append("# Created on {}".format(datetime.now().strftime('%b %d, %Y at %H:%M:%S')))
         lines.append("#")
         if self.macro_pixel_size is not None or self.geo_delta is not None or self.time_delta is not None or self.depth_delta is not None:
             lines.append("# Matchup criteria:")
@@ -138,3 +140,9 @@ class Output(object):
         header_items.append('reliability_index')
         header_items.append('model_efficiency')
         return header_items
+
+    def write_to_file(self, target_file, lines):
+        file = open(target_file, 'w')
+        for line in lines:
+            file.write("%s\n" % line)
+        file.close()

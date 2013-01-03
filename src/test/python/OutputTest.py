@@ -4,21 +4,30 @@ from src.main.python import Processor
 from src.main.python.Data import Data
 from src.main.python.Matchup import Matchup
 from src.main.python.Output import Output
+import os.path as path
+import os as os
 
 class OutputTest(TestCase):
 
-    def test_output_basic_statistics_from_dictionary(self):
-
+    def setUp(self):
         matchups = [
             Matchup('chl_ref', 'chl', 10, 11, 55, 20, 10000, 0, 0, 0, 0.1, 0),
             Matchup('chl_ref', 'chl', 10, 9, 55, 20, 10000, 0, 0, 0, 0.1, 0),
             Matchup('chl_ref', 'chl', 10, 11.2, 55, 20, 10000, 0, 0, 0, 0.1, 0),
             Matchup('chl_ref', 'chl', 10, 10.5, 55, 20, 10000, 0, 0, 0, 0.1, 0)
         ]
-        stats = Processor.basic_statistics(matchups)
+        self.stats = Processor.basic_statistics(matchups)
+        self.temp_filename = '../resources/test_output.csv'
 
+    def tearDown(self):
+        if path.exists(self.temp_filename):
+            os.remove(self.temp_filename)
+            if path.exists(self.temp_filename):
+                self.fail('Failed to delete {}'.format(self.temp_filename))
+
+    def test_output_basic_statistics_from_dictionary(self):
         output = Output(
-            statistics=stats,
+            statistics=self.stats,
             variable_name='chl',
             ref_variable_name='chl_ref',
             matchup_count=4,
@@ -30,14 +39,13 @@ class OutputTest(TestCase):
         )
 
         expected_result = []
-        now = datetime.now()
         expected_result.append("##############################################################")
         expected_result.append("#")
         expected_result.append("# Benchmarking results of file \'somethingsomethingsomethingdarkside\'")
         expected_result.append("#")
         expected_result.append("##############################################################")
         expected_result.append("#")
-        expected_result.append("# Created on {} {}, {} at {}:{}:{}".format(now.month, now.day, now.year, now.hour, now.minute, now.second))
+        expected_result.append("# Created on {}".format(datetime.now().strftime('%b %d, %Y at %H:%M:%S')))
         expected_result.append("#")
         expected_result.append("# Matchup criteria:")
         expected_result.append("#    Macro pixel size = 123")
@@ -56,25 +64,16 @@ class OutputTest(TestCase):
 
     def test_output_basic_statistics_from_dictionary_minimum(self):
 
-        matchups = [
-            Matchup('chl_ref', 'chl', 10, 11, 55, 20, 10000, 0, 0, 0, 0.1, 0),
-            Matchup('chl_ref', 'chl', 10, 9, 55, 20, 10000, 0, 0, 0, 0.1, 0),
-            Matchup('chl_ref', 'chl', 10, 11.2, 55, 20, 10000, 0, 0, 0, 0.1, 0),
-            Matchup('chl_ref', 'chl', 10, 10.5, 55, 20, 10000, 0, 0, 0, 0.1, 0)
-        ]
-        stats = Processor.basic_statistics(matchups)
-
-        output = Output(statistics=stats)
+        output = Output(statistics=self.stats)
 
         expected_result = []
-        now = datetime.now()
         expected_result.append("##############################################################")
         expected_result.append("#")
         expected_result.append("# Benchmarking results")
         expected_result.append("#")
         expected_result.append("##############################################################")
         expected_result.append("#")
-        expected_result.append("# Created on {} {}, {} at {}:{}:{}".format(now.month, now.day, now.year, now.hour, now.minute, now.second))
+        expected_result.append("# Created on {}".format(datetime.now().strftime('%b %d, %Y at %H:%M:%S')))
         expected_result.append("#")
         expected_result.append("variable_name\tref_variable_name\tmatchup_count\tmin\tmax\tmean\tstddev\tmedian\tp90\tp95\tref_min\tref_max\tref_mean\tref_stddev\tref_median\tref_p90\tref_p95\trmsd\tunbiased_rmsd\tbias\tpbias\tcorrcoeff\treliability_index\tmodel_efficiency")
         expected_result.append("None\tNone\tNone\t9\t11.2\t10.425\t0.8613\t10.75\t11.14\t11.17\t10\t10\t10\t0\t10\t10\t10\t0.9605\t0.8613\t-0.425\t-4.25\tnan\t1.0417\tnan")
@@ -83,15 +82,7 @@ class OutputTest(TestCase):
         
     def test_output_basic_statistics_from_dictionary_no_header(self):
 
-        matchups = [
-            Matchup('chl_ref', 'chl', 10, 11, 55, 20, 10000, 0, 0, 0, 0.1, 0),
-            Matchup('chl_ref', 'chl', 10, 9, 55, 20, 10000, 0, 0, 0, 0.1, 0),
-            Matchup('chl_ref', 'chl', 10, 11.2, 55, 20, 10000, 0, 0, 0, 0.1, 0),
-            Matchup('chl_ref', 'chl', 10, 10.5, 55, 20, 10000, 0, 0, 0, 0.1, 0)
-        ]
-        stats = Processor.basic_statistics(matchups)
-
-        output = Output(statistics=stats)
+        output = Output(statistics=self.stats)
 
         expected_result = []
         expected_result.append("variable_name;ref_variable_name;matchup_count;min;max;mean;stddev;median;p90;p95;ref_min;ref_max;ref_mean;ref_stddev;ref_median;ref_p90;ref_p95;rmsd;unbiased_rmsd;bias;pbias;corrcoeff;reliability_index;model_efficiency")
@@ -104,14 +95,13 @@ class OutputTest(TestCase):
         output = Output(data=data, variable_name='chl', ref_variable_name='chl_ref')
 
         expected_result = []
-        now = datetime.now()
         expected_result.append("##############################################################")
         expected_result.append("#")
         expected_result.append("# Benchmarking results")
         expected_result.append("#")
         expected_result.append("##############################################################")
         expected_result.append("#")
-        expected_result.append("# Created on {} {}, {} at {}:{}:{}".format(now.month, now.day, now.year, now.hour, now.minute, now.second))
+        expected_result.append("# Created on {}".format(datetime.now().strftime('%b %d, %Y at %H:%M:%S')))
         expected_result.append("#")
         expected_result.append("variable_name\tref_variable_name\tmatchup_count\tmin\tmax\tmean\tstddev\tmedian\tp90\tp95\tref_min\tref_max\tref_mean\tref_stddev\tref_median\tref_p90\tref_p95\trmsd\tunbiased_rmsd\tbias\tpbias\tcorrcoeff\treliability_index\tmodel_efficiency")
         expected_result.append("chl\tchl_ref\t56\t0.1111\t")
@@ -119,6 +109,14 @@ class OutputTest(TestCase):
         print(output.csv())
 
         self.assertTrue(output.csv().startswith("\n".join(expected_result)))
+
+    def test_write_csv_file(self):
+        output = Output(statistics=self.stats)
+        self.assertFalse(path.exists(self.temp_filename))
+        output.csv(target_file=self.temp_filename)
+        self.assertTrue(path.exists(self.temp_filename))
+        os.remove(self.temp_filename)
+        self.assertFalse(path.exists(self.temp_filename))
 
     def test_wrong_initialisation_1(self):
         with self.assertRaises(ValueError):
