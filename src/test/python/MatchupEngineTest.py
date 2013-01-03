@@ -146,7 +146,7 @@ class MatchupEngineTest(TestCase):
     def test_find_all_matchups(self):
         ref_variable_name = 'chl_ref'
         model_variable_name = 'chl'
-        all_matchups = self.me.find_all_matchups(ref_variable_name, model_variable_name, 9)
+        all_matchups = self.me.find_all_matchups(ref_variable_name, model_variable_name, macro_pixel_size=9)
         self.assertIsNotNone(all_matchups)
         expected_matchup_count = 2 * 2 * 2 * 4 * 3 # time * depth * lat * lon * #reference_records
         self.assertEqual(expected_matchup_count, len(all_matchups))
@@ -167,10 +167,10 @@ class MatchupEngineTest(TestCase):
     def test_find_matchups_in_file_containing_fill_values(self):
         self.data = Data('../resources/test_including_fill_values.nc')
         self.me = MatchupEngine(self.data)
-        all_matchups = self.me.find_all_matchups('chl_ref', 'chl', 1, 10, 1000, 0.00021)
+        all_matchups = self.me.find_all_matchups('chl_ref', 'chl', macro_pixel_size=1, max_geographical_delta=10, max_time_delta=1000, max_depth_delta=0.00021)
         self.assertEqual(0, len(all_matchups))
 
-        all_matchups = self.me.find_all_matchups('chl_ref', 'chl', 11)
+        all_matchups = self.me.find_all_matchups('chl_ref', 'chl', macro_pixel_size=11)
         self.assertEqual(60, len(all_matchups))
 
     def test_normalise(self):

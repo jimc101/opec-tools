@@ -136,7 +136,21 @@ class MatchupEngine(object):
             index += 1
         return matchup_indices
 
-    def find_all_matchups(self, ref_variable_name, model_variable_name, macro_pixel_size=3, max_geographical_delta=50000, max_time_delta=31536000, max_depth_delta=10):
+    def find_all_matchups(self, ref_variable_name, model_variable_name, macro_pixel_size=None, max_geographical_delta=None, max_time_delta=None, max_depth_delta=None):
+        """Finds all matchups between the given reference variable and model variable, according to the constraints
+         provided as keyword parameters.
+
+         Keywords:
+            macro_pixel_size -- the size of the macro pixel searched for matchups. Default value is 3
+            max_geographical_delta -- the maximum geographical delta model pixels may have to reference values. Default is 10
+            max_time_delta -- the maximum time delta in seconds model pixels may have to reference values. Default is 86400
+            max_depth_delta -- the maximum depth-delta in meters model pixels may have to reference values. Default is 10
+        """
+        macro_pixel_size = macro_pixel_size if macro_pixel_size is not None else 3
+        max_geographical_delta = max_geographical_delta if max_geographical_delta is not None else 10
+        max_time_delta = max_time_delta if max_time_delta is not None else 86400
+        max_depth_delta = max_depth_delta if max_depth_delta is not None else 10
+
         reference_records = self.find_reference_records(ref_variable_name)
         all_matchups = []
         for rr in reference_records:
