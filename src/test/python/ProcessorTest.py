@@ -98,6 +98,62 @@ class ProcessorTest(TestCase):
 
         self.assertAlmostEqual(basic_stats['rmsd'] ** 2, basic_stats['bias'] ** 2 + basic_stats['unbiased_rmsd'] ** 2, 5)
 
+    def test_compute_basic_statistics_with_extreme_model_values(self):
+        model_values = np.array(range(1, 5, 1)) # [1, 2, 3, 4]
+        ref_values = np.array([1, 1, 1, 1])
+        basic_stats = basic_statistics(reference_values=ref_values, model_values=model_values)
+        self.assertAlmostEqual(1.118034, basic_stats['unbiased_rmsd'], 5)
+        self.assertAlmostEqual(1.870829, basic_stats['rmsd'], 5)
+        self.assertAlmostEqual(-150, basic_stats['pbias'], 5)
+        self.assertAlmostEqual(-1.5, basic_stats['bias'], 5)
+        self.assertTrue(np.isnan(basic_stats['corrcoeff']))
+        self.assertAlmostEqual(1.5106421, basic_stats['reliability_index'], 5)
+        self.assertTrue(np.isnan(basic_stats['model_efficiency']))
+        self.assertAlmostEqual(2.5, basic_stats['mean'], 5)
+        self.assertAlmostEqual(1, basic_stats['ref_mean'], 5)
+        self.assertAlmostEqual(1.11803, basic_stats['stddev'], 5)
+        self.assertAlmostEqual(0.0, basic_stats['ref_stddev'], 5)
+        self.assertAlmostEqual(2.5, basic_stats['median'], 5)
+        self.assertAlmostEqual(1, basic_stats['ref_median'], 5)
+        self.assertAlmostEqual(3.7, basic_stats['p90'], 5)
+        self.assertAlmostEqual(1, basic_stats['ref_p90'], 5)
+        self.assertAlmostEqual(3.85, basic_stats['p95'], 5)
+        self.assertAlmostEqual(1, basic_stats['ref_p95'], 5)
+        self.assertAlmostEqual(1, basic_stats['min'], 5)
+        self.assertAlmostEqual(1, basic_stats['ref_min'], 5)
+        self.assertAlmostEqual(4, basic_stats['max'], 5)
+        self.assertAlmostEqual(1, basic_stats['ref_max'], 5)
+
+        self.assertAlmostEqual(basic_stats['rmsd'] ** 2, basic_stats['bias'] ** 2 + basic_stats['unbiased_rmsd'] ** 2, 5)
+
+    def test_compute_basic_statistics_with_extreme_reference_values(self):
+        model_values = np.array([1, 1, 1, 1])
+        ref_values = np.array([1.1, 2.2, 2.9, 3.7])
+        basic_stats = basic_statistics(reference_values=ref_values, model_values=model_values)
+        self.assertAlmostEqual(0.954921, basic_stats['unbiased_rmsd'], 5)
+        self.assertAlmostEqual(1.757128, basic_stats['rmsd'], 5)
+        self.assertAlmostEqual(59.595959, basic_stats['pbias'], 5)
+        self.assertAlmostEqual(1.475, basic_stats['bias'], 5)
+        self.assertTrue(np.isnan(basic_stats['corrcoeff']))
+        self.assertAlmostEqual(1.49908579, basic_stats['reliability_index'], 5)
+        self.assertAlmostEqual(-2.38588, basic_stats['model_efficiency'], 5)
+        self.assertAlmostEqual(1.0, basic_stats['mean'], 5)
+        self.assertAlmostEqual(2.475, basic_stats['ref_mean'], 5)
+        self.assertAlmostEqual(0, basic_stats['stddev'], 5)
+        self.assertAlmostEqual(0.954921, basic_stats['ref_stddev'], 5)
+        self.assertAlmostEqual(1, basic_stats['median'], 5)
+        self.assertAlmostEqual(2.545, basic_stats['ref_median'], 2)
+        self.assertAlmostEqual(1, basic_stats['p90'], 5)
+        self.assertAlmostEqual(3.46, basic_stats['ref_p90'], 5)
+        self.assertAlmostEqual(1, basic_stats['p95'], 5)
+        self.assertAlmostEqual(3.58, basic_stats['ref_p95'], 2)
+        self.assertAlmostEqual(1, basic_stats['min'], 5)
+        self.assertAlmostEqual(1.1, basic_stats['ref_min'], 5)
+        self.assertAlmostEqual(1, basic_stats['max'], 5)
+        self.assertAlmostEqual(3.7, basic_stats['ref_max'], 5)
+
+        self.assertAlmostEqual(basic_stats['rmsd'] ** 2, basic_stats['bias'] ** 2 + basic_stats['unbiased_rmsd'] ** 2, 5)
+
     def test_cleanup_1(self):
         model_values = ma.array(np.arange(1.0, 5.0, 1), mask=np.array([False, False, True, False])) # [1, --, 3, 4]
         ref_values = np.array([1.1, 2.2, 2.9, 3.7])
