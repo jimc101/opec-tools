@@ -1,3 +1,9 @@
+General TODO:
+
+- add parameters for percentile, stddev computation
+- add comment about how the statistics have been computed
+- add parameter which allows to not write this comment or to write it to an additional file
+
 Requirements:
 
 allow easy access for user, including write access to data:

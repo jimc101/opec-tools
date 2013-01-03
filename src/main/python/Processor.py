@@ -1,7 +1,6 @@
 import numpy as np
 import numpy.ma as ma
-
-# TODO: compute mean, stddev, median, p90, p95, min, max
+import scipy.stats.mstats as mstats
 
 def extract_values(matchups):
     reference_values = np.empty(len(matchups))
@@ -13,7 +12,19 @@ def extract_values(matchups):
         index += 1
     return reference_values, model_values
 
-def compute_rmsd(reference_values, values):
+def mean(values):
+    return np.mean(values)
+
+def stddev(values, ddof=0):
+    return np.std(values, ddof=ddof)
+
+def percentiles(values, alphap=1, betap=1):
+    return mstats.mquantiles(values, [0.5, 0.9, 0.95], alphap, betap)
+
+def minmax(values):
+    return [np.min(values), np.max(values)]
+
+def rmsd(reference_values, values):
     """
     according to MEECE D2.7 User guide and report outlining validation methodology
     """
@@ -22,35 +33,35 @@ def compute_rmsd(reference_values, values):
     squareErrors = (values - reference_values) ** 2
     return np.sqrt(np.mean(squareErrors))
 
-def compute_bias(reference_values, values):
+def bias(reference_values, values):
     """
     according to http://en.wikipedia.org/wiki/Bias_of_an_estimator
     """
     return np.mean(reference_values) - np.mean(values)
 
-def compute_unbiased_rmsd(reference_values, values):
+def unbiased_rmsd(reference_values, values):
     squared_differences = ((values - np.mean(values)) - (reference_values - np.mean(reference_values))) ** 2
     squared_differences /= ma.count(values)
     return np.sqrt(np.sum(squared_differences))
 
-def compute_correlation(reference_values, values):
+def correlation(reference_values, values):
     return ma.corrcoef(values, reference_values)[0, 1]
 
-def compute_percentage_model_bias(reference_values, model_values):
+def percentage_model_bias(reference_values, model_values):
     """
     according to MEECE D2.7 User guide and report outlining validation methodology
     """
     return np.sum(reference_values - model_values) * 100 / np.sum(reference_values)
 
 
-def compute_reliability_index(reference_values, model_values):
+def reliability_index(reference_values, model_values):
     """
     according to MEECE D2.7 User guide and report outlining validation methodology
     """
     n = 1 / ma.count(reference_values)
     return np.exp(np.sqrt(n * np.sum(np.power(np.log10(reference_values / model_values), 2))))
 
-def compute_model_efficiency(reference_values, model_values):
+def model_efficiency(reference_values, model_values):
     """
     Nash-Sutcliffe model efficiency according to MEECE D2.7 User guide and report outlining validation methodology
     """
@@ -69,17 +80,37 @@ def harmonise(reference_values, model_values):
     model_values.mask = reference_values.mask | model_values.mask
     return reference_values, model_values
 
-def compute_basic_statistics(matchups=None, reference_values=None, model_values=None):
+def basic_statistics(matchups=None, reference_values=None, model_values=None):
     if reference_values is None or model_values is None:
         reference_values, model_values = extract_values(matchups)
     reference_values, model_values = harmonise(reference_values, model_values)
-    basic_statistics = dict()
-    basic_statistics['rmsd'] = compute_rmsd(reference_values, model_values)
-    basic_statistics['unbiased_rmsd'] = compute_unbiased_rmsd(reference_values, model_values)
-    basic_statistics['pbias'] = compute_percentage_model_bias(reference_values, model_values)
-    basic_statistics['bias'] = compute_bias(reference_values, model_values)
-    basic_statistics['corrcoeff'] = compute_correlation(reference_values, model_values)
-    basic_statistics['reliability_index'] = compute_reliability_index(reference_values, model_values)
-    basic_statistics['model_efficiency'] = compute_model_efficiency(reference_values, model_values)
-    return basic_statistics
+    # todo - add parameter so that user can control how to calculate percentiles
+    model_percentiles = percentiles(model_values)
+    ref_percentiles = percentiles(reference_values)
+    model_minmax = minmax(model_values)
+    ref_minmax = minmax(reference_values)
+    basic_stats = dict()
+    basic_stats['rmsd'] = rmsd(reference_values, model_values)
+    basic_stats['unbiased_rmsd'] = unbiased_rmsd(reference_values, model_values)
+    basic_stats['pbias'] = percentage_model_bias(reference_values, model_values)
+    basic_stats['bias'] = bias(reference_values, model_values)
+    basic_stats['corrcoeff'] = correlation(reference_values, model_values)
+    basic_stats['reliability_index'] = reliability_index(reference_values, model_values)
+    basic_stats['model_efficiency'] = model_efficiency(reference_values, model_values)
+    basic_stats['mean'] = mean(model_values)
+    basic_stats['ref_mean'] = mean(reference_values)
+    # todo - add parameter so that user can control how to calculate stddev
+    basic_stats['stddev'] = stddev(model_values)
+    basic_stats['ref_stddev'] = stddev(reference_values)
+    basic_stats['median'] = model_percentiles[0]
+    basic_stats['ref_median'] = ref_percentiles[0]
+    basic_stats['p90'] = model_percentiles[1]
+    basic_stats['ref_p90'] = ref_percentiles[1]
+    basic_stats['p95'] = model_percentiles[2]
+    basic_stats['ref_p95'] = ref_percentiles[2]
+    basic_stats['min'] = model_minmax[0]
+    basic_stats['ref_min'] = ref_minmax[0]
+    basic_stats['max'] = model_minmax[1]
+    basic_stats['ref_max'] = ref_minmax[1]
+    return basic_stats
 
