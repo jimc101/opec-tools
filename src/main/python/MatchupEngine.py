@@ -1,4 +1,5 @@
 from math import fabs, floor, sqrt
+from src.main.python.Configuration import global_config
 from src.main.python.Matchup import Matchup
 import numpy.ma as ma
 
@@ -14,8 +15,9 @@ class ReferenceRecord(object):
 
 class MatchupEngine(object):
 
-    def __init__(self, data):
+    def __init__(self, data, macro_pixel_size=None, geo_delta=None, time_delta=None, depth_delta=None):
         self.data = data
+        self.update_config(macro_pixel_size, geo_delta, time_delta, depth_delta)
 
     def clear_reference_data(self, ref_depth_variable_name, ref_lat_variable_name, ref_lon_variable_name,
                              ref_time_variable_name, variable_name):
@@ -49,12 +51,12 @@ class MatchupEngine(object):
             ref_time_variable_name, variable_name)
         return reference_records
 
-    def find_matchups(self, reference_record, model_variable_name=None, macro_pixel_size=1, max_geographical_delta=10, max_time_delta=86400, max_depth_delta=10):
+    def find_matchups(self, reference_record, model_variable_name=None):
         if model_variable_name is None:
             model_variable_name = reference_record.variable_name
-        matchup_positions = self.find_matchup_positions(reference_record.lat, reference_record.lon, macro_pixel_size, max_geographical_delta)
-        matchup_times = self.find_matchup_times(reference_record.time, max_time_delta)
-        matchup_depths = self.find_matchup_depths(reference_record.depth, max_depth_delta)
+        matchup_positions = self.find_matchup_positions(reference_record.lat, reference_record.lon)
+        matchup_times = self.find_matchup_times(reference_record.time)
+        matchup_depths = self.find_matchup_depths(reference_record.depth)
         matchups = []
         for matchup_position in matchup_positions:
             for matchup_time in matchup_times:
@@ -85,10 +87,10 @@ class MatchupEngine(object):
         pixel_size = self.data[dimension][1] - self.data[dimension][0]
         return normalise((target_value - self.data[dimension][0]) / pixel_size, dim_size - 1)
 
-    def find_matchup_positions(self, ref_lat, ref_lon, macro_pixel_size, max_geographical_delta):
+    def find_matchup_positions(self, ref_lat, ref_lon):
         self.__prepare_lat_lon_data()
-
-        offset = int(macro_pixel_size / 2)
+        config = global_config()
+        offset = int(config.macro_pixel_size / 2)
 
         pixel_x = self.find_position('lon', ref_lon)
         pixel_y = self.find_position('lat', ref_lat)
@@ -106,7 +108,7 @@ class MatchupEngine(object):
             current_lon = self.data['lon'][x]
             for y in range(min_y, max_y + 1):
                 current_lat = self.data['lat'][y]
-                if delta(current_lat, current_lon, ref_lat, ref_lon) < max_geographical_delta:
+                if delta(current_lat, current_lon, ref_lat, ref_lon) < config.geo_delta:
                     pixel_positions.append((x, y, current_lon, current_lat))
 
         return pixel_positions
@@ -117,13 +119,13 @@ class MatchupEngine(object):
         if not 'lat' in self.data:
             self.data.read('lat')
 
-    def find_matchup_times(self, ref_time, max_delta):
-        return self.find_matchup_indices('time', ref_time, max_delta)
+    def find_matchup_times(self, ref_time):
+        return self.find_matchup_indices('time', ref_time, global_config().time_delta)
 
-    def find_matchup_depths(self, ref_depth, max_delta):
+    def find_matchup_depths(self, ref_depth):
         if not self.data.has_variable('depth'):
             return [None]
-        return self.find_matchup_indices('depth', ref_depth, max_delta)
+        return self.find_matchup_indices('depth', ref_depth, global_config().depth_delta)
 
     def find_matchup_indices(self, dimension, ref, max_delta):
         self.data.read(dimension)
@@ -136,25 +138,13 @@ class MatchupEngine(object):
             index += 1
         return matchup_indices
 
-    def find_all_matchups(self, ref_variable_name, model_variable_name, macro_pixel_size=None, max_geographical_delta=None, max_time_delta=None, max_depth_delta=None):
-        """Finds all matchups between the given reference variable and model variable, according to the constraints
-         provided as keyword parameters.
-
-         Keywords:
-            macro_pixel_size -- the size of the macro pixel searched for matchups. Default value is 3
-            max_geographical_delta -- the maximum geographical delta model pixels may have to reference values. Default is 10
-            max_time_delta -- the maximum time delta in seconds model pixels may have to reference values. Default is 86400
-            max_depth_delta -- the maximum depth-delta in meters model pixels may have to reference values. Default is 10
+    def find_all_matchups(self, ref_variable_name, model_variable_name):
+        """Finds all matchups between the given reference variable and model variable.
         """
-        macro_pixel_size = macro_pixel_size if macro_pixel_size is not None else 3
-        max_geographical_delta = max_geographical_delta if max_geographical_delta is not None else 10
-        max_time_delta = max_time_delta if max_time_delta is not None else 86400
-        max_depth_delta = max_depth_delta if max_depth_delta is not None else 10
-
         reference_records = self.find_reference_records(ref_variable_name)
         all_matchups = []
         for rr in reference_records:
-            matchups = self.find_matchups(rr, model_variable_name, macro_pixel_size, max_geographical_delta, max_time_delta, max_depth_delta)
+            matchups = self.find_matchups(rr, model_variable_name)
             all_matchups.extend(matchups)
         return all_matchups
 
@@ -166,6 +156,18 @@ class MatchupEngine(object):
         self.data.read(ref_time_variable_name)
         if ref_depth_variable_name is not None:
             self.data.read(ref_depth_variable_name)
+
+    def update_config(self, macro_pixel_size, geo_delta, time_delta, depth_delta):
+        config = global_config()
+        # todo - do this more elegant
+        if macro_pixel_size is not None:
+            config.macro_pixel_size = macro_pixel_size
+        if geo_delta is not None:
+            config.geo_delta = geo_delta
+        if time_delta is not None:
+            config.time_delta = time_delta
+        if depth_delta is not None:
+            config.depth_delta = depth_delta
 
 def find_ref_coordinate_names(ref_coordinate_variables):
     lat = None

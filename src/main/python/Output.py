@@ -16,20 +16,12 @@ class Output(object):
             variable_name -- the model variable name (optional; mandatory if statistics is not given)
             ref_variable_name -- the reference variable name (optional; mandatory if statistics is not given)
             matchup_count -- the number of matchups (optional)
-            macro_pixel_size -- the macro pixel size used for matchup computation (optional)
-            geo_delta -- the maximum geographical delta used for matchup computation (optional)
-            time_delta -- the maximum time delta used for matchup computation (optional)
-            depth_delta -- the maximum depth delta used for matchup computation (optional)
             source_file -- a reference to the file the benchmarks were computed on (optional)
         """
 
         self.variable_name = kwargs['variable_name'] if 'variable_name' in kwargs.keys() else None
         self.ref_variable_name = kwargs['ref_variable_name'] if 'ref_variable_name' in kwargs.keys() else None
         self.matchup_count = kwargs['matchup_count'] if 'matchup_count' in kwargs.keys() else None
-        self.macro_pixel_size = kwargs['macro_pixel_size'] if 'macro_pixel_size' in kwargs.keys() else None
-        self.geo_delta = kwargs['geo_delta'] if 'geo_delta' in kwargs.keys() else None
-        self.time_delta = kwargs['time_delta'] if 'time_delta' in kwargs.keys() else None
-        self.depth_delta = kwargs['depth_delta'] if 'depth_delta' in kwargs.keys() else None
         self.source_file = kwargs['source_file'] if 'source_file' in kwargs.keys() else None
 
         if 'statistics' not in kwargs and 'data' not in kwargs:
@@ -49,9 +41,9 @@ class Output(object):
             self.data = kwargs['data']
             if self.variable_name is None or self.ref_variable_name is None:
                 raise ValueError("missing \'variable name\' and/or \'ref_variable_name\' argument(s)")
-            me = MatchupEngine(self.data)
-            matchups = me.find_all_matchups(self.ref_variable_name, self.variable_name, self.macro_pixel_size,
-                self.geo_delta, self.time_delta, self.depth_delta)
+            config = global_config()
+            me = MatchupEngine(self.data, config.macro_pixel_size, config.geo_delta, config.time_delta, config.depth_delta)
+            matchups = me.find_all_matchups(self.ref_variable_name, self.variable_name)
             self.matchup_count = len(matchups)
             self.statistics = Processor.basic_statistics(matchups=matchups)
 
@@ -86,25 +78,30 @@ class Output(object):
         lines.append('#')
         lines.append('# Created on {}'.format(datetime.now().strftime('%b %d, %Y at %H:%M:%S')))
         lines.append('#')
-        if self.macro_pixel_size is not None or self.geo_delta is not None or self.time_delta is not None or self.depth_delta is not None:
-            lines.append('# Matchup criteria:')
-            lines.append('#    Macro pixel size = {}'.format(self.macro_pixel_size))
-            lines.append('#    Maximum geographic delta = {} \"degrees\"'.format(self.geo_delta))
-            lines.append('#    Maximum time delta = {} seconds'.format(self.time_delta))
-            if self.depth_delta is not None:
-                lines.append('#    Maximum depth delta = {} meters'.format(self.depth_delta))
-            lines.append('#')
+        lines.append('# Matchup criteria:')
+        lines.append('#    Macro pixel size = {}'.format(config.macro_pixel_size))
+        lines.append('#    Maximum geographic delta = {} \"degrees\"'.format(config.geo_delta))
+        lines.append('#    Maximum time delta = {} seconds'.format(config.time_delta))
+        # TODO - exclude depth if source file contains no depth dimension
+        lines.append('#    Maximum depth delta = {} meters'.format(config.depth_delta))
+        lines.append('#')
         lines.append('# Parameters:')
         lines.append('#    ddof (delta degrees of freedom, used for computation of stddev) = {}'.format(config.ddof))
         lines.append('#    alpha (used for percentile computation) = 1'.format(config.alpha))
         lines.append('#    beta (used for percentile computation) = 1'.format(config.beta))
         lines.append('#')
 
+    def rename(self, string):
+        return str(string) if string is not None else 'Unknown'
+
     def data_items(self):
+        matchup_count = self.rename(self.matchup_count)
+        variable_name = self.rename(self.variable_name)
+        ref_variable_name = self.rename(self.ref_variable_name)
         data_items = [
-            str(self.variable_name),
-            str(self.ref_variable_name),
-            str(self.matchup_count),
+            variable_name,
+            ref_variable_name,
+            matchup_count,
             str('%g' % round(self.statistics['min'], 4)),
             str('%g' % round(self.statistics['max'], 4)),
             str('%g' % round(self.statistics['mean'], 4)),

@@ -6,6 +6,7 @@ Configuration:
 - the latter is the main problem: when is it created? Singleton: create it on the first use.
 - by choosing configurable parameters, the user always changes the configuration
 - consequence: in every place where configurable parameters are being used, configuration needs to be updated
+---> every object based on this configuration can be changed by changing other objects --> this is bad.
 
 - add configuration parameters for matchup criteria
 - add parameters for percentile, stddev computation

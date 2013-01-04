@@ -11,14 +11,14 @@ class ProcessorTest(TestCase):
 
     def setUp(self):
         self.data = Data('../resources/test.nc')
-        self.me = MatchupEngine(self.data)
+        self.me = MatchupEngine(self.data, 3)
 
     def tearDown(self):
-        global_config().reload()
+        global_config().set_to_default()
         self.data.close()
 
     def test_compute_basic_statistics_for_matchups(self):
-        matchups = self.me.find_all_matchups('chl_ref', 'chl', 3)
+        matchups = self.me.find_all_matchups('chl_ref', 'chl')
         basic_stats = basic_statistics(matchups, ddof=0, alpha=1, beta=1)
         self.assertAlmostEqual(0.0960456, basic_stats['rmsd'], 5)
         self.assertAlmostEqual(0.0868041, basic_stats['unbiased_rmsd'], 5)
