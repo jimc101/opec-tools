@@ -2,18 +2,21 @@ General TODO:
 
 - parse configuration from .ini-file or similar
 - add logging; add log level parameter
+- extend read mechanism by 'force' flag that, well, forces to read from disk, overwriting old values
+- extend read mechanism by smarter caching means
+- document how to work with the tool, i.e., create a dump of the console when doing something smart with the tool
+- add parameter allowing to zip the output
+- document the matchup strategy (see below) somewhere
+- same holds for the benchmark computing strategy. Perhaps create that and circulate for comments?
 
 Requirements:
 
 allow easy access for user, including write access to data:
 - data is a dictionary
 - structure: varName -> numpyArray
-- contains dedicated 'read' and 'clear' methods
+- contains dedicated 'read' methods
     - 'read' reads from disk the given variable data, given by origin or shape (or fully)
     - puts the data into the dictionary, so it can be accessed without the need to be read again
-    - 'clear' deletes the local array
-- TODO:
-    - automatically detect if data has been read already; then, don't read all over again
 
 don't read each pixel from disk:
 - read variables always in chunks
@@ -36,10 +39,21 @@ Benchmarks are computed like this:
 - compute the benchmarks on these arrays
 - thus: for each benchmarked variable, a single set of benchmarks (containing one value of RMSD, Bias, ...) is computed
 
+Configuration:
+- Configuration is fixed, attributes are 'final'
+- Batch mode: create Configuration from file, hand it into Processor, MatchupEngine, Output etc
+
+- Interactive mode: create Configuration objects from scratch
+- put these objects into Processor, MatchupEngine, Output
+- Processor, MatchupEngine, Output: if no configuration object is passed, take default one, same as in batch mode
+--> user responsibility to put same config into output as into processor
+- can buy that if there's the possibility to make a run with only one configuration object
+- meaning: just run an 'Output' with data and configuration, and everything is consistent
+- if the user wants to mess around, fine, but we cannot prevent him from creating inconsistent output by wrong usage
+
 proposed output format:
 - CSV containing statistics
 - PNG images of target/taylor diagrams
-- allow parameter which creates zip from outputs
 - example CSV:
 
 ##############################################################
