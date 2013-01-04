@@ -1,8 +1,15 @@
 General TODO:
 
+Configuration:
+- needs to be globally accessible, because we don't want to force the user to create each object with the configuration instance
+- needs to be created both from batch mode (easy, just parse a configuration file) and from interactive mode
+- the latter is the main problem: when is it created? Singleton: create it on the first use.
+- by choosing configurable parameters, the user always changes the configuration
+- consequence: in every place where configurable parameters are being used, configuration needs to be updated
+
+- add configuration parameters for matchup criteria
 - add parameters for percentile, stddev computation
 - add comment about how the statistics have been computed
-- add parameter which allows to not write this comment or to write it to an additional file
 - add logging; add log level parameter
 
 Requirements:
@@ -57,6 +64,11 @@ proposed output format:
 #    maximum geographic delta = 10 "degrees"
 #    maximum time delta = 20000 seconds
 #    maximum depth delta = 10 meters
+#
+# Parameters:
+#    Delta Degrees of Freedom (used for computation of stddev) = 1
+#    alpha (used for percentile computation) = 0.4
+#    beta (used for percentile computation) = 0.4
 #
 variable_name   reference_variable_name matchup_count   min max mean    stddev  median  p90 p95 ref_min ref_max ref_mean    ref_stddev  ref_median  ref_p90 ref_p95 rmsd    unbiased_rmsd   bias    pbias   correlation_coefficient reliability_index   model_efficiency
 chl-a   chl_ref 10 0.1 0.2 0.3 0.4 0.5 0.6 0.7

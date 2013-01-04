@@ -1,6 +1,7 @@
 from datetime import datetime
 import logging
 from src.main.python import Processor
+from src.main.python.Configuration import global_config
 from src.main.python.MatchupEngine import MatchupEngine
 
 class Output(object):
@@ -75,6 +76,7 @@ class Output(object):
         return '\n'.join(lines)
 
     def write_header(self, lines):
+        config = global_config()
         source = '' if self.source_file is None else ' of file \'{}\''.format(self.source_file)
         lines.append('##############################################################')
         lines.append('#')
@@ -82,16 +84,21 @@ class Output(object):
         lines.append('#')
         lines.append('##############################################################')
         lines.append('#')
-        lines.append("# Created on {}".format(datetime.now().strftime('%b %d, %Y at %H:%M:%S')))
-        lines.append("#")
+        lines.append('# Created on {}'.format(datetime.now().strftime('%b %d, %Y at %H:%M:%S')))
+        lines.append('#')
         if self.macro_pixel_size is not None or self.geo_delta is not None or self.time_delta is not None or self.depth_delta is not None:
-            lines.append("# Matchup criteria:")
-            lines.append("#    Macro pixel size = {}".format(self.macro_pixel_size))
-            lines.append("#    Maximum geographic delta = {} \"degrees\"".format(self.geo_delta))
-            lines.append("#    Maximum time delta = {} seconds".format(self.time_delta))
+            lines.append('# Matchup criteria:')
+            lines.append('#    Macro pixel size = {}'.format(self.macro_pixel_size))
+            lines.append('#    Maximum geographic delta = {} \"degrees\"'.format(self.geo_delta))
+            lines.append('#    Maximum time delta = {} seconds'.format(self.time_delta))
             if self.depth_delta is not None:
-                lines.append("#    Maximum depth delta = {} meters".format(self.depth_delta))
-            lines.append("#")
+                lines.append('#    Maximum depth delta = {} meters'.format(self.depth_delta))
+            lines.append('#')
+        lines.append('# Parameters:')
+        lines.append('#    ddof (delta degrees of freedom, used for computation of stddev) = {}'.format(config.ddof))
+        lines.append('#    alpha (used for percentile computation) = 1'.format(config.alpha))
+        lines.append('#    beta (used for percentile computation) = 1'.format(config.beta))
+        lines.append('#')
 
     def data_items(self):
         data_items = [

@@ -1,6 +1,7 @@
 from datetime import datetime
 from unittest import TestCase
 from src.main.python import Processor
+from src.main.python.Configuration import global_config
 from src.main.python.Data import Data
 from src.main.python.Matchup import Matchup
 from src.main.python.Output import Output
@@ -18,6 +19,9 @@ class OutputTest(TestCase):
         ]
         self.stats = Processor.basic_statistics(matchups)
         self.temp_filename = '../resources/test_output.csv'
+        global_config().ddof = 0
+        global_config().alpha = 1
+        global_config().beta = 1
 
     def tearDown(self):
         if path.exists(self.temp_filename):
@@ -53,6 +57,11 @@ class OutputTest(TestCase):
         expected_result.append("#    Maximum time delta = 1234 seconds")
         expected_result.append("#    Maximum depth delta = 0.234 meters")
         expected_result.append("#")
+        expected_result.append("# Parameters:")
+        expected_result.append("#    ddof (delta degrees of freedom, used for computation of stddev) = 0")
+        expected_result.append("#    alpha (used for percentile computation) = 1")
+        expected_result.append("#    beta (used for percentile computation) = 1")
+        expected_result.append("#")
         expected_result.append("variable_name\tref_variable_name\tmatchup_count\tmin\tmax\tmean\tstddev\tmedian\tp90\tp95\tref_min\tref_max\tref_mean\tref_stddev\tref_median\tref_p90\tref_p95\trmsd\tunbiased_rmsd\tbias\tpbias\tcorrcoeff\treliability_index\tmodel_efficiency")
         expected_result.append("chl\tchl_ref\t4\t9\t11.2\t10.425\t0.8613\t10.75\t11.14\t11.17\t10\t10\t10\t0\t10\t10\t10\t0.9605\t0.8613\t-0.425\t-4.25\tnan\t1.0417\tnan")
 
@@ -74,6 +83,11 @@ class OutputTest(TestCase):
         expected_result.append("##############################################################")
         expected_result.append("#")
         expected_result.append("# Created on {}".format(datetime.now().strftime('%b %d, %Y at %H:%M:%S')))
+        expected_result.append("#")
+        expected_result.append("# Parameters:")
+        expected_result.append("#    ddof (delta degrees of freedom, used for computation of stddev) = 0")
+        expected_result.append("#    alpha (used for percentile computation) = 1")
+        expected_result.append("#    beta (used for percentile computation) = 1")
         expected_result.append("#")
         expected_result.append("variable_name\tref_variable_name\tmatchup_count\tmin\tmax\tmean\tstddev\tmedian\tp90\tp95\tref_min\tref_max\tref_mean\tref_stddev\tref_median\tref_p90\tref_p95\trmsd\tunbiased_rmsd\tbias\tpbias\tcorrcoeff\treliability_index\tmodel_efficiency")
         expected_result.append("None\tNone\tNone\t9\t11.2\t10.425\t0.8613\t10.75\t11.14\t11.17\t10\t10\t10\t0\t10\t10\t10\t0.9605\t0.8613\t-0.425\t-4.25\tnan\t1.0417\tnan")
@@ -102,6 +116,11 @@ class OutputTest(TestCase):
         expected_result.append("##############################################################")
         expected_result.append("#")
         expected_result.append("# Created on {}".format(datetime.now().strftime('%b %d, %Y at %H:%M:%S')))
+        expected_result.append("#")
+        expected_result.append("# Parameters:")
+        expected_result.append("#    ddof (delta degrees of freedom, used for computation of stddev) = 0")
+        expected_result.append("#    alpha (used for percentile computation) = 1")
+        expected_result.append("#    beta (used for percentile computation) = 1")
         expected_result.append("#")
         expected_result.append("variable_name\tref_variable_name\tmatchup_count\tmin\tmax\tmean\tstddev\tmedian\tp90\tp95\tref_min\tref_max\tref_mean\tref_stddev\tref_median\tref_p90\tref_p95\trmsd\tunbiased_rmsd\tbias\tpbias\tcorrcoeff\treliability_index\tmodel_efficiency")
         expected_result.append("chl\tchl_ref\t56\t0.1111\t")

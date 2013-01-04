@@ -1,6 +1,7 @@
 import numpy as np
 import numpy.ma as ma
 import scipy.stats.mstats as mstats
+from src.main.python.Configuration import global_config
 
 def extract_values(matchups):
     reference_values = np.empty(len(matchups))
@@ -15,10 +16,10 @@ def extract_values(matchups):
 def mean(values):
     return np.mean(values)
 
-def stddev(values, ddof=0):
+def stddev(values, ddof):
     return np.std(values, ddof=ddof)
 
-def percentiles(values, alphap=1, betap=1):
+def percentiles(values, alphap, betap):
     return mstats.mquantiles(values, [0.5, 0.9, 0.95], alphap, betap)
 
 def minmax(values):
@@ -82,15 +83,18 @@ def harmonise(reference_values, model_values):
     model_values.mask = reference_values.mask | model_values.mask
     return reference_values, model_values
 
-def basic_statistics(matchups=None, reference_values=None, model_values=None):
+def basic_statistics(matchups=None, reference_values=None, model_values=None, ddof=None, alpha=None, beta=None):
     if reference_values is None or model_values is None:
         reference_values, model_values = extract_values(matchups)
     reference_values, model_values = harmonise(reference_values, model_values)
     if ma.count(model_values) != ma.count(reference_values):
         raise ValueError("len(values) != len(reference_values)")
-    # todo - add parameter so that user can control how to calculate percentiles
-    model_percentiles = percentiles(model_values)
-    ref_percentiles = percentiles(reference_values)
+
+    update_config(ddof, alpha, beta)
+    config = global_config()
+
+    model_percentiles = percentiles(model_values, config.alpha, config.beta)
+    ref_percentiles = percentiles(reference_values, config.alpha, config.beta)
     model_minmax = minmax(model_values)
     ref_minmax = minmax(reference_values)
     basic_stats = dict()
@@ -103,9 +107,8 @@ def basic_statistics(matchups=None, reference_values=None, model_values=None):
     basic_stats['model_efficiency'] = model_efficiency(reference_values, model_values)
     basic_stats['mean'] = mean(model_values)
     basic_stats['ref_mean'] = mean(reference_values)
-    # todo - add parameter so that user can control how to calculate stddev
-    basic_stats['stddev'] = stddev(model_values)
-    basic_stats['ref_stddev'] = stddev(reference_values)
+    basic_stats['stddev'] = stddev(model_values, config.ddof)
+    basic_stats['ref_stddev'] = stddev(reference_values, config.ddof)
     basic_stats['median'] = model_percentiles[0]
     basic_stats['ref_median'] = ref_percentiles[0]
     basic_stats['p90'] = model_percentiles[1]
@@ -118,3 +121,11 @@ def basic_statistics(matchups=None, reference_values=None, model_values=None):
     basic_stats['ref_max'] = ref_minmax[1]
     return basic_stats
 
+def update_config(ddof, alpha, beta):
+    config = global_config()
+    if ddof is not None:
+        config.ddof = ddof
+    if alpha is not None:
+        config.alpha = alpha
+    if beta is not None:
+        config.beta = beta
