@@ -2,7 +2,7 @@ from unittest import TestCase
 import numpy as np
 import numpy.ma as ma
 from numpy.testing import assert_array_equal
-from src.main.python.Configuration import global_config
+from src.main.python.Configuration import Configuration
 from src.main.python.Data import Data
 from src.main.python.MatchupEngine import MatchupEngine
 from src.main.python.Processor import basic_statistics, harmonise
@@ -11,15 +11,15 @@ class ProcessorTest(TestCase):
 
     def setUp(self):
         self.data = Data('../resources/test.nc')
-        self.me = MatchupEngine(self.data, 3)
+        self.config = Configuration(ddof=0, alpha=1, beta=1)
+        self.me = MatchupEngine(self.data, self.config)
 
     def tearDown(self):
-        global_config().set_to_default()
         self.data.close()
 
     def test_compute_basic_statistics_for_matchups(self):
         matchups = self.me.find_all_matchups('chl_ref', 'chl')
-        basic_stats = basic_statistics(matchups, ddof=0, alpha=1, beta=1)
+        basic_stats = basic_statistics(matchups, config=self.config)
         self.assertAlmostEqual(0.0960456, basic_stats['rmsd'], 5)
         self.assertAlmostEqual(0.0868041, basic_stats['unbiased_rmsd'], 5)
         self.assertAlmostEqual(20.553573, basic_stats['pbias'], 5)
@@ -47,7 +47,7 @@ class ProcessorTest(TestCase):
     def test_compute_basic_statistics(self):
         model_values = np.array(range(1, 5, 1)) # [1, 2, 3, 4]
         ref_values = np.array([1.1, 2.2, 2.9, 3.7])
-        basic_stats = basic_statistics(reference_values=ref_values, model_values=model_values, ddof=0, alpha=1, beta=1)
+        basic_stats = basic_statistics(reference_values=ref_values, model_values=model_values, config=self.config)
         self.assertAlmostEqual(0.192028, basic_stats['unbiased_rmsd'], 5)
         self.assertAlmostEqual(0.193649, basic_stats['rmsd'], 5)
         self.assertAlmostEqual(-1.0101, basic_stats['pbias'], 5)
@@ -75,7 +75,7 @@ class ProcessorTest(TestCase):
     def test_compute_basic_statistics_with_masked_values(self):
         model_values = ma.array(np.arange(1.0, 5.0, 1), mask=np.array([False, False, True, False])) # [1, 2, --, 4]
         ref_values = np.array([1.1, 2.2, 2.9, 3.7])
-        basic_stats = basic_statistics(reference_values=ref_values, model_values=model_values, ddof=0, alpha=1, beta=1)
+        basic_stats = basic_statistics(reference_values=ref_values, model_values=model_values, config=self.config)
         self.assertAlmostEqual(0.216024, basic_stats['unbiased_rmsd'], 5)
         self.assertAlmostEqual(0.216024, basic_stats['rmsd'], 5)
         self.assertAlmostEqual(6.344131e-15, basic_stats['pbias'], 5)
@@ -103,7 +103,7 @@ class ProcessorTest(TestCase):
     def test_compute_basic_statistics_with_extreme_model_values(self):
         model_values = np.array(range(1, 5, 1)) # [1, 2, 3, 4]
         ref_values = np.array([1, 1, 1, 1])
-        basic_stats = basic_statistics(reference_values=ref_values, model_values=model_values, ddof=0, alpha=1, beta=1)
+        basic_stats = basic_statistics(reference_values=ref_values, model_values=model_values, config=self.config)
         self.assertAlmostEqual(1.118034, basic_stats['unbiased_rmsd'], 5)
         self.assertAlmostEqual(1.870829, basic_stats['rmsd'], 5)
         self.assertAlmostEqual(-150, basic_stats['pbias'], 5)
@@ -131,7 +131,7 @@ class ProcessorTest(TestCase):
     def test_compute_basic_statistics_with_extreme_reference_values(self):
         model_values = np.array([1, 1, 1, 1])
         ref_values = np.array([1.1, 2.2, 2.9, 3.7])
-        basic_stats = basic_statistics(reference_values=ref_values, model_values=model_values, ddof=0, alpha=1, beta=1)
+        basic_stats = basic_statistics(reference_values=ref_values, model_values=model_values, config=self.config)
         self.assertAlmostEqual(0.954921, basic_stats['unbiased_rmsd'], 5)
         self.assertAlmostEqual(1.757128, basic_stats['rmsd'], 5)
         self.assertAlmostEqual(59.595959, basic_stats['pbias'], 5)

@@ -1,7 +1,7 @@
 from datetime import datetime
 import logging
 from src.main.python import Processor
-from src.main.python.Configuration import global_config
+from src.main.python.Configuration import get_default_config
 from src.main.python.MatchupEngine import MatchupEngine
 
 class Output(object):
@@ -15,12 +15,14 @@ class Output(object):
             data -- the data on which to compute statistics to be output (mandatory if statistics is not given)
             variable_name -- the model variable name (optional; mandatory if statistics is not given)
             ref_variable_name -- the reference variable name (optional; mandatory if statistics is not given)
+            config -- the configuration the processors and matchup engine have been run with (optional)
             matchup_count -- the number of matchups (optional)
             source_file -- a reference to the file the benchmarks were computed on (optional)
         """
 
         self.variable_name = kwargs['variable_name'] if 'variable_name' in kwargs.keys() else None
         self.ref_variable_name = kwargs['ref_variable_name'] if 'ref_variable_name' in kwargs.keys() else None
+        self.config = kwargs['config'] if 'config' in kwargs.keys() else get_default_config()
         self.matchup_count = kwargs['matchup_count'] if 'matchup_count' in kwargs.keys() else None
         self.source_file = kwargs['source_file'] if 'source_file' in kwargs.keys() else None
 
@@ -41,8 +43,7 @@ class Output(object):
             self.data = kwargs['data']
             if self.variable_name is None or self.ref_variable_name is None:
                 raise ValueError("missing \'variable name\' and/or \'ref_variable_name\' argument(s)")
-            config = global_config()
-            me = MatchupEngine(self.data, config.macro_pixel_size, config.geo_delta, config.time_delta, config.depth_delta)
+            me = MatchupEngine(self.data, self.config)
             matchups = me.find_all_matchups(self.ref_variable_name, self.variable_name)
             self.matchup_count = len(matchups)
             self.statistics = Processor.basic_statistics(matchups=matchups)
@@ -68,7 +69,6 @@ class Output(object):
         return '\n'.join(lines)
 
     def write_header(self, lines):
-        config = global_config()
         source = '' if self.source_file is None else ' of file \'{}\''.format(self.source_file)
         lines.append('##############################################################')
         lines.append('#')
@@ -79,16 +79,16 @@ class Output(object):
         lines.append('# Created on {}'.format(datetime.now().strftime('%b %d, %Y at %H:%M:%S')))
         lines.append('#')
         lines.append('# Matchup criteria:')
-        lines.append('#    Macro pixel size = {}'.format(config.macro_pixel_size))
-        lines.append('#    Maximum geographic delta = {} \"degrees\"'.format(config.geo_delta))
-        lines.append('#    Maximum time delta = {} seconds'.format(config.time_delta))
+        lines.append('#    Macro pixel size = {}'.format(self.config.macro_pixel_size))
+        lines.append('#    Maximum geographic delta = {} \"degrees\"'.format(self.config.geo_delta))
+        lines.append('#    Maximum time delta = {} seconds'.format(self.config.time_delta))
         # TODO - exclude depth if source file contains no depth dimension
-        lines.append('#    Maximum depth delta = {} meters'.format(config.depth_delta))
+        lines.append('#    Maximum depth delta = {} meters'.format(self.config.depth_delta))
         lines.append('#')
         lines.append('# Parameters:')
-        lines.append('#    ddof (delta degrees of freedom, used for computation of stddev) = {}'.format(config.ddof))
-        lines.append('#    alpha (used for percentile computation) = 1'.format(config.alpha))
-        lines.append('#    beta (used for percentile computation) = 1'.format(config.beta))
+        lines.append('#    ddof (delta degrees of freedom, used for computation of stddev) = {}'.format(self.config.ddof))
+        lines.append('#    alpha (used for percentile computation) = 1'.format(self.config.alpha))
+        lines.append('#    beta (used for percentile computation) = 1'.format(self.config.beta))
         lines.append('#')
 
     def rename(self, string):

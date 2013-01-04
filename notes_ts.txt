@@ -1,16 +1,6 @@
 General TODO:
 
-Configuration:
-- needs to be globally accessible, because we don't want to force the user to create each object with the configuration instance
-- needs to be created both from batch mode (easy, just parse a configuration file) and from interactive mode
-- the latter is the main problem: when is it created? Singleton: create it on the first use.
-- by choosing configurable parameters, the user always changes the configuration
-- consequence: in every place where configurable parameters are being used, configuration needs to be updated
----> every object based on this configuration can be changed by changing other objects --> this is bad.
-
-- add configuration parameters for matchup criteria
-- add parameters for percentile, stddev computation
-- add comment about how the statistics have been computed
+- parse configuration from .ini-file or similar
 - add logging; add log level parameter
 
 Requirements:

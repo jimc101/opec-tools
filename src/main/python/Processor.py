@@ -1,7 +1,7 @@
 import numpy as np
 import numpy.ma as ma
 import scipy.stats.mstats as mstats
-from src.main.python.Configuration import global_config
+from src.main.python.Configuration import Configuration, get_default_config
 
 def extract_values(matchups):
     reference_values = np.empty(len(matchups))
@@ -83,15 +83,15 @@ def harmonise(reference_values, model_values):
     model_values.mask = reference_values.mask | model_values.mask
     return reference_values, model_values
 
-def basic_statistics(matchups=None, reference_values=None, model_values=None, ddof=None, alpha=None, beta=None):
+def basic_statistics(matchups=None, reference_values=None, model_values=None, config=None):
     if reference_values is None or model_values is None:
         reference_values, model_values = extract_values(matchups)
     reference_values, model_values = harmonise(reference_values, model_values)
     if ma.count(model_values) != ma.count(reference_values):
         raise ValueError("len(values) != len(reference_values)")
 
-    update_config(ddof, alpha, beta)
-    config = global_config()
+    if config is None:
+        config = get_default_config()
 
     model_percentiles = percentiles(model_values, config.alpha, config.beta)
     ref_percentiles = percentiles(reference_values, config.alpha, config.beta)
@@ -120,12 +120,3 @@ def basic_statistics(matchups=None, reference_values=None, model_values=None, dd
     basic_stats['max'] = model_minmax[1]
     basic_stats['ref_max'] = ref_minmax[1]
     return basic_stats
-
-def update_config(ddof, alpha, beta):
-    config = global_config()
-    if ddof is not None:
-        config.ddof = ddof
-    if alpha is not None:
-        config.alpha = alpha
-    if beta is not None:
-        config.beta = beta

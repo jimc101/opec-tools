@@ -1,5 +1,5 @@
 from math import fabs, floor, sqrt
-from src.main.python.Configuration import global_config
+from src.main.python.Configuration import get_default_config
 from src.main.python.Matchup import Matchup
 import numpy.ma as ma
 
@@ -13,11 +13,12 @@ class ReferenceRecord(object):
         self.time = time
         self.depth = depth
 
+
 class MatchupEngine(object):
 
-    def __init__(self, data, macro_pixel_size=None, geo_delta=None, time_delta=None, depth_delta=None):
+    def __init__(self, data, configuration=None):
         self.data = data
-        self.update_config(macro_pixel_size, geo_delta, time_delta, depth_delta)
+        self.config = configuration if configuration is not None else get_default_config()
 
     def clear_reference_data(self, ref_depth_variable_name, ref_lat_variable_name, ref_lon_variable_name,
                              ref_time_variable_name, variable_name):
@@ -89,8 +90,7 @@ class MatchupEngine(object):
 
     def find_matchup_positions(self, ref_lat, ref_lon):
         self.__prepare_lat_lon_data()
-        config = global_config()
-        offset = int(config.macro_pixel_size / 2)
+        offset = int(self.config.macro_pixel_size / 2)
 
         pixel_x = self.find_position('lon', ref_lon)
         pixel_y = self.find_position('lat', ref_lat)
@@ -108,7 +108,7 @@ class MatchupEngine(object):
             current_lon = self.data['lon'][x]
             for y in range(min_y, max_y + 1):
                 current_lat = self.data['lat'][y]
-                if delta(current_lat, current_lon, ref_lat, ref_lon) < config.geo_delta:
+                if delta(current_lat, current_lon, ref_lat, ref_lon) < self.config.geo_delta:
                     pixel_positions.append((x, y, current_lon, current_lat))
 
         return pixel_positions
@@ -120,12 +120,12 @@ class MatchupEngine(object):
             self.data.read('lat')
 
     def find_matchup_times(self, ref_time):
-        return self.find_matchup_indices('time', ref_time, global_config().time_delta)
+        return self.find_matchup_indices('time', ref_time, self.config.time_delta)
 
     def find_matchup_depths(self, ref_depth):
         if not self.data.has_variable('depth'):
             return [None]
-        return self.find_matchup_indices('depth', ref_depth, global_config().depth_delta)
+        return self.find_matchup_indices('depth', ref_depth, self.config.depth_delta)
 
     def find_matchup_indices(self, dimension, ref, max_delta):
         self.data.read(dimension)
@@ -157,18 +157,6 @@ class MatchupEngine(object):
         if ref_depth_variable_name is not None:
             self.data.read(ref_depth_variable_name)
 
-    def update_config(self, macro_pixel_size, geo_delta, time_delta, depth_delta):
-        config = global_config()
-        # todo - do this more elegant
-        if macro_pixel_size is not None:
-            config.macro_pixel_size = macro_pixel_size
-        if geo_delta is not None:
-            config.geo_delta = geo_delta
-        if time_delta is not None:
-            config.time_delta = time_delta
-        if depth_delta is not None:
-            config.depth_delta = depth_delta
-
 def find_ref_coordinate_names(ref_coordinate_variables):
     lat = None
     lon = None
@@ -190,6 +178,7 @@ def find_ref_coordinate_names(ref_coordinate_variables):
 def normalise(n, max):
     # don't use built-in round because for x.5 it rounds to the next even integer, not to the next higher one
     # example: round(2.5) -> 2, round(3.5) -> 4
+    # instead, use more linear method
     number = int(floor(n + 0.5))
     if number > max:
         return max
