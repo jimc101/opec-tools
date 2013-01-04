@@ -199,3 +199,23 @@ class MatchupEngineTest(TestCase):
         self.assertEqual(1, normalise(0.5, 10))
         self.assertEqual(3, normalise(2.500001, 10))
         self.assertEqual(2, normalise(2.499999, 10))
+
+    def test_that_data_manipulations_are_conserved(self):
+        self.data.read('chl')
+        chl_data = self.data['chl']
+        self.assertAlmostEqual(0.1111, chl_data[0][0][0][0])
+
+        config = Configuration(macro_pixel_size=1, geo_delta=0.01415, time_delta=3000, depth_delta=0.0003)
+        me = MatchupEngine(self.data, config)
+        matchup = me.find_all_matchups('chl_ref', 'chl')[0]
+
+        self.assertAlmostEqual(0.1111, matchup.model_value)
+        self.assertAlmostEqual(0.1, matchup.ref_value)
+
+        self.data['chl'][0][0][0][0] = 0.2
+        self.data['chl_ref'][0] = 0.3
+
+        matchup = me.find_all_matchups('chl_ref', 'chl')[0]
+
+        self.assertAlmostEqual(0.2, matchup.model_value)
+        self.assertAlmostEqual(0.3, matchup.ref_value)

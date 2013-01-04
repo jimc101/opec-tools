@@ -62,7 +62,7 @@ class MatchupEngine(object):
                     origin.append(matchup_position[0]) # third or fourth dimension: lon
 
                     self.data.read(model_variable_name, origin, shape) # TODO: here, only a single is pixel is read. Pull this outside!
-                    model_value = self.data[model_variable_name][0]
+                    model_value = self.data[model_variable_name].reshape(1)[0]
                     if model_value is ma.masked:
                         continue
                     lon_delta = fabs(matchup_position[2] - reference_record.lon)

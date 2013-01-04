@@ -1,6 +1,6 @@
 import functools
 from netCDF4 import Dataset
-from numpy import *
+import numpy as np
 
 class NetCDFFacade(object):
 
@@ -34,7 +34,7 @@ class NetCDFFacade(object):
         variable = self.get_variable(variableName)
         dimensionString = ""
         for dimName in variable._getdims():
-            dimensionString = dimensionString + dimName + " "
+            dimensionString = "%s%s " % (dimensionString, dimName)
         dimensionString = dimensionString.strip()
         return dimensionString
 
@@ -51,10 +51,21 @@ class NetCDFFacade(object):
         dimCount = len(variable._getdims())
         if dimCount != len(origin) or dimCount != len(shape):
             raise ValueError("len(origin) and len(shape) must be equal to number of dimensions of variable '" + variableName + "'")
-        indexArray = []
+        index_array = []
         for dimIndex in range(0, dimCount):
-            indexArray.append(range(origin[dimIndex], origin[dimIndex] + shape[dimIndex]))
-        return variable[indexArray]
+            current_index = range(origin[dimIndex], origin[dimIndex] + shape[dimIndex])
+            index_array.append(current_index)
+        # ensure that resulting array has same dimension as variable
+        # unfortunately, the netcdf lib reduces the array's rank in some cases
+        array = variable[index_array]
+        if len(array.shape) < len(variable._getdims()):
+            new_shape = []
+            for d in range(dimCount - len(array.shape)):
+                new_shape.append(1)
+            for i in array.shape:
+                new_shape.append(i)
+            array = array.reshape(new_shape)
+        return array
 
     def close(self):
         self.dataSet.close()

@@ -45,7 +45,7 @@ class NetCDFFacadeTest(unittest.TestCase):
         self.assertEqual(4, self.netcdf.get_dim_length("chl", 3))
 
     def test_get_data_via_origin_and_shape(self):
-        assert_array_equal(array([0.1111], dtype='float32'),
+        assert_array_equal(array([[[[0.1111]]]], dtype='float32'),
             self.netcdf.get_data("chl", [0, 0, 0, 0], [1, 1, 1, 1]))
 
         assert_array_equal(array([
@@ -59,6 +59,14 @@ class NetCDFFacadeTest(unittest.TestCase):
             ]
         ],
             dtype='float32'), self.netcdf.get_data("chl", [0, 0, 0, 0], [2, 2, 2, 2]))
+
+
+        assert_array_equal(array([
+            [
+              [[ 0.2111, 0.1211], [ 0.2121, 0.1221]],
+            ],
+        ],
+            dtype='float32'), self.netcdf.get_data("chl", [0, 0, 0, 1], [1, 1, 2, 2]))
 
     def test_get_dimensions(self):
         assert_array_equal(["time", "depth", "lat", "lon", "record_num"], self.netcdf.get_dimensions())

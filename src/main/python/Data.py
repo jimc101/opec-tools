@@ -1,10 +1,12 @@
 from src.main.python.NetCDFFacade import NetCDFFacade
+import numpy as np
 
 class Data(dict):
 
     def __init__(self, inputFile):
         super().__init__()
         self.__netcdf = NetCDFFacade(inputFile)
+        self.__current_storage_metadata = {}
 
     def model_vars(self):
         return self.__netcdf.get_model_variables()
@@ -33,8 +35,25 @@ class Data(dict):
             return 0
         return self.dim_size(self.dimension_string(ref_vars[0]))
 
+
+    #todo - continue here: allow access to values that have been read, but not exactly the same shape as requested
     def read(self, variable_name, origin=None, shape=None):
+        has_been_read = variable_name in self.__current_storage_metadata.keys()
+        if has_been_read:
+            all_requested_and_fully_read = origin is None and shape is None and self.__current_storage_metadata[variable_name] == 'fully_read'
+            if all_requested_and_fully_read:
+                return self[variable_name]
+            if origin is not None and shape is not None:
+                if self.__current_storage_metadata[variable_name] != 'fully_read':
+                    current_slice = self.__current_storage_metadata[variable_name]
+                    if np.array_equal(origin, current_slice[0]) and np.array_equal(shape, current_slice[1]):
+                        # if origin and shape exactly match origin and shape of what has been read before, return that
+                        return self[variable_name]
+
         if origin is None and shape is None:
             self[variable_name] = self.__netcdf.get_variable(variable_name)[:]
+            self.__current_storage_metadata[variable_name] = 'fully_read'
         else:
             self[variable_name] = self.__netcdf.get_data(variable_name, origin, shape)
+            self.__current_storage_metadata[variable_name] = [np.array(origin), np.array(shape)]
+        return self[variable_name]
