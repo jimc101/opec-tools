@@ -13,20 +13,11 @@ class ReferenceRecord(object):
         self.time = time
         self.depth = depth
 
-
 class MatchupEngine(object):
 
     def __init__(self, data, configuration=None):
         self.data = data
         self.config = configuration if configuration is not None else get_default_config()
-
-    def clear_reference_data(self, ref_depth_variable_name, ref_lat_variable_name, ref_lon_variable_name,
-                             ref_time_variable_name, variable_name):
-        self.data.clear(ref_lat_variable_name)
-        self.data.clear(ref_lon_variable_name)
-        self.data.clear(ref_depth_variable_name)
-        self.data.clear(ref_time_variable_name)
-        self.data.clear(variable_name)
 
     def find_reference_records(self, variable_name):
         reference_records = []
@@ -48,8 +39,6 @@ class MatchupEngine(object):
                 ref_depth = None
             rr = ReferenceRecord(variable_name, ref_value, ref_lat, ref_lon, ref_time, ref_depth)
             reference_records.append(rr)
-        self.clear_reference_data(ref_depth_variable_name, ref_lat_variable_name, ref_lon_variable_name,
-            ref_time_variable_name, variable_name)
         return reference_records
 
     def find_matchups(self, reference_record, model_variable_name=None):

@@ -35,7 +35,3 @@ class DataTest(unittest.TestCase):
         chl_data = self.data['chl']
         self.assertEqual(np.ndarray, type(chl_data))
         self.assertEqual(32, chl_data.size)
-
-        self.data.clear('chl')
-        chl_data = self.data['chl']
-        self.assertEqual(0, len(chl_data))
