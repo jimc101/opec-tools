@@ -83,7 +83,7 @@ def harmonise(reference_values, model_values):
     model_values.mask = reference_values.mask | model_values.mask
     return reference_values, model_values
 
-def basic_statistics(matchups=None, reference_values=None, model_values=None, config=None):
+def calculate_statistics(matchups=None, reference_values=None, model_values=None, config=None):
     if reference_values is None or model_values is None:
         reference_values, model_values = extract_values(matchups)
     reference_values, model_values = harmonise(reference_values, model_values)
@@ -97,26 +97,26 @@ def basic_statistics(matchups=None, reference_values=None, model_values=None, co
     ref_percentiles = percentiles(reference_values, config.alpha, config.beta)
     model_minmax = minmax(model_values)
     ref_minmax = minmax(reference_values)
-    basic_stats = dict()
-    basic_stats['rmsd'] = rmsd(reference_values, model_values)
-    basic_stats['unbiased_rmsd'] = unbiased_rmsd(reference_values, model_values)
-    basic_stats['pbias'] = percentage_model_bias(reference_values, model_values)
-    basic_stats['bias'] = bias(reference_values, model_values)
-    basic_stats['corrcoeff'] = correlation(reference_values, model_values)
-    basic_stats['reliability_index'] = reliability_index(reference_values, model_values)
-    basic_stats['model_efficiency'] = model_efficiency(reference_values, model_values)
-    basic_stats['mean'] = mean(model_values)
-    basic_stats['ref_mean'] = mean(reference_values)
-    basic_stats['stddev'] = stddev(model_values, config.ddof)
-    basic_stats['ref_stddev'] = stddev(reference_values, config.ddof)
-    basic_stats['median'] = model_percentiles[0]
-    basic_stats['ref_median'] = ref_percentiles[0]
-    basic_stats['p90'] = model_percentiles[1]
-    basic_stats['ref_p90'] = ref_percentiles[1]
-    basic_stats['p95'] = model_percentiles[2]
-    basic_stats['ref_p95'] = ref_percentiles[2]
-    basic_stats['min'] = model_minmax[0]
-    basic_stats['ref_min'] = ref_minmax[0]
-    basic_stats['max'] = model_minmax[1]
-    basic_stats['ref_max'] = ref_minmax[1]
-    return basic_stats
+    stats = dict()
+    stats['rmsd'] = rmsd(reference_values, model_values)
+    stats['unbiased_rmsd'] = unbiased_rmsd(reference_values, model_values)
+    stats['pbias'] = percentage_model_bias(reference_values, model_values)
+    stats['bias'] = bias(reference_values, model_values)
+    stats['corrcoeff'] = correlation(reference_values, model_values)
+    stats['reliability_index'] = reliability_index(reference_values, model_values)
+    stats['model_efficiency'] = model_efficiency(reference_values, model_values)
+    stats['mean'] = mean(model_values)
+    stats['ref_mean'] = mean(reference_values)
+    stats['stddev'] = stddev(model_values, config.ddof)
+    stats['ref_stddev'] = stddev(reference_values, config.ddof)
+    stats['median'] = model_percentiles[0]
+    stats['ref_median'] = ref_percentiles[0]
+    stats['p90'] = model_percentiles[1]
+    stats['ref_p90'] = ref_percentiles[1]
+    stats['p95'] = model_percentiles[2]
+    stats['ref_p95'] = ref_percentiles[2]
+    stats['min'] = model_minmax[0]
+    stats['ref_min'] = ref_minmax[0]
+    stats['max'] = model_minmax[1]
+    stats['ref_max'] = ref_minmax[1]
+    return stats

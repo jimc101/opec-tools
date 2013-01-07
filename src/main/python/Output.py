@@ -46,7 +46,7 @@ class Output(object):
             me = MatchupEngine(self.data, self.config)
             matchups = me.find_all_matchups(self.ref_variable_name, self.variable_name)
             self.matchup_count = len(matchups)
-            self.statistics = Processor.basic_statistics(matchups=matchups)
+            self.statistics = Processor.calculate_statistics(matchups=matchups)
 
     def csv(self, include_header=True, separator='\t', target_file=None):
         """Outputs the statistics to CSV.

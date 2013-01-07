@@ -18,7 +18,7 @@ class OutputTest(TestCase):
             Matchup('chl_ref', 'chl', 10, 11.2, 55, 20, 10000, 0, 0, 0, 0.1, 0),
             Matchup('chl_ref', 'chl', 10, 10.5, 55, 20, 10000, 0, 0, 0, 0.1, 0)
         ]
-        self.stats = Processor.basic_statistics(matchups, config=self.config)
+        self.stats = Processor.calculate_statistics(matchups, config=self.config)
         self.temp_filename = '../resources/test_output.csv'
 
     def tearDown(self):
@@ -27,7 +27,7 @@ class OutputTest(TestCase):
             if path.exists(self.temp_filename):
                 self.fail('Failed to delete {}'.format(self.temp_filename))
 
-    def test_output_basic_statistics_from_dictionary(self):
+    def test_output_statistics_from_dictionary(self):
         output = Output(
             statistics=self.stats,
             variable_name='chl',
@@ -62,7 +62,7 @@ class OutputTest(TestCase):
 
         self.assertEqual("\n".join(expected_result), output.csv())
 
-    def test_output_basic_statistics_from_dictionary_minimum(self):
+    def test_output_statistics_from_dictionary_minimum(self):
 
         output = Output(statistics=self.stats, config=self.config)
 
@@ -91,7 +91,7 @@ class OutputTest(TestCase):
 
         self.assertEqual("\n".join(expected_result) , output.csv())
         
-    def test_output_basic_statistics_from_dictionary_no_header(self):
+    def test_output_statistics_from_dictionary_no_header(self):
 
         output = Output(statistics=self.stats, config=self.config)
 
@@ -101,7 +101,7 @@ class OutputTest(TestCase):
 
         self.assertEqual("\n".join(expected_result) , output.csv(False, ';'))
 
-    def test_output_basic_statistics_from_data(self):
+    def test_output_statistics_from_data(self):
         data = Data('../resources/test.nc')
         output = Output(data=data, variable_name='chl', ref_variable_name='chl_ref', config=self.config)
 
