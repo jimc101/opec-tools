@@ -4,6 +4,7 @@ General TODO:
 - add logging; add log level parameter
 - extend read mechanism by 'force' flag that, well, forces to read from disk, overwriting old values
 - extend read mechanism by smarter caching means
+- allow clearing of cache
 - document how to work with the tool, i.e., create a dump of the console when doing something smart with the tool
 - add parameter allowing to zip the output
 - document the matchup strategy (see below) somewhere
