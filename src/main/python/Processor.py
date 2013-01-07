@@ -1,7 +1,7 @@
 import numpy as np
 import numpy.ma as ma
 import scipy.stats.mstats as mstats
-from src.main.python.Configuration import Configuration, get_default_config
+from src.main.python.Configuration import get_default_config
 
 def extract_values(matchups):
     reference_values = np.empty(len(matchups))

@@ -9,6 +9,7 @@ General TODO:
 - add parameter allowing to zip the output
 - document the matchup strategy (see below) somewhere
 - same holds for the benchmark computing strategy. Perhaps create that and circulate for comments?
+- restructure project according to https://python-guide.readthedocs.org/en/latest/writing/structure/ and http://docs.python.org/3.3/tutorial/modules.html#packages
 
 Requirements:
 
@@ -43,14 +44,6 @@ Benchmarks are computed like this:
 Configuration:
 - Configuration is fixed, attributes are 'final'
 - Batch mode: create Configuration from file, hand it into Processor, MatchupEngine, Output etc
-
-- Interactive mode: create Configuration objects from scratch
-- put these objects into Processor, MatchupEngine, Output
-- Processor, MatchupEngine, Output: if no configuration object is passed, take default one, same as in batch mode
---> user responsibility to put same config into output as into processor
-- can buy that if there's the possibility to make a run with only one configuration object
-- meaning: just run an 'Output' with data and configuration, and everything is consistent
-- if the user wants to mess around, fine, but we cannot prevent him from creating inconsistent output by wrong usage
 
 proposed output format:
 - CSV containing statistics

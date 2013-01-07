@@ -11,7 +11,7 @@ class ProcessorTest(TestCase):
 
     def setUp(self):
         self.data = Data('../resources/test.nc')
-        self.config = Configuration(ddof=0, alpha=1, beta=1)
+        self.config = Configuration(macro_pixel_size=3, geo_delta=10, time_delta=86400, depth_delta=12, ddof=0, alpha=1, beta=1)
         self.me = MatchupEngine(self.data, self.config)
 
     def tearDown(self):

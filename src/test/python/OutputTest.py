@@ -48,7 +48,7 @@ class OutputTest(TestCase):
         expected_result.append("#")
         expected_result.append("# Matchup criteria:")
         expected_result.append("#    Macro pixel size = 123")
-        expected_result.append("#    Maximum geographic delta = 12 \"degrees\"")
+        expected_result.append("#    Maximum geographic delta = 12.0 \"degrees\"")
         expected_result.append("#    Maximum time delta = 1234 seconds")
         expected_result.append("#    Maximum depth delta = 0.234 meters")
         expected_result.append("#")
@@ -77,7 +77,7 @@ class OutputTest(TestCase):
         expected_result.append("#")
         expected_result.append("# Matchup criteria:")
         expected_result.append("#    Macro pixel size = 123")
-        expected_result.append("#    Maximum geographic delta = 12 \"degrees\"")
+        expected_result.append("#    Maximum geographic delta = 12.0 \"degrees\"")
         expected_result.append("#    Maximum time delta = 1234 seconds")
         expected_result.append("#    Maximum depth delta = 0.234 meters")
         expected_result.append("#")
@@ -116,7 +116,7 @@ class OutputTest(TestCase):
         expected_result.append("#")
         expected_result.append("# Matchup criteria:")
         expected_result.append("#    Macro pixel size = 123")
-        expected_result.append("#    Maximum geographic delta = 12 \"degrees\"")
+        expected_result.append("#    Maximum geographic delta = 12.0 \"degrees\"")
         expected_result.append("#    Maximum time delta = 1234 seconds")
         expected_result.append("#    Maximum depth delta = 0.234 meters")
         expected_result.append("#")
@@ -127,6 +127,8 @@ class OutputTest(TestCase):
         expected_result.append("#")
         expected_result.append("variable_name\tref_variable_name\tmatchup_count\tmin\tmax\tmean\tstddev\tmedian\tp90\tp95\tref_min\tref_max\tref_mean\tref_stddev\tref_median\tref_p90\tref_p95\trmsd\tunbiased_rmsd\tbias\tpbias\tcorrcoeff\treliability_index\tmodel_efficiency")
         expected_result.append("chl\tchl_ref\t48\t0.1111\t")
+
+        print(output.csv())
 
         self.assertTrue(output.csv().startswith("\n".join(expected_result)))
 
