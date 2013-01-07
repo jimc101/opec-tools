@@ -74,7 +74,7 @@ class MatchupEngineTest(TestCase):
 
     def test_find_matchups_all(self):
         reference_record = ReferenceRecord('chl', 0.1, 55.1, 5.5, 1261440252, 0.0012)
-        me = MatchupEngine(self.data, Configuration(macro_pixel_size=7))
+        me = MatchupEngine(self.data, Configuration(macro_pixel_size=7, geo_delta=10))
         matchups = me.find_matchups(reference_record, None)
         self.assertIsNotNone(matchups)
         self.assertEqual(32, len(matchups))
@@ -162,7 +162,7 @@ class MatchupEngineTest(TestCase):
     def test_find_all_matchups(self):
         ref_variable_name = 'chl_ref'
         model_variable_name = 'chl'
-        me = MatchupEngine(self.data, Configuration(macro_pixel_size=9))
+        me = MatchupEngine(self.data, Configuration(macro_pixel_size=9, geo_delta=10))
         all_matchups = me.find_all_matchups(ref_variable_name, model_variable_name)
         self.assertIsNotNone(all_matchups)
         expected_matchup_count = 2 * 2 * 2 * 4 * 3 # time * depth * lat * lon * #reference_records
