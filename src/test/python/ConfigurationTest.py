@@ -9,7 +9,7 @@ class ConfigurationTest(unittest.TestCase):
         self.assertEqual(1, c.beta)
         self.assertEqual(2, c.ddof)
         self.assertEqual(12, c.depth_delta)
-        self.assertEqual(10, c.geo_delta)
+        self.assertEqual(1, c.geo_delta)
         self.assertEqual(3, c.macro_pixel_size)
         self.assertEqual(86400, c.time_delta)
         self.assertEqual('INFO', c.log_level)
