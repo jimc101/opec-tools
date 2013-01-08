@@ -1,8 +1,23 @@
 from matplotlib import pyplot
 from matplotlib.projections.polar import PolarTransform
-import numpy
+import numpy as np
 import mpl_toolkits.axisartist.floating_axes as FA
 import mpl_toolkits.axisartist.grid_finder as GF
+
+
+def create_taylor_diagram(statistics, target_file=None):
+    diagram = TaylorDiagram(statistics)
+    figure = pyplot.figure()
+
+    diagram.setup_axes(figure)
+    diagram.plot_sample(statistics, 'yh')
+
+    if target_file is not None:
+        pyplot.savefig(target_file)
+
+
+def create_target_diagram():
+    pass
 
 class TaylorDiagram(object):
     """Taylor diagram: plot model standard deviation and correlation
@@ -14,7 +29,7 @@ class TaylorDiagram(object):
     """
 
     def __init__(self, statistics, target_file=None):
-        self.stddev = statistics['stddev']
+        self.ref_stddev = statistics['ref_stddev']
 
     def setup_axes(self, fig):
         """Set up Taylor diagram axes, i.e. single quadrant polar
@@ -24,19 +39,19 @@ class TaylorDiagram(object):
         tr = PolarTransform()
 
         # Intervals on the axis of the correlation coefficient
-        rlocs = numpy.concatenate((numpy.arange(10) / 10., [0.95, 0.99]))
+        rlocs = np.concatenate((np.arange(10) / 10., [0.95, 0.99]))
 
         # The same intervals as angles
-        tlocs = numpy.arccos(rlocs) # Conversion to polar angles
+        tlocs = np.arccos(rlocs) # Conversion to polar angles
 
 
         gl1 = GF.FixedLocator(tlocs)    # Positions
         tf1 = GF.DictFormatter(dict(zip(tlocs, map(str, rlocs)))) # maps coefficient angles to string representation of correlation coefficient
 
-        y_max = 1.5 * self.stddev # the stddev-axis shall go from 0 to 1.5-times of the stddev
+        y_max = 1.5 * self.ref_stddev # the stddev-axis shall go from 0 to 1.5-times of the stddev
         ghelper = FA.GridHelperCurveLinear(tr,
             extremes=(
-                0, numpy.pi / 2, # show in grid only the 1st quadrant: from 0 degrees to pi/2 degrees
+                0, np.pi / 2, # show in grid only the 1st quadrant: from 0 degrees to pi/2 degrees
                 0, y_max),
             grid_locator1=gl1,
             tick_formatter1=tf1,
@@ -74,20 +89,20 @@ class TaylorDiagram(object):
         # [0] = x-value
         # self.modelData.std() = y-value
         # 'bo' = blue circle
-        self.ax.plot([0], self.stddev, 'Db')
+        self.ax.plot([0], self.ref_stddev, 'b*')
 
         # Add stddev contour
-        t = numpy.linspace(0, numpy.pi / 2, num=50) # 50 values linearly distributed between 0 and pi/2
-        r = numpy.zeros_like(t) + self.stddev # 50 times the stddev
+        t = np.linspace(0, np.pi / 2, num=50) # 50 values linearly distributed between 0 and pi/2
+        r = np.zeros_like(t) + self.ref_stddev # 50 times the stddev
         self.ax.plot(t, r, 'k--', label='_', linewidth=0.5)
 
         # Add rmse contour
-        rs, ts = numpy.meshgrid(numpy.linspace(0, y_max, num=50),
-            numpy.linspace(0, numpy.pi/2, num=50))
+        rs, ts = np.meshgrid(np.linspace(0, y_max, num=50),
+            np.linspace(0, np.pi/2, num=50))
 
         # Unfortunately, I don't understand the next line AT ALL,
         # it's copied from http://matplotlib.1069221.n5.nabble.com/Taylor-diagram-2nd-take-td28070.html
-        rmse = numpy.sqrt(self.stddev ** 2 + rs ** 2 - 2 * self.stddev * rs * numpy.cos(ts))
+        rmse = np.sqrt(self.ref_stddev ** 2 + rs ** 2 - 2 * self.ref_stddev * rs * np.cos(ts))
 
         colors = ('#7F0000', '#6F0000', '#5F0000', '#4F0000', '#3F0000', '#2F0000', '#1F0000', '#0F0000')
         rmse_contour = self.ax.contour(ts, rs, rmse, 8, linewidths=0.5, colors=colors)
@@ -98,22 +113,13 @@ class TaylorDiagram(object):
 
     def get_angle(self, statistics):
         corr_coeff = statistics['corrcoeff']
-        return numpy.arccos(corr_coeff)
+        return np.arccos(corr_coeff)
 
     def plot_sample(self, statistics, *args, **kwargs):
-        """Add sample to the Taylor diagram. args and kwargs are
+        """Add model sample to the Taylor diagram. args and kwargs are
         directly propagated to the plot command."""
 
         theta = self.get_angle(statistics)
-        radius = statistics['ref_stddev']
+        radius = statistics['stddev']
         self.ax.plot(theta, radius, *args, **kwargs) # (theta,radius)
 
-
-def exportTaylorDiagram(targetFile, values, referenceValues):
-    diagram = TaylorDiagram(values)
-    figure = pyplot.figure()
-
-    diagram.setup_axes(figure)
-    diagram.plot_sample(referenceValues, 'yh')
-
-    pyplot.savefig(targetFile)

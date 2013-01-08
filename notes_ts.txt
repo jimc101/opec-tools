@@ -9,6 +9,7 @@ General TODO:
 - add target + taylor diagram output facility
 - don't read each pixel from disk in matchup engine
 - restructure project according to https://python-guide.readthedocs.org/en/latest/writing/structure/ and http://docs.python.org/3.3/tutorial/modules.html#packages
+- in both modes: allow user to compute stats for multiple variables
 
 Requirements:
 
@@ -18,6 +19,9 @@ allow easy access for user, including write access to data:
 - contains dedicated 'read' methods
     - 'read' reads from disk the given variable data, given by origin or shape (or fully)
     - puts the data into the dictionary, so it can be accessed without the need to be read again
+
+- we definitely want to be able to plot statistics from console
+- but we also need them to be exported in batch mode
 
 proposed output format:
 - CSV containing statistics
