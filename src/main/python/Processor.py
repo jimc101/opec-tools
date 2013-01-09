@@ -25,12 +25,12 @@ def percentiles(values, alphap, betap):
 def minmax(values):
     return [np.min(values), np.max(values)]
 
-def rmsd(reference_values, values):
+def rmse(reference_values, values):
     """
     according to MEECE D2.7 User guide and report outlining validation methodology
     """
-    squareErrors = (values - reference_values) ** 2
-    return np.sqrt(np.mean(squareErrors))
+    squared_errors = (values - reference_values) ** 2
+    return np.sqrt(np.mean(squared_errors))
 
 def bias(reference_values, values):
     """
@@ -38,7 +38,7 @@ def bias(reference_values, values):
     """
     return np.mean(reference_values) - np.mean(values)
 
-def unbiased_rmsd(reference_values, values):
+def unbiased_rmse(reference_values, values):
     squared_differences = ((values - np.mean(values)) - (reference_values - np.mean(reference_values))) ** 2
     squared_differences /= ma.count(values)
     return np.sqrt(np.sum(squared_differences))
@@ -98,8 +98,8 @@ def calculate_statistics(matchups=None, reference_values=None, model_values=None
     model_minmax = minmax(model_values)
     ref_minmax = minmax(reference_values)
     stats = dict()
-    stats['rmsd'] = rmsd(reference_values, model_values)
-    stats['unbiased_rmsd'] = unbiased_rmsd(reference_values, model_values)
+    stats['rmse'] = rmse(reference_values, model_values)
+    stats['unbiased_rmse'] = unbiased_rmse(reference_values, model_values)
     stats['pbias'] = percentage_model_bias(reference_values, model_values)
     stats['bias'] = bias(reference_values, model_values)
     stats['corrcoeff'] = correlation(reference_values, model_values)

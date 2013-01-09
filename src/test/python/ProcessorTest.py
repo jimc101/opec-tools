@@ -20,8 +20,8 @@ class ProcessorTest(TestCase):
     def test_compute_statistics_for_matchups(self):
         matchups = self.me.find_all_matchups('chl_ref', 'chl')
         stats = calculate_statistics(matchups, config=self.config)
-        self.assertAlmostEqual(0.0960456, stats['rmsd'], 5)
-        self.assertAlmostEqual(0.0868041, stats['unbiased_rmsd'], 5)
+        self.assertAlmostEqual(0.0960456, stats['rmse'], 5)
+        self.assertAlmostEqual(0.0868041, stats['unbiased_rmse'], 5)
         self.assertAlmostEqual(20.553573, stats['pbias'], 5)
         self.assertAlmostEqual(0.0411071, stats['bias'], 5)
         self.assertAlmostEqual(0.077279, stats['corrcoeff'], 5)
@@ -42,14 +42,14 @@ class ProcessorTest(TestCase):
         self.assertAlmostEqual(0.2224, stats['max'], 5)
         self.assertAlmostEqual(0.3, stats['ref_max'], 5)
 
-        self.assertAlmostEqual(stats['rmsd'] ** 2, stats['bias'] ** 2 + stats['unbiased_rmsd'] ** 2, 5)
+        self.assertAlmostEqual(stats['rmse'] ** 2, stats['bias'] ** 2 + stats['unbiased_rmse'] ** 2, 5)
 
     def test_compute_statistics(self):
         model_values = np.array(range(1, 5, 1)) # [1, 2, 3, 4]
         ref_values = np.array([1.1, 2.2, 2.9, 3.7])
         stats = calculate_statistics(reference_values=ref_values, model_values=model_values, config=self.config)
-        self.assertAlmostEqual(0.192028, stats['unbiased_rmsd'], 5)
-        self.assertAlmostEqual(0.193649, stats['rmsd'], 5)
+        self.assertAlmostEqual(0.192028, stats['unbiased_rmse'], 5)
+        self.assertAlmostEqual(0.193649, stats['rmse'], 5)
         self.assertAlmostEqual(-1.0101, stats['pbias'], 5)
         self.assertAlmostEqual(-0.025, stats['bias'], 5)
         self.assertAlmostEqual(0.99519, stats['corrcoeff'], 5)
@@ -70,14 +70,14 @@ class ProcessorTest(TestCase):
         self.assertAlmostEqual(4, stats['max'], 5)
         self.assertAlmostEqual(3.7, stats['ref_max'], 5)
 
-        self.assertAlmostEqual(stats['rmsd'] ** 2, stats['bias'] ** 2 + stats['unbiased_rmsd'] ** 2, 5)
+        self.assertAlmostEqual(stats['rmse'] ** 2, stats['bias'] ** 2 + stats['unbiased_rmse'] ** 2, 5)
 
     def test_compute_statistics_with_masked_values(self):
         model_values = ma.array(np.arange(1.0, 5.0, 1), mask=np.array([False, False, True, False])) # [1, 2, --, 4]
         ref_values = np.array([1.1, 2.2, 2.9, 3.7])
         stats = calculate_statistics(reference_values=ref_values, model_values=model_values, config=self.config)
-        self.assertAlmostEqual(0.216024, stats['unbiased_rmsd'], 5)
-        self.assertAlmostEqual(0.216024, stats['rmsd'], 5)
+        self.assertAlmostEqual(0.216024, stats['unbiased_rmse'], 5)
+        self.assertAlmostEqual(0.216024, stats['rmse'], 5)
         self.assertAlmostEqual(6.344131e-15, stats['pbias'], 5)
         self.assertAlmostEqual(0.0, stats['bias'], 5)
         self.assertAlmostEqual(0.99484975, stats['corrcoeff'], 5)
@@ -98,14 +98,14 @@ class ProcessorTest(TestCase):
         self.assertAlmostEqual(4, stats['max'], 5)
         self.assertAlmostEqual(3.7, stats['ref_max'], 5)
 
-        self.assertAlmostEqual(stats['rmsd'] ** 2, stats['bias'] ** 2 + stats['unbiased_rmsd'] ** 2, 5)
+        self.assertAlmostEqual(stats['rmse'] ** 2, stats['bias'] ** 2 + stats['unbiased_rmse'] ** 2, 5)
 
     def test_compute_statistics_with_extreme_model_values(self):
         model_values = np.array(range(1, 5, 1)) # [1, 2, 3, 4]
         ref_values = np.array([1, 1, 1, 1])
         stats = calculate_statistics(reference_values=ref_values, model_values=model_values, config=self.config)
-        self.assertAlmostEqual(1.118034, stats['unbiased_rmsd'], 5)
-        self.assertAlmostEqual(1.870829, stats['rmsd'], 5)
+        self.assertAlmostEqual(1.118034, stats['unbiased_rmse'], 5)
+        self.assertAlmostEqual(1.870829, stats['rmse'], 5)
         self.assertAlmostEqual(-150, stats['pbias'], 5)
         self.assertAlmostEqual(-1.5, stats['bias'], 5)
         self.assertTrue(np.isnan(stats['corrcoeff']))
@@ -126,14 +126,14 @@ class ProcessorTest(TestCase):
         self.assertAlmostEqual(4, stats['max'], 5)
         self.assertAlmostEqual(1, stats['ref_max'], 5)
 
-        self.assertAlmostEqual(stats['rmsd'] ** 2, stats['bias'] ** 2 + stats['unbiased_rmsd'] ** 2, 5)
+        self.assertAlmostEqual(stats['rmse'] ** 2, stats['bias'] ** 2 + stats['unbiased_rmse'] ** 2, 5)
 
     def test_compute_statistics_with_extreme_reference_values(self):
         model_values = np.array([1, 1, 1, 1])
         ref_values = np.array([1.1, 2.2, 2.9, 3.7])
         stats = calculate_statistics(reference_values=ref_values, model_values=model_values, config=self.config)
-        self.assertAlmostEqual(0.954921, stats['unbiased_rmsd'], 5)
-        self.assertAlmostEqual(1.757128, stats['rmsd'], 5)
+        self.assertAlmostEqual(0.954921, stats['unbiased_rmse'], 5)
+        self.assertAlmostEqual(1.757128, stats['rmse'], 5)
         self.assertAlmostEqual(59.595959, stats['pbias'], 5)
         self.assertAlmostEqual(1.475, stats['bias'], 5)
         self.assertTrue(np.isnan(stats['corrcoeff']))
@@ -154,7 +154,7 @@ class ProcessorTest(TestCase):
         self.assertAlmostEqual(1, stats['max'], 5)
         self.assertAlmostEqual(3.7, stats['ref_max'], 5)
 
-        self.assertAlmostEqual(stats['rmsd'] ** 2, stats['bias'] ** 2 + stats['unbiased_rmsd'] ** 2, 5)
+        self.assertAlmostEqual(stats['rmse'] ** 2, stats['bias'] ** 2 + stats['unbiased_rmse'] ** 2, 5)
 
     def test_cleanup_1(self):
         model_values = ma.array(np.arange(1.0, 5.0, 1), mask=np.array([False, False, True, False])) # [1, --, 3, 4]

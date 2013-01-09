@@ -116,8 +116,8 @@ class Output(object):
             str('%g' % round(self.statistics['ref_median'], 4)),
             str('%g' % round(self.statistics['ref_p90'], 4)),
             str('%g' % round(self.statistics['ref_p95'], 4)),
-            str('%g' % round(self.statistics['rmsd'], 4)),
-            str('%g' % round(self.statistics['unbiased_rmsd'], 4)),
+            str('%g' % round(self.statistics['rmse'], 4)),
+            str('%g' % round(self.statistics['unbiased_rmse'], 4)),
             str('%g' % round(self.statistics['bias'], 4)),
             str('%g' % round(self.statistics['pbias'], 4)),
             str('%g' % round(self.statistics['corrcoeff'], 4)),
@@ -136,8 +136,8 @@ class Output(object):
             header_items.append(bn)
         for bn in basic_names:
             header_items.append('ref_' + bn)
-        header_items.append('rmsd')
-        header_items.append('unbiased_rmsd')
+        header_items.append('rmse')
+        header_items.append('unbiased_rmse')
         header_items.append('bias')
         header_items.append('pbias')
         header_items.append('corrcoeff')
