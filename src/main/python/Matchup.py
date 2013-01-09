@@ -71,6 +71,12 @@ class Matchup(object):
     def get_model_value(self):
         return self.__model_value
 
+    def get_ref_variable_name(self):
+        return self.__ref_variable_name
+
+    def get_model_variable_name(self):
+        return self.__model_variable_name
+
     ref_value = property(get_ref_value)
     ref_lat = property(get_ref_lat)
     ref_lon = property(get_ref_lon)
@@ -81,3 +87,5 @@ class Matchup(object):
     time_delta = property(get_time_delta)
     depth_delta = property(get_depth_delta)
     model_value = property(get_model_value)
+    ref_variable_name = property(get_ref_variable_name)
+    model_variable_name = property(get_model_variable_name)

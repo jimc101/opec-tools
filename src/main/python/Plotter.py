@@ -4,16 +4,14 @@ import numpy as np
 import mpl_toolkits.axisartist.floating_axes as FA
 import mpl_toolkits.axisartist.grid_finder as GF
 
-def create_taylor_diagram(ref_stddev, statistics, target_file=None):
-    diagram = TaylorDiagram(ref_stddev)
+def create_taylor_diagram(ref_stddev, statistics, max_stddev=None):
     figure = pyplot.figure()
+    diagram = TaylorDiagram(figure, ref_stddev, max_stddev)
 
-    diagram.setup_axes(figure)
+    diagram.setup_axes()
     for stats in statistics:
-        diagram.plot_sample(stats['corrcoeff'], stats['stddev'], 'yh')
-
-    if target_file is not None:
-        pyplot.savefig(target_file)
+        model_name = stats['model_name'] if 'model_name' in stats else None
+        diagram.plot_sample(stats['corrcoeff'], stats['stddev'], model_name)
 
     return diagram
 
@@ -29,11 +27,18 @@ class TaylorDiagram(object):
     http://matplotlib.1069221.n5.nabble.com/Taylor-diagram-2nd-take-td28070.html
     """
 
-    def __init__(self, ref_stddev, show_negative_corrcoeff=True):
+    def __init__(self, figure, ref_stddev, max_stddev=None, show_negative_corrcoeff=False):
+        self.fig = figure
         self.ref_stddev = ref_stddev
         self.show_negative_corrcoeff = show_negative_corrcoeff
+        self.max_stddev = ref_stddev * 1.5 if max_stddev is None else max_stddev
 
-    def setup_axes(self, fig):
+    def get_color(self):
+        if not hasattr(self, 'colors') or not self.colors:
+            self.colors = ['r', 'g', 'b', 'm', 'y', 'c']
+        return self.colors.pop(0)
+
+    def setup_axes(self):
         """Set up Taylor diagram axes, i.e. single quadrant polar
         plot, using mpl_toolkits.axisartist.floating_axes.
         """
@@ -49,20 +54,21 @@ class TaylorDiagram(object):
         gl1 = GF.FixedLocator(tlocs)    # Positions
         tf1 = GF.DictFormatter(dict(zip(tlocs, map(str, rlocs)))) # maps coefficient angles to string representation of correlation coefficient
 
-        y_max = 1.5 * self.ref_stddev # the stddev-axis shall go from 0 to 1.5-times of the stddev
         x_max = np.pi if self.show_negative_corrcoeff else np.pi / 2
+        x_axis_range = (0, x_max)
+        y_axis_range = (0, self.max_stddev)
         ghelper = FA.GridHelperCurveLinear(tr,
             extremes=(
-                0, x_max, # show in grid only the 1st quadrant: from 0 degrees to pi/2 degrees
-                0, y_max),
+                x_axis_range[0], x_axis_range[1],
+                y_axis_range[0], y_axis_range[1]),
             grid_locator1=gl1,
             tick_formatter1=tf1,
         )
 
-        ax = FA.FloatingSubplot(fig, 111, grid_helper=ghelper) # 111 -> plot contains 1 row, 1 col and shall be located at position 1 (1-based!) in the resulting grid
-        fig.add_subplot(ax)
+        ax = FA.FloatingSubplot(self.fig, 111, grid_helper=ghelper) # 111 -> plot contains 1 row, 1 col and shall be located at position 1 (1-based!) in the resulting grid
+        self.fig.add_subplot(ax)
         if self.show_negative_corrcoeff:
-            fig.text(0.41, 0.178, 'Standard Deviation') # magic numbers: place label central below plot
+            self.fig.text(0.41, 0.178, 'Standard Deviation') # magic numbers: place label central below plot
 
         # Setup axes
         ax.axis["top"].set_axis_direction("bottom")  # "Angle axis"
@@ -96,11 +102,12 @@ class TaylorDiagram(object):
         self.ax = ax.get_aux_axes(tr)
 
         # Add reference point
-
         # [0] = x-value
         # self.modelData.std() = y-value
-        # 'bo' = blue circle
-        self.ax.plot([0], self.ref_stddev, 'b*')
+        # 'ko' = black circle
+        r = self.ax.plot([0], self.ref_stddev, 'ko')
+        self.sample_points = [r[0]]
+        self.sample_names = ['Reference']
 
         # Add stddev contour
         t = np.linspace(0, x_max, num=50) # 50 values linearly distributed between 0 and pi/2
@@ -108,7 +115,7 @@ class TaylorDiagram(object):
         self.ax.plot(t, r, 'k--', label='_', linewidth=0.5)
 
         # Add rmse contour
-        rs, ts = np.meshgrid(np.linspace(0, y_max, num=50),
+        rs, ts = np.meshgrid(np.linspace(0, y_axis_range[1], num=50),
             np.linspace(0, x_max, num=50))
 
         # Unfortunately, I don't understand the next line AT ALL,
@@ -126,11 +133,22 @@ class TaylorDiagram(object):
     def get_angle(self, corrcoeff):
         return np.arccos(corrcoeff)
 
-    def plot_sample(self, corrcoeff, model_stddev, *args, **kwargs):
+    def plot_sample(self, corrcoeff, model_stddev, model_name=None, *args, **kwargs):
         """Add model sample to the Taylor diagram. args and kwargs are
         directly propagated to the plot command."""
 
+        if not args:
+            args = ['%sh' % self.get_color()]
+
         theta = self.get_angle(corrcoeff)
         radius = model_stddev
-        self.ax.plot(theta, radius, *args, **kwargs)
+        v = self.ax.plot(theta, radius, *args, **kwargs)
+        self.sample_points.append(v[0])
+        self.sample_names.append(model_name if model_name is not None else 'Model value')
+        self.update_legend()
 
+    def update_legend(self):
+        self.fig.legend(self.sample_points, self.sample_names, numpoints=1, prop=dict(size='small'), loc='upper right')
+
+    def write(self, target_file):
+        pyplot.savefig(target_file)

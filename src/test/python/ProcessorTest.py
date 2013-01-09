@@ -20,6 +20,7 @@ class ProcessorTest(TestCase):
     def test_compute_statistics_for_matchups(self):
         matchups = self.me.find_all_matchups('chl_ref', 'chl')
         stats = calculate_statistics(matchups, config=self.config)
+        self.assertEqual('chl', stats['model_name'])
         self.assertAlmostEqual(0.0960456, stats['rmse'], 5)
         self.assertAlmostEqual(0.0868041, stats['unbiased_rmse'], 5)
         self.assertAlmostEqual(20.553573, stats['pbias'], 5)
@@ -48,6 +49,7 @@ class ProcessorTest(TestCase):
         model_values = np.array(range(1, 5, 1)) # [1, 2, 3, 4]
         ref_values = np.array([1.1, 2.2, 2.9, 3.7])
         stats = calculate_statistics(reference_values=ref_values, model_values=model_values, config=self.config)
+        self.assertIsNone(stats['model_name'])
         self.assertAlmostEqual(0.192028, stats['unbiased_rmse'], 5)
         self.assertAlmostEqual(0.193649, stats['rmse'], 5)
         self.assertAlmostEqual(-1.0101, stats['pbias'], 5)
