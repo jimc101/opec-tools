@@ -1,4 +1,5 @@
 import configparser
+import os
 
 # needed because configparser.ConfigParser requires at least one section header in a properties file
 # See http://stackoverflow.com/a/8555776 for source
@@ -11,7 +12,8 @@ def add_section_header(properties_file, header_name):
 class Configuration(object):
 
     def __init__(self, alpha=None, beta=None, ddof=None, macro_pixel_size=None, geo_delta=None, time_delta=None,
-                 depth_delta=None, log_level=None, zip=None, show_negative_corrcoeff=None, show_legend=None, properties_file_name=None):
+                 depth_delta=None, log_level=None, zip=None, show_negative_corrcoeff=None, show_legend=None,
+                 target_dir=None, target_prefix=None, include_header=None, separator=None, properties_file_name=None):
         """
         Priority:
         1) what is passed as parameter
@@ -20,6 +22,9 @@ class Configuration(object):
         """
         self.__read_properties(properties_file_name)
         self.__read_default_properties()
+
+        if target_dir is None:
+            target_dir = os.getcwd() # needed because if default shall be CWD, it cannot be put in the static config file
 
         self.__dict = {}
         self.__set(alpha, 'alpha')
@@ -33,6 +38,10 @@ class Configuration(object):
         self.__set(zip, 'zip')
         self.__set(show_negative_corrcoeff, 'show_negative_corrcoeff')
         self.__set(show_legend, 'show_legend')
+        self.__set(target_dir, 'target_dir')
+        self.__set(target_prefix, 'target_prefix')
+        self.__set(separator, 'separator')
+        self.__set(include_header, 'include_header')
 
     def __set(self, value, name):
         if value is not None:
@@ -90,6 +99,24 @@ class Configuration(object):
     def __show_legend(self):
         return str(self.__dict['show_legend']).lower() == 'true'
 
+    def __target_dir(self):
+        return self.__dict['target_dir']
+
+    def __target_prefix(self):
+        return self.__dict['target_prefix']
+
+    def __include_header(self):
+        return str(self.__dict['include_header']).lower() == 'true'
+
+    def __separator(self):
+        separator = self.__dict['separator']
+        # I just didn't get escaped strings unescaped, so here's the low-tech version
+        if separator in ('\\t', 'tab', '\t'):
+            return '\t'
+        if separator in ('\' \''):
+            return ' '
+        return separator
+
     alpha = property(__alpha)
     beta = property(__beta)
     ddof = property(__ddof)
@@ -101,6 +128,10 @@ class Configuration(object):
     zip = property(__zip)
     show_negative_corrcoeff = property(__show_negative_corrcoeff)
     show_legend = property(__show_legend)
+    target_dir = property(__target_dir)
+    target_prefix = property(__target_prefix)
+    include_header = property(__include_header)
+    separator = property(__separator)
 
 def get_default_config():
     return Configuration()

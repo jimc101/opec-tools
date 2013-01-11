@@ -1,5 +1,6 @@
 from datetime import datetime
 import logging
+import os
 from src.main.python import Processor
 from src.main.python.Configuration import get_default_config
 from src.main.python.MatchupEngine import MatchupEngine
@@ -34,9 +35,9 @@ class Output(object):
             logger.setLevel(logging.INFO)
             logger.warning('both \'statistics\' and \'data\' given: Ignoring \'data\'.')
 
-        self.assign_statistics(kwargs)
+        self.__assign_statistics(kwargs)
 
-    def assign_statistics(self, kwargs):
+    def __assign_statistics(self, kwargs):
         if 'statistics' in kwargs.keys():
             self.statistics = kwargs['statistics']
         else:
@@ -48,7 +49,7 @@ class Output(object):
             self.matchup_count = len(matchups)
             self.statistics = Processor.calculate_statistics(matchups=matchups)
 
-    def csv(self, include_header=True, separator='\t', target_file=None):
+    def csv(self, include_header, separator, target_file=None):
         """Outputs the statistics to CSV.
 
         Keyword arguments:
@@ -59,16 +60,16 @@ class Output(object):
 
         lines = []
         if include_header:
-            self.write_header(lines)
-        lines.append(separator.join(self.header_line_items()))
-        lines.append(separator.join(self.data_items()))
+            self.__write_header(lines)
+        lines.append(separator.join(self.__header_line_items()))
+        lines.append(separator.join(self.__data_items()))
 
         if target_file is not None:
-            self.write_to_file(target_file, lines)
+            self.__write_to_file(target_file, lines)
 
         return '\n'.join(lines)
 
-    def write_header(self, lines):
+    def __write_header(self, lines):
         source = '' if self.source_file is None else ' of file \'{}\''.format(self.source_file)
         lines.append('##############################################################')
         lines.append('#')
@@ -91,13 +92,13 @@ class Output(object):
         lines.append('#    beta (used for percentile computation) = 1'.format(self.config.beta))
         lines.append('#')
 
-    def rename(self, string):
+    def __rename(self, string):
         return str(string) if string is not None else 'Unknown'
 
-    def data_items(self):
-        matchup_count = self.rename(self.matchup_count)
-        variable_name = self.rename(self.variable_name)
-        ref_variable_name = self.rename(self.ref_variable_name)
+    def __data_items(self):
+        matchup_count = self.__rename(self.matchup_count)
+        variable_name = self.__rename(self.variable_name)
+        ref_variable_name = self.__rename(self.ref_variable_name)
         data_items = [
             variable_name,
             ref_variable_name,
@@ -126,7 +127,7 @@ class Output(object):
         ]
         return data_items
 
-    def header_line_items(self):
+    def __header_line_items(self):
         header_items = []
         basic_names = ['min', 'max', 'mean', 'stddev', 'median', 'p90', 'p95']
         header_items.append('variable_name')
@@ -145,7 +146,10 @@ class Output(object):
         header_items.append('model_efficiency')
         return header_items
 
-    def write_to_file(self, target_file, lines):
+    def __write_to_file(self, target_file, lines):
+        directory = os.path.dirname(target_file)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
         file = open(target_file, 'w')
         for line in lines:
             file.write("%s\n" % line)

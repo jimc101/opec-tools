@@ -60,7 +60,7 @@ class OutputTest(TestCase):
         expected_result.append("variable_name\tref_variable_name\tmatchup_count\tmin\tmax\tmean\tstddev\tmedian\tp90\tp95\tref_min\tref_max\tref_mean\tref_stddev\tref_median\tref_p90\tref_p95\trmse\tunbiased_rmse\tbias\tpbias\tcorrcoeff\treliability_index\tmodel_efficiency")
         expected_result.append("chl\tchl_ref\t4\t9\t11.2\t10.425\t0.8613\t10.75\t11.14\t11.17\t10\t10\t10\t0\t10\t10\t10\t0.9605\t0.8613\t-0.425\t-4.25\tnan\t1.0417\tnan")
 
-        self.assertEqual("\n".join(expected_result), output.csv())
+        self.assertEqual("\n".join(expected_result), output.csv(True, '\t'))
 
     def test_output_statistics_from_dictionary_minimum(self):
 
@@ -89,7 +89,7 @@ class OutputTest(TestCase):
         expected_result.append("variable_name\tref_variable_name\tmatchup_count\tmin\tmax\tmean\tstddev\tmedian\tp90\tp95\tref_min\tref_max\tref_mean\tref_stddev\tref_median\tref_p90\tref_p95\trmse\tunbiased_rmse\tbias\tpbias\tcorrcoeff\treliability_index\tmodel_efficiency")
         expected_result.append("Unknown\tUnknown\tUnknown\t9\t11.2\t10.425\t0.8613\t10.75\t11.14\t11.17\t10\t10\t10\t0\t10\t10\t10\t0.9605\t0.8613\t-0.425\t-4.25\tnan\t1.0417\tnan")
 
-        self.assertEqual("\n".join(expected_result) , output.csv())
+        self.assertEqual("\n".join(expected_result) , output.csv(True, '\t'))
         
     def test_output_statistics_from_dictionary_no_header(self):
 
@@ -128,12 +128,12 @@ class OutputTest(TestCase):
         expected_result.append("variable_name\tref_variable_name\tmatchup_count\tmin\tmax\tmean\tstddev\tmedian\tp90\tp95\tref_min\tref_max\tref_mean\tref_stddev\tref_median\tref_p90\tref_p95\trmse\tunbiased_rmse\tbias\tpbias\tcorrcoeff\treliability_index\tmodel_efficiency")
         expected_result.append("chl\tchl_ref\t48\t0.1111\t")
 
-        self.assertTrue(output.csv().startswith("\n".join(expected_result)))
+        self.assertTrue(output.csv(True, '\t').startswith("\n".join(expected_result)))
 
     def test_write_csv_file(self):
         output = Output(statistics=self.stats)
         self.assertFalse(path.exists(self.temp_filename))
-        output.csv(target_file=self.temp_filename)
+        output.csv(True, '\t', target_file=self.temp_filename)
         self.assertTrue(path.exists(self.temp_filename))
         os.remove(self.temp_filename)
         self.assertFalse(path.exists(self.temp_filename))

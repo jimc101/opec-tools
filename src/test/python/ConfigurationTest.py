@@ -1,3 +1,4 @@
+import os
 import unittest
 from src.main.python.Configuration import Configuration
 
@@ -16,6 +17,8 @@ class ConfigurationTest(unittest.TestCase):
         self.assertEqual(False, c.zip)
         self.assertEqual(False, c.show_negative_corrcoeff)
         self.assertEqual(False, c.show_legend)
+        self.assertEqual(os.getcwd(), c.target_dir)
+        self.assertEqual('benchmark_', c.target_prefix)
 
     def test_initialisation_by_file(self):
         c = Configuration(alpha=5, ddof=2, properties_file_name='../resources/test.properties')
@@ -30,3 +33,5 @@ class ConfigurationTest(unittest.TestCase):
         self.assertEqual(False, c.zip)             # does not appear in test.properties, so it is taken from default file
         self.assertEqual(True, c.show_legend)
         self.assertEqual(False, c.show_negative_corrcoeff)             # does not appear in test.properties, so it is taken from default file
+        self.assertEqual(os.getcwd(), c.target_dir)
+        self.assertEqual('benchmark_', c.target_prefix)
