@@ -1,3 +1,4 @@
+import logging
 import unittest
 import numpy as np
 from numpy.testing import assert_array_equal
@@ -6,7 +7,11 @@ from src.main.python.Data import Data
 class DataTest(unittest.TestCase):
 
     def setUp(self):
+        logging.basicConfig(level=logging.DEBUG)
         self.data = Data('../resources/test.nc')
+
+    def tearDown(self):
+        logging.basicConfig(level=logging.WARNING)
 
     def test_model_vars(self):
         model_vars = self.data.model_vars()

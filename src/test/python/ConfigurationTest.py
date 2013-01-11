@@ -4,7 +4,7 @@ from src.main.python.Configuration import Configuration
 class ConfigurationTest(unittest.TestCase):
 
     def test_initialisation(self):
-        c = Configuration(alpha=5, ddof=2)
+        c = Configuration(alpha=5, ddof=2, show_legend=False)
         self.assertEqual(5, c.alpha)
         self.assertEqual(1, c.beta)
         self.assertEqual(2, c.ddof)
@@ -14,6 +14,8 @@ class ConfigurationTest(unittest.TestCase):
         self.assertEqual(86400, c.time_delta)
         self.assertEqual('INFO', c.log_level)
         self.assertEqual(False, c.zip)
+        self.assertEqual(False, c.show_negative_corrcoeff)
+        self.assertEqual(False, c.show_legend)
 
     def test_initialisation_by_file(self):
         c = Configuration(alpha=5, ddof=2, properties_file_name='../resources/test.properties')
@@ -26,3 +28,5 @@ class ConfigurationTest(unittest.TestCase):
         self.assertEqual(200, c.time_delta)
         self.assertEqual('INFO', c.log_level)    # does not appear in test.properties, so it is taken from default file
         self.assertEqual(False, c.zip)             # does not appear in test.properties, so it is taken from default file
+        self.assertEqual(True, c.show_legend)
+        self.assertEqual(False, c.show_negative_corrcoeff)             # does not appear in test.properties, so it is taken from default file

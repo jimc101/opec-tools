@@ -1,3 +1,4 @@
+import logging
 from math import fabs, floor, sqrt
 from src.main.python.Configuration import get_default_config
 from src.main.python.Matchup import Matchup
@@ -22,6 +23,7 @@ class MatchupEngine(object):
     def find_reference_records(self, variable_name):
         reference_records = []
         if not self.data.has_variable(variable_name):
+            logging.debug('No reference record for variable \'%s\' found.' % variable_name)
             return reference_records
         ref_coordinate_variables = self.data.reference_coordinate_variables()
         ref_lat_variable_name, ref_lon_variable_name, ref_time_variable_name, ref_depth_variable_name = find_ref_coordinate_names(ref_coordinate_variables)
@@ -39,6 +41,7 @@ class MatchupEngine(object):
                 ref_depth = None
             rr = ReferenceRecord(variable_name, ref_value, ref_lat, ref_lon, ref_time, ref_depth)
             reference_records.append(rr)
+        logging.debug('Found \'%s\' reference records for variable \'%s\'.' % (len(reference_records), variable_name))
         return reference_records
 
     def find_matchups(self, reference_record, model_variable_name=None):
@@ -69,7 +72,7 @@ class MatchupEngine(object):
                     lat_delta = fabs(matchup_position[3] - reference_record.lat)
                     time_delta = fabs(matchup_time[1] - reference_record.time)
                     matchups.append(Matchup(reference_record.variable_name, model_variable_name, reference_record.value, model_value, reference_record.lat, reference_record.lon, reference_record.time, lat_delta, lon_delta, time_delta, reference_record.depth, depth_delta))
-
+        logging.debug('Found \'%s\' matchups between \'%s\' and \'%s\'.' % (len(matchups), model_variable_name, reference_record.variable_name))
         return matchups
 
     def find_position(self, dimension, target_value):
@@ -139,6 +142,7 @@ class MatchupEngine(object):
 
     def read_reference_records(self, ref_depth_variable_name, ref_lat_variable_name, ref_lon_variable_name,
                                ref_time_variable_name, variable_name):
+        logging.debug('Reading reference records')
         self.data.read(variable_name)
         self.data.read(ref_lat_variable_name)
         self.data.read(ref_lon_variable_name)

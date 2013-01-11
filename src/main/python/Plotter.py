@@ -3,10 +3,14 @@ from matplotlib.projections.polar import PolarTransform
 import numpy as np
 import mpl_toolkits.axisartist.floating_axes as FA
 import mpl_toolkits.axisartist.grid_finder as GF
+from src.main.python.Configuration import get_default_config
 
-def create_taylor_diagram(ref_stddev, statistics, max_stddev=None):
+def create_taylor_diagram(ref_stddev, statistics, max_stddev=None, config=None):
+    if config is None:
+        config = get_default_config()
+
     figure = pyplot.figure()
-    diagram = TaylorDiagram(figure, ref_stddev, max_stddev)
+    diagram = TaylorDiagram(figure, ref_stddev, config.show_negative_corrcoeff, config.show_legend, max_stddev)
 
     diagram.setup_axes()
     for stats in statistics:
@@ -27,10 +31,11 @@ class TaylorDiagram(object):
     http://matplotlib.1069221.n5.nabble.com/Taylor-diagram-2nd-take-td28070.html
     """
 
-    def __init__(self, figure, ref_stddev, max_stddev=None, show_negative_corrcoeff=False):
+    def __init__(self, figure, ref_stddev, show_negative_corrcoeff, show_legend, max_stddev=None):
         self.fig = figure
         self.ref_stddev = ref_stddev
         self.show_negative_corrcoeff = show_negative_corrcoeff
+        self.show_legend = show_legend
         self.max_stddev = ref_stddev * 1.5 if max_stddev is None else max_stddev
 
     def get_color(self):
@@ -148,7 +153,8 @@ class TaylorDiagram(object):
         self.update_legend()
 
     def update_legend(self):
-        self.fig.legend(self.sample_points, self.sample_names, numpoints=1, prop=dict(size='small'), loc='upper right')
+        if self.show_legend:
+            self.fig.legend(self.sample_points, self.sample_names, numpoints=1, prop=dict(size='small'), loc='upper right')
 
     def write(self, target_file):
         pyplot.savefig(target_file)

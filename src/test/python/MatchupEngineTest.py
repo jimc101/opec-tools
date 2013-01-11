@@ -1,3 +1,4 @@
+import logging
 from unittest import TestCase
 import math
 import numpy.testing as np
@@ -9,8 +10,11 @@ class MatchupEngineTest(TestCase):
 
     def setUp(self):
         self.data = Data('../resources/test.nc')
+        logging.basicConfig(level=logging.DEBUG)
+
 
     def tearDown(self):
+        logging.basicConfig(level=logging.WARNING)
         self.data.close()
 
     def test_find_matchups_default_config(self):
