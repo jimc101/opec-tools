@@ -23,7 +23,7 @@ class MatchupEngine(object):
     def find_reference_records(self, variable_name):
         reference_records = []
         if not self.data.has_variable(variable_name):
-            logging.debug('No reference record for variable \'%s\' found.' % variable_name)
+            logging.debug('No reference records for variable \'%s\' found.' % variable_name)
             return reference_records
         ref_coordinate_variables = self.data.reference_coordinate_variables()
         ref_lat_variable_name, ref_lon_variable_name, ref_time_variable_name, ref_depth_variable_name = find_ref_coordinate_names(ref_coordinate_variables)

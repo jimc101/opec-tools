@@ -6,7 +6,7 @@ class Data(dict):
     def __init__(self, inputFile):
         super().__init__()
         self.__netcdf = NetCDFFacade(inputFile)
-        self.__current_storage_metadata = {}
+        self.__current_storage = {}
 
     def model_vars(self):
         return self.__netcdf.get_model_variables()
@@ -41,22 +41,22 @@ class Data(dict):
             if self.__can_return_all(origin, shape, variable_name):
                 return self[variable_name]
             if origin is not None and shape is not None:
-                if self.__current_storage_metadata[variable_name] != 'fully_read':
-                    current_slice = self.__current_storage_metadata[variable_name]
+                if self.__current_storage[variable_name] != 'fully_read':
+                    current_slice = self.__current_storage[variable_name]
+                    # if origin and shape exactly match origin and shape of what has been read before, return that
                     if np.array_equal(origin, current_slice[0]) and np.array_equal(shape, current_slice[1]):
-                        # if origin and shape exactly match origin and shape of what has been read before, return that
                         return self[variable_name]
         must_fully_read = origin is None and shape is None
         if must_fully_read:
             self[variable_name] = self.__netcdf.get_variable(variable_name)[:]
-            self.__current_storage_metadata[variable_name] = 'fully_read'
+            self.__current_storage[variable_name] = 'fully_read'
         else:
             self[variable_name] = self.__netcdf.get_data(variable_name, origin, shape)
-            self.__current_storage_metadata[variable_name] = [np.array(origin), np.array(shape)]
+            self.__current_storage[variable_name] = [np.array(origin), np.array(shape)]
         return self[variable_name]
 
     def __is_cached(self, variable_name):
-        return variable_name in self.__current_storage_metadata.keys()
+        return variable_name in self.__current_storage.keys()
 
     def __can_return_all(self, origin, shape, variable_name):
-        return origin is None and shape is None and self.__current_storage_metadata[variable_name] == 'fully_read'
+        return origin is None and shape is None and self.__current_storage[variable_name] == 'fully_read'
