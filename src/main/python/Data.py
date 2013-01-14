@@ -1,4 +1,3 @@
-import logging
 from src.main.python.NetCDFFacade import NetCDFFacade
 import numpy as np
 
