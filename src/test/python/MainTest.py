@@ -4,7 +4,7 @@ from src.main.python.Main import parse_arguments
 class MainTest(unittest.TestCase):
 
     def test_parsing(self):
-        args = parse_arguments(["-a /path/to/configuration.ini", "-o /path/to/target/directory", "-p target_prefix", "-v chl_ref:chl sst_ref:sst", "MyModelOutput.nc"])
+        args = parse_arguments(["-a /path/to/configuration.ini", "-o /path/to/target/directory", "-p target_prefix", "-v chl_ref:chl,sst_ref:sst", "MyModelOutput.nc"])
         self.assertEqual("/path/to/configuration.ini", args.a.lstrip().rstrip())
         self.assertEqual("/path/to/target/directory", args.o.lstrip().rstrip())
         self.assertEqual("target_prefix", args.p.lstrip().rstrip())

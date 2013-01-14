@@ -1,0 +1,153 @@
+netcdf test {
+dimensions:
+        time = 2 ;
+        depth = 2 ;
+        lat = 2 ;
+        lon = 4 ;
+        record_num = 3 ;
+variables:
+        int time(time) ;
+                time:units = "seconds since 1960-01-01 00:00:00" ;
+                time:long_name = "time" ;
+                time:standard_name = "time" ;
+                time:axis = "T" ;
+                time:calendar = "standard" ;
+                time:_CoordinateAxisType = "Time" ;
+                time:_FillValue = -999 ;
+        float depth(depth) ;
+                depth:units = "m" ;
+                depth:long_name = "depth" ;
+                depth:standard_name = "depth" ;
+                depth:positive = "down" ;
+                depth:axis = "Z" ;
+                depth:valid_min = 0.f ;
+                depth:_CoordinateAxisType = "Height" ;
+                depth:_CoordinateZisPositive = "down" ;
+        float lat(lat) ;
+                lat:units = "degrees_north" ;
+                lat:long_name = "latitude" ;
+                lat:standard_name = "latitude" ;
+                lat:axis = "Y" ;
+                lat:valid_min = -90.f ;
+                lat:valid_max = 90.f ;
+                lat:_CoordinateAxisType = "Lat" ;
+        float lon(lon) ;
+                lon:units = "degrees_east" ;
+                lon:long_name = "longitude" ;
+                lon:standard_name = "longitude" ;
+                lon:axis = "X" ;
+                lon:valid_min = -180.f ;
+                lon:valid_max = 180.f ;
+                lon:_CoordinateAxisType = "Lon" ;
+        float chl(time, depth, lat, lon) ;
+                chl:_CoordinateAxes = "time depth lat lon" ;
+                chl:_FillValue = -1.f ;
+                chl:missing_value = -1.f ;
+                chl:units = "milligram m-3" ;
+                chl:long_name = "Concentration of Chlorophyll in sea water" ;
+                chl:standard_name = "concentration_of_chlorophyll_in_sea_water" ;
+                chl:coordinates = "time depth latitude longitude" ;
+                chl:source = "my_chlorophyll_model" ;
+        float sst(time, depth, lat, lon) ;
+                sst:_CoordinateAxes = "time depth lat lon" ;
+                sst:_FillValue = -1.f ;
+                sst:units = "kelvin" ;
+                sst:long_name = "Sea surface temperature" ;
+                sst:standard_name = "sea_surface_temperature" ;
+                sst:coordinates = "time depth latitude longitude" ;
+                sst:source = "my_sst_model" ;
+        int time_ref(record_num) ;
+                time_ref:units = "seconds since 1960-01-01 00:00:00" ;
+                time_ref:long_name = "reference_time" ;
+                time_ref:axis = "T" ;
+                time_ref:calendar = "standard" ;
+                time_ref:_CoordinateAxisType = "Time" ;
+                time_ref:_FillValue = -999 ;
+        float depth_ref(record_num) ;
+                depth_ref:units = "m" ;
+                depth_ref:long_name = "depth of the reference observations" ;
+                depth_ref:positive = "down" ;
+                depth_ref:axis = "Z" ;
+                depth_ref:valid_min = 0.f ;
+                depth_ref:_CoordinateAxisType = "Height" ;
+                depth_ref:_CoordinateZisPositive = "down" ;
+        float lat_ref(record_num) ;
+                lat_ref:units = "degrees_north" ;
+                lat_ref:long_name = "latitude of the reference observations" ;
+                lat_ref:axis = "Y" ;
+                lat_ref:valid_min = -90.f ;
+                lat_ref:valid_max = 90.f ;
+                lat_ref:_CoordinateAxisType = "latitude" ;
+        float lon_ref(record_num) ;
+                lon_ref:units = "degrees_east" ;
+                lon_ref:long_name = "longitude of the reference observations" ;
+                lon_ref:axis = "X" ;
+                lon_ref:valid_min = -180.f ;
+                lon_ref:valid_max = 180.f ;
+                lon_ref:_CoordinateAxisType = "longitude" ;
+        float chl_ref(record_num) ;
+                chl_ref:_FillValue = -1.f ;
+                chl_ref:missing_value = -1.f ;
+                chl_ref:units = "milligram m-3" ;
+                chl_ref:long_name = "In-situ concentration of chlorophyll in sea water" ;
+                chl_ref:coordinates = "time_ref lat_ref lon_ref depth_ref" ;
+                chl_ref:source = "my_chlorophyll_buoy" ;
+        float sst_ref(record_num) ;
+                chl_ref:_FillValue = -1.f ;
+                chl_ref:missing_value = -1.f ;
+                chl_ref:units = "Kelvin" ;
+                chl_ref:long_name = "In-situ concentration of chlorophyll in sea water" ;
+                chl_ref:coordinates = "time_ref lat_ref lon_ref depth_ref" ;
+                chl_ref:source = "my_chlorophyll_buoy" ;
+
+// global attributes:
+                :Conventions = "CF-1.6" ;
+                :title = "some title" ;
+                :institution = "institution code" ;        
+                :references = "links to references" ;
+                :source = "method of production" ;
+                :history = "audit trail" ;
+                :comment = "comment" ;
+data:
+
+ time = 1261440000, 1261447200 ;
+
+ depth = 0.001, 0.002 ;
+
+ lat = 55.2, 56.8 ;
+
+ lon = 5.3, 5.8, 6.3, 6.8 ;
+
+ chl =
+  0.1111, 0.2111, 0.1211, 0.2211,
+  0.1121, 0.2121, 0.1221, 0.2221,
+  0.1112, 0.2112, 0.1212, 0.2212,
+  0.1122, 0.2122, 0.1222, 0.2222,
+  0.1113, 0.2113, 0.1213, 0.2213,
+  0.1123, 0.2123, 0.1223, 0.2223,
+  0.1114, 0.2114, 0.1214, 0.2214,
+  0.1124, 0.2124, 0.1224, 0.2224 ;
+
+ sst =
+  280.1111, 280.2111, 280.1211, 280.2211,
+  280.1121, 280.2121, 280.1221, 280.2221,
+  280.1112, 280.2112, 280.1212, 280.2212,
+  280.1122, 280.2122, 280.1222, 280.2222,
+  280.1113, 280.2113, 280.1213, 280.2213,
+  280.1123, 280.2123, 280.1223, 280.2223,
+  280.1114, 280.2114, 280.1214, 280.2214,
+  280.1124, 280.2124, 280.1224, 280.2224 ;
+
+
+time_ref = 1261440250, 1261440300, 1261447000 ;
+
+depth_ref = 0.0012, 0.0013, 0.0021 ;
+
+lat_ref = 55.21, 55.8, 56.12 ;
+
+lon_ref = 5.31, 5.72, 12.35 ;
+
+chl_ref = 0.1, 0.2, 0.3 ;
+
+sst_ref = 281.2, 282.3, 281.4 ;
+}

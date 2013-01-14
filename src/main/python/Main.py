@@ -12,7 +12,7 @@ class VariableMappingsParseAction(argparse.Action):
 
     def __call__(self, parser, namespace, values, option_string=None):
         result = []
-        pairs = values[0].lstrip().split(' ')
+        pairs = values[0].lstrip().split(',')
         for pair in pairs:
             vars = pair.split(':')
             new_pair = [vars[0], vars[1]]
@@ -33,8 +33,8 @@ def parse_arguments(arguments):
     parser.add_argument('path', help='Path to the model output file', metavar='<path>')
     return parser.parse_args(arguments)
 
-def benchmark(arguments):
-    parsed_args = parse_arguments(arguments)
+def main():
+    parsed_args = parse_arguments(sys.argv[1:])
     config = Configuration(properties_file_name=parsed_args.a, target_dir=parsed_args.o, target_prefix=parsed_args.p)
     logging.basicConfig(level=config.log_level)
     logging.debug('Starting benchmark')
@@ -46,8 +46,8 @@ def benchmark(arguments):
         logging.debug('having stats')
         output = Output(statistics=stats, ref_variable_name=pair[0], variable_name=pair[1], config=config, matchup_count=len(matchups), source_file=parsed_args.path)
         logging.debug('having output')
-        output.csv(config.include_header, config.separator, target_file=parsed_args.o + "\\" + config.target_prefix + 'statistics.csv')
+        output.csv(config.include_header, config.separator, target_file='%s\\%s%s_statistics.csv' % (parsed_args.o, config.target_prefix, pair[0]))
         logging.debug('output done')
 
-benchmark(sys.argv[1:])
-
+if __name__ == '__main__':
+    main()
