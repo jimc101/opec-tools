@@ -34,7 +34,7 @@ def parse_arguments(arguments):
     return parser.parse_args(arguments)
 
 def benchmark(arguments):
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.DEBUG) # todo - use log level from config
     logging.debug('Starting benchmark')
     parsed_args = parse_arguments(arguments)
     config = Configuration(properties_file_name=parsed_args.a, target_dir=parsed_args.o, target_prefix=parsed_args.p)
