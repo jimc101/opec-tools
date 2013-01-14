@@ -1,4 +1,5 @@
 import configparser
+import logging
 import os
 
 # needed because configparser.ConfigParser requires at least one section header in a properties file
@@ -7,7 +8,6 @@ def add_section_header(properties_file, header_name):
     yield '[{}]\n'.format(header_name)
     for line in properties_file:
         yield line
-
 
 class Configuration(object):
 
@@ -27,29 +27,30 @@ class Configuration(object):
             target_dir = os.getcwd() # needed because if default shall be CWD, it cannot be put in the static config file
 
         self.__dict = {}
-        self.__set(alpha, 'alpha')
-        self.__set(beta, 'beta')
-        self.__set(ddof, 'ddof')
-        self.__set(macro_pixel_size, 'macro_pixel_size')
-        self.__set(geo_delta, 'geo_delta')
-        self.__set(time_delta, 'time_delta')
-        self.__set(depth_delta, 'depth_delta')
-        self.__set(log_level, 'log_level')
-        self.__set(zip, 'zip')
-        self.__set(show_negative_corrcoeff, 'show_negative_corrcoeff')
-        self.__set(show_legend, 'show_legend')
-        self.__set(target_dir, 'target_dir')
-        self.__set(target_prefix, 'target_prefix')
-        self.__set(separator, 'separator')
-        self.__set(include_header, 'include_header')
+        self.__set(alpha, 'alpha', float)
+        self.__set(beta, 'beta', float)
+        self.__set(ddof, 'ddof', int)
+        self.__set(macro_pixel_size, 'macro_pixel_size', int)
+        self.__set(geo_delta, 'geo_delta', float)
+        self.__set(time_delta, 'time_delta', int)
+        self.__set(depth_delta, 'depth_delta', float)
+        self.__set(log_level, 'log_level', convert_log_level)
+        self.__set(zip, 'zip', convert_bool)
+        self.__set(show_negative_corrcoeff, 'show_negative_corrcoeff', convert_bool)
+        self.__set(show_legend, 'show_legend', convert_bool)
+        self.__set(target_dir, 'target_dir', str)
+        self.__set(target_prefix, 'target_prefix', str)
+        self.__set(separator, 'separator', convert_separator)
+        self.__set(include_header, 'include_header', convert_bool)
 
-    def __set(self, value, name):
+    def __set(self, value, name, converter):
         if value is not None:
-            self.__dict[name] = value
+             actual_value = value
         elif self.__config is not None and name in self.__config['dummy_section']:
-            self.__dict[name] = self.__config['dummy_section'][name]
+            actual_value = self.__config['dummy_section'][name]
         else:
-            self.__dict[name] = self.__default_config['dummy_section'][name]
+            actual_value = self.__default_config['dummy_section'][name]
+        self.__dict[name] = converter(actual_value)
 
     def __read_properties(self, properties_file_name):
         if properties_file_name is not None:
@@ -67,37 +68,37 @@ class Configuration(object):
         default_properties_file.close()
 
     def __alpha(self):
-        return float(self.__dict['alpha'])
+        return self.__dict['alpha']
 
     def __beta(self):
-        return float(self.__dict['beta'])
+        return self.__dict['beta']
 
     def __ddof(self):
-        return int(self.__dict['ddof'])
+        return self.__dict['ddof']
 
     def __macro_pixel_size(self):
-        return int(self.__dict['macro_pixel_size'])
+        return self.__dict['macro_pixel_size']
 
     def __geo_delta(self):
-        return float(self.__dict['geo_delta'])
+        return self.__dict['geo_delta']
 
     def __time_delta(self):
-        return int(self.__dict['time_delta'])
+        return self.__dict['time_delta']
 
     def __depth_delta(self):
-        return float(self.__dict['depth_delta'])
+        return self.__dict['depth_delta']
 
     def __log_level(self):
-        return self.__dict['log_level'].upper()
+        return self.__dict['log_level']
 
     def __zip(self):
-        return self.__dict['zip'].lower() == 'true'
+        return self.__dict['zip']
 
     def __show_negative_corrcoeff(self):
-        return self.__dict['show_negative_corrcoeff'].lower() == 'true'
+        return self.__dict['show_negative_corrcoeff']
 
     def __show_legend(self):
-        return str(self.__dict['show_legend']).lower() == 'true'
+        return self.__dict['show_legend']
 
     def __target_dir(self):
         return self.__dict['target_dir']
@@ -106,16 +107,10 @@ class Configuration(object):
         return self.__dict['target_prefix']
 
     def __include_header(self):
-        return str(self.__dict['include_header']).lower() == 'true'
+        return self.__dict['include_header']
 
     def __separator(self):
-        separator = self.__dict['separator']
-        # I just didn't get escaped strings unescaped, so here's the low-tech version
-        if separator in ('\\t', 'tab', '\t'):
-            return '\t'
-        if separator in ('\' \''):
-            return ' '
-        return separator
+        return self.__dict['separator']
 
     alpha = property(__alpha)
     beta = property(__beta)
@@ -135,3 +130,24 @@ class Configuration(object):
 
 def get_default_config():
     return Configuration()
+
+def convert_log_level(value):
+    log_level = value.upper()
+    if log_level == 'DEBUG':
+        return logging.DEBUG
+    if log_level == 'INFO':
+        return logging.INFO
+    if log_level == 'WARNING':
+        return logging.WARNING
+    raise RuntimeError('Erroneous log level: %s' % value)
+
+def convert_bool(value):
+    return str(value).lower() == 'true'
+
+def convert_separator(value):
+    # I just didn't get escaped strings unescaped, so here's the low-tech version
+    if value in ('\\t', 'tab', '\t'):
+        return '\t'
+    if value in ('\' \''):
+        return ' '
+    return value
