@@ -1,5 +1,6 @@
 from matplotlib import pyplot
 from matplotlib.projections.polar import PolarTransform
+from mpl_toolkits.axisartist import SubplotZero
 import numpy as np
 import mpl_toolkits.axisartist.floating_axes as FA
 import mpl_toolkits.axisartist.grid_finder as GF
@@ -24,10 +25,50 @@ def create_taylor_diagram(statistics, max_stddev=None, config=None):
 
     return diagram
 
-def create_target_diagram():
-    pass
+def create_target_diagram(statistics, config=None):
+    figure = pyplot.figure()
+    diagram = TargetDiagram(figure)
 
-class TaylorDiagram(object):
+    diagram.setup_axes()
+    for stats in statistics:
+#        diagram.plot_sample(stats['bias'], stats['unbiased_rmse'], stats['rmse'])
+        pass
+
+    return diagram
+
+class Diagram(object):
+
+    def write(self, target_file):
+        pyplot.savefig(target_file)
+
+class TargetDiagram(Diagram):
+    """Target diagram: provides summary information about the pattern
+    statistics as well as the bias thus yielding a broader overview of
+    their respective contributions to the total RMSE (see Jolliff et al 2009 for details)."""
+
+    def __init__(self, figure):
+        self.fig = figure
+
+    def setup_axes(self):
+        """Set up Taylor diagram axes, i.e. single quadrant polar
+        plot, using mpl_toolkits.axisartist.floating_axes.
+        """
+
+        ax = SubplotZero(self.fig, 111)
+        self.fig.add_subplot(ax)
+
+        for direction in ["xzero", "yzero"]:
+            ax.axis[direction].set_axisline_style("-|>")
+            ax.axis[direction].set_visible(True)
+
+        for direction in ["left", "right", "bottom", "top"]:
+            ax.axis[direction].set_visible(False)
+
+        ax.set_ylim([-1.0, 1.0])
+
+        return ax
+
+class TaylorDiagram(Diagram):
     """Taylor diagram: plot model standard deviation and correlation
     to reference (data) sample in a single-quadrant polar plot, with
     r=stddev and theta=arccos(correlation).
@@ -166,6 +207,3 @@ class TaylorDiagram(object):
     def update_legend(self):
         if self.show_legend:
             self.fig.legend(self.sample_points, self.sample_names, numpoints=1, prop=dict(size='small'), loc='upper right')
-
-    def write(self, target_file):
-        pyplot.savefig(target_file)

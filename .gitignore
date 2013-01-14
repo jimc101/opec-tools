@@ -3,3 +3,4 @@
 *.h5
 test_output.csv
 src/test/resources/taylor_test.png
+src/test/resources/target_test.png
