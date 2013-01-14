@@ -13,7 +13,8 @@ class Configuration(object):
 
     def __init__(self, alpha=None, beta=None, ddof=None, macro_pixel_size=None, geo_delta=None, time_delta=None,
                  depth_delta=None, log_level=None, zip=None, show_negative_corrcoeff=None, show_legend=None,
-                 target_dir=None, target_prefix=None, include_header=None, separator=None, properties_file_name=None):
+                 target_dir=None, target_prefix=None, include_header=None, separator=None, properties_file_name=None,
+                 write_taylor_diagram=None):
         """
         Priority:
         1) what is passed as parameter
@@ -42,6 +43,7 @@ class Configuration(object):
         self.__set(target_prefix, 'target_prefix', str)
         self.__set(separator, 'separator', convert_separator)
         self.__set(include_header, 'include_header', convert_bool)
+        self.__set(write_taylor_diagram, 'write_taylor_diagram', convert_bool)
 
     def __set(self, value, name, converter):
         if value is not None:
@@ -112,6 +114,9 @@ class Configuration(object):
     def __separator(self):
         return self.__dict['separator']
 
+    def __write_taylor_diagram(self):
+        return self.__dict['write_taylor_diagram']
+
     alpha = property(__alpha)
     beta = property(__beta)
     ddof = property(__ddof)
@@ -127,6 +132,7 @@ class Configuration(object):
     target_prefix = property(__target_prefix)
     include_header = property(__include_header)
     separator = property(__separator)
+    write_taylor_diagram = property(__write_taylor_diagram)
 
 def get_default_config():
     return Configuration()
