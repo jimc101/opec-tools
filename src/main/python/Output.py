@@ -86,7 +86,7 @@ class Output(object):
         # TODO - exclude depth if source file contains no depth dimension
         lines.append('#    Maximum depth delta = {} meters'.format(self.config.depth_delta))
         lines.append('#')
-        lines.append('# Parameters:')
+        lines.append('# Algorithm parameters:')
         lines.append('#    ddof (delta degrees of freedom, used for computation of stddev) = {}'.format(self.config.ddof))
         lines.append('#    alpha (used for percentile computation) = 1'.format(self.config.alpha))
         lines.append('#    beta (used for percentile computation) = 1'.format(self.config.beta))
