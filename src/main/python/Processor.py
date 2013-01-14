@@ -83,11 +83,13 @@ def harmonise(reference_values, model_values):
     model_values.mask = reference_values.mask | model_values.mask
     return reference_values, model_values
 
-def calculate_statistics(matchups=None, reference_values=None, model_values=None, config=None, model_name=None):
+def calculate_statistics(matchups=None, reference_values=None, model_values=None, config=None, model_name=None, ref_name=None):
     if reference_values is None or model_values is None:
         reference_values, model_values = extract_values(matchups)
         if model_name is None:
             model_name = matchups[0].model_variable_name
+        if ref_name is None:
+            ref_name = matchups[0].ref_variable_name
     reference_values, model_values = harmonise(reference_values, model_values)
     if ma.count(model_values) != ma.count(reference_values):
         raise ValueError("len(values) != len(reference_values)")
@@ -101,6 +103,7 @@ def calculate_statistics(matchups=None, reference_values=None, model_values=None
     ref_minmax = minmax(reference_values)
     stats = dict()
     stats['model_name'] = model_name
+    stats['ref_name'] = ref_name
     stats['rmse'] = rmse(reference_values, model_values)
     stats['unbiased_rmse'] = unbiased_rmse(reference_values, model_values)
     stats['pbias'] = percentage_model_bias(reference_values, model_values)

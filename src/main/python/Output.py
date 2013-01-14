@@ -1,71 +1,44 @@
 from datetime import datetime
-import logging
 import os
-from src.main.python import Processor
+from src.main.python import Plotter
 from src.main.python.Configuration import get_default_config
-from src.main.python.MatchupEngine import MatchupEngine
 
 class Output(object):
 
     def __init__(self, **kwargs):
-        """Constructs a new instance of Output, tied to a set of statistics.
-        Note that either a 'statistics' or a 'data' object needs to be passed.
+        """Constructs a new instance of Output.
 
         Keyword arguments:
-            statistics -- the statistics to be output (mandatory if data is not given)
-            data -- the data on which to compute statistics to be output (mandatory if statistics is not given)
-            variable_name -- the model variable name (optional; mandatory if statistics is not given)
-            ref_variable_name -- the reference variable name (optional; mandatory if statistics is not given)
             config -- the configuration the processors and matchup engine have been run with (optional)
-            matchup_count -- the number of matchups (optional)
             source_file -- a reference to the file the benchmarks were computed on (optional)
         """
-
-        self.variable_name = kwargs['variable_name'] if 'variable_name' in kwargs.keys() else None
-        self.ref_variable_name = kwargs['ref_variable_name'] if 'ref_variable_name' in kwargs.keys() else None
         self.config = kwargs['config'] if 'config' in kwargs.keys() else get_default_config()
-        self.matchup_count = kwargs['matchup_count'] if 'matchup_count' in kwargs.keys() else None
         self.source_file = kwargs['source_file'] if 'source_file' in kwargs.keys() else None
 
-        if 'statistics' not in kwargs and 'data' not in kwargs:
-            raise ValueError('missing \'statistics\' or \'data\' argument')
-
-        if 'statistics' in kwargs and 'data' in kwargs:
-            logger = logging.getLogger('')
-            logger.setLevel(logging.INFO)
-            logger.warning('both \'statistics\' and \'data\' given: Ignoring \'data\'.')
-
-        self.__assign_statistics(kwargs)
-
-    def __assign_statistics(self, kwargs):
-        if 'statistics' in kwargs.keys():
-            self.statistics = kwargs['statistics']
-        else:
-            self.data = kwargs['data']
-            if self.variable_name is None or self.ref_variable_name is None:
-                raise ValueError("missing \'variable name\' and/or \'ref_variable_name\' argument(s)")
-            me = MatchupEngine(self.data, self.config)
-            matchups = me.find_all_matchups(self.ref_variable_name, self.variable_name)
-            self.matchup_count = len(matchups)
-            self.statistics = Processor.calculate_statistics(matchups=matchups)
-
-    def csv(self, include_header, separator, target_file=None):
+    def csv(self, statistics, target_file=None, **kwargs):
         """Outputs the statistics to CSV.
 
         Keyword arguments:
-            include_header -- if meta information shall be included. Defaults to True
-            separator -- the separator character used in the CSV output. Defaults to '\t'
-            target_file -- if specified, the CSV will be written to the file. Defaults to None
+            variable_name -- the model variable name (optional)
+            ref_variable_name -- the reference variable name (optional)
+            matchup_count -- the number of matchups (optional)
+            target_file -- if specified, the CSV will be written to the file. (optional)
         """
+
+        variable_name = kwargs['variable_name'] if 'variable_name' in kwargs.keys() else None
+        ref_variable_name = kwargs['ref_variable_name'] if 'ref_variable_name' in kwargs.keys() else None
+        matchup_count = kwargs['matchup_count'] if 'matchup_count' in kwargs.keys() else None
+        include_header = self.config.include_header
+        separator = self.config.separator
 
         lines = []
         if include_header:
             self.__write_header(lines)
         lines.append(separator.join(self.__header_line_items()))
-        lines.append(separator.join(self.__data_items()))
+        lines.append(separator.join(self.__data_items(statistics, matchup_count, variable_name, ref_variable_name)))
 
         if target_file is not None:
-            self.__write_to_file(target_file, lines)
+            self.__write_csv_to_file(target_file, lines)
 
         return '\n'.join(lines)
 
@@ -95,35 +68,35 @@ class Output(object):
     def __rename(self, string):
         return str(string) if string is not None else 'Unknown'
 
-    def __data_items(self):
-        matchup_count = self.__rename(self.matchup_count)
-        variable_name = self.__rename(self.variable_name)
-        ref_variable_name = self.__rename(self.ref_variable_name)
+    def __data_items(self, statistics, matchup_count, variable_name, ref_variable_name):
+        matchup_count = self.__rename(matchup_count)
+        variable_name = self.__rename(variable_name)
+        ref_variable_name = self.__rename(ref_variable_name)
         data_items = [
             variable_name,
             ref_variable_name,
             matchup_count,
-            str('%g' % round(self.statistics['min'], 4)),
-            str('%g' % round(self.statistics['max'], 4)),
-            str('%g' % round(self.statistics['mean'], 4)),
-            str('%g' % round(self.statistics['stddev'], 4)),
-            str('%g' % round(self.statistics['median'], 4)),
-            str('%g' % round(self.statistics['p90'], 4)),
-            str('%g' % round(self.statistics['p95'], 4)),
-            str('%g' % round(self.statistics['ref_min'], 4)),
-            str('%g' % round(self.statistics['ref_max'], 4)),
-            str('%g' % round(self.statistics['ref_mean'], 4)),
-            str('%g' % round(self.statistics['ref_stddev'], 4)),
-            str('%g' % round(self.statistics['ref_median'], 4)),
-            str('%g' % round(self.statistics['ref_p90'], 4)),
-            str('%g' % round(self.statistics['ref_p95'], 4)),
-            str('%g' % round(self.statistics['rmse'], 4)),
-            str('%g' % round(self.statistics['unbiased_rmse'], 4)),
-            str('%g' % round(self.statistics['bias'], 4)),
-            str('%g' % round(self.statistics['pbias'], 4)),
-            str('%g' % round(self.statistics['corrcoeff'], 4)),
-            str('%g' % round(self.statistics['reliability_index'], 4)),
-            str('%g' % round(self.statistics['model_efficiency'], 4))
+            str('%g' % round(statistics['min'], 4)),
+            str('%g' % round(statistics['max'], 4)),
+            str('%g' % round(statistics['mean'], 4)),
+            str('%g' % round(statistics['stddev'], 4)),
+            str('%g' % round(statistics['median'], 4)),
+            str('%g' % round(statistics['p90'], 4)),
+            str('%g' % round(statistics['p95'], 4)),
+            str('%g' % round(statistics['ref_min'], 4)),
+            str('%g' % round(statistics['ref_max'], 4)),
+            str('%g' % round(statistics['ref_mean'], 4)),
+            str('%g' % round(statistics['ref_stddev'], 4)),
+            str('%g' % round(statistics['ref_median'], 4)),
+            str('%g' % round(statistics['ref_p90'], 4)),
+            str('%g' % round(statistics['ref_p95'], 4)),
+            str('%g' % round(statistics['rmse'], 4)),
+            str('%g' % round(statistics['unbiased_rmse'], 4)),
+            str('%g' % round(statistics['bias'], 4)),
+            str('%g' % round(statistics['pbias'], 4)),
+            str('%g' % round(statistics['corrcoeff'], 4)),
+            str('%g' % round(statistics['reliability_index'], 4)),
+            str('%g' % round(statistics['model_efficiency'], 4))
         ]
         return data_items
 
@@ -146,7 +119,7 @@ class Output(object):
         header_items.append('model_efficiency')
         return header_items
 
-    def __write_to_file(self, target_file, lines):
+    def __write_csv_to_file(self, target_file, lines):
         directory = os.path.dirname(target_file)
         if not os.path.exists(directory):
             os.makedirs(directory)
@@ -154,3 +127,7 @@ class Output(object):
         for line in lines:
             file.write("%s\n" % line)
         file.close()
+
+    def taylor(self, target_file, statistics):
+        diagram = Plotter.create_taylor_diagram(statistics, config=self.config)
+        diagram.write(target_file)

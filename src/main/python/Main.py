@@ -7,6 +7,7 @@ from src.main.python.Configuration import Configuration
 from src.main.python.Data import Data
 from src.main.python.MatchupEngine import MatchupEngine
 from src.main.python.Output import Output
+import numpy as np
 
 class VariableMappingsParseAction(argparse.Action):
 
@@ -33,21 +34,29 @@ def parse_arguments(arguments):
     parser.add_argument('path', help='Path to the model output file', metavar='<path>')
     return parser.parse_args(arguments)
 
+def ref_stddev(statistics):
+    return np.max(list(map(lambda x: x.get('ref_stddev'), statistics)))
+
 def main():
     parsed_args = parse_arguments(sys.argv[1:])
     config = Configuration(properties_file_name=parsed_args.a, target_dir=parsed_args.o, target_prefix=parsed_args.p)
     logging.basicConfig(level=config.log_level)
-    logging.debug('Starting benchmark')
+    logging.info('Starting benchmark')
     data = Data(parsed_args.path)
     me = MatchupEngine(data, config)
+    collected_statistics = []
+    output = Output(config=config, source_file=parsed_args.path)
     for pair in parsed_args.v:
         matchups = me.find_all_matchups(pair[0], pair[1])
-        stats = Processor.calculate_statistics(matchups=matchups, config=config, model_name=parsed_args.path)
-        logging.debug('having stats')
-        output = Output(statistics=stats, ref_variable_name=pair[0], variable_name=pair[1], config=config, matchup_count=len(matchups), source_file=parsed_args.path)
-        logging.debug('having output')
-        output.csv(config.include_header, config.separator, target_file='%s\\%s%s_statistics.csv' % (parsed_args.o, config.target_prefix, pair[0]))
-        logging.debug('output done')
+        stats = Processor.calculate_statistics(matchups=matchups, config=config, model_name=pair[1], ref_name=pair[0])
+        collected_statistics.append(stats)
+        csv_target_file = '%s\\%s%s_statistics.csv' % (parsed_args.o, config.target_prefix, pair[0])
+        output.csv(stats, target_file=csv_target_file, matchup_count=len(matchups), ref_variable_name=pair[0], variable_name=pair[1])
+        logging.info('csv output written to \'%s\'' % csv_target_file)
+
+    taylor_target_file = '%s\\%staylor.png' % (parsed_args.o, config.target_prefix)
+    output.taylor(taylor_target_file, collected_statistics)
+    logging.info('taylor diagram written to \'%s\'' % taylor_target_file)
 
 if __name__ == '__main__':
     main()

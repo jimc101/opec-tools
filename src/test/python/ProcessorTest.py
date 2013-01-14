@@ -21,6 +21,7 @@ class ProcessorTest(TestCase):
         matchups = self.me.find_all_matchups('chl_ref', 'chl')
         stats = calculate_statistics(matchups, config=self.config)
         self.assertEqual('chl', stats['model_name'])
+        self.assertEqual('chl_ref', stats['ref_name'])
         self.assertAlmostEqual(0.0960456, stats['rmse'], 5)
         self.assertAlmostEqual(0.0868041, stats['unbiased_rmse'], 5)
         self.assertAlmostEqual(20.553573, stats['pbias'], 5)
@@ -50,6 +51,7 @@ class ProcessorTest(TestCase):
         ref_values = np.array([1.1, 2.2, 2.9, 3.7])
         stats = calculate_statistics(reference_values=ref_values, model_values=model_values, config=self.config)
         self.assertIsNone(stats['model_name'])
+        self.assertIsNone(stats['ref_name'])
         self.assertAlmostEqual(0.192028, stats['unbiased_rmse'], 5)
         self.assertAlmostEqual(0.193649, stats['rmse'], 5)
         self.assertAlmostEqual(-1.0101, stats['pbias'], 5)
@@ -77,7 +79,9 @@ class ProcessorTest(TestCase):
     def test_compute_statistics_with_masked_values(self):
         model_values = ma.array(np.arange(1.0, 5.0, 1), mask=np.array([False, False, True, False])) # [1, 2, --, 4]
         ref_values = np.array([1.1, 2.2, 2.9, 3.7])
-        stats = calculate_statistics(reference_values=ref_values, model_values=model_values, config=self.config)
+        stats = calculate_statistics(reference_values=ref_values, model_values=model_values, config=self.config, model_name='kate', ref_name='ref')
+        self.assertEqual('kate', stats['model_name'])
+        self.assertEqual('ref', stats['ref_name'])
         self.assertAlmostEqual(0.216024, stats['unbiased_rmse'], 5)
         self.assertAlmostEqual(0.216024, stats['rmse'], 5)
         self.assertAlmostEqual(6.344131e-15, stats['pbias'], 5)

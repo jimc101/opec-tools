@@ -29,7 +29,7 @@ class PlotterTest(unittest.TestCase):
         print('unbiased rmse: %s' % stats2['unbiased_rmse'])
         print('corrcoeff: %s' % stats2['corrcoeff'])
 
-        diagram = plotter.create_taylor_diagram(stats['ref_stddev'], (stats, stats1), max_stddev=11)
+        diagram = plotter.create_taylor_diagram((stats, stats1), 10)
         diagram.plot_sample(stats2['corrcoeff'], stats2['stddev'], model_name='Linda Evangelista value')
         diagram.write('../resources/taylor_test.png')
         # pypl.show()
