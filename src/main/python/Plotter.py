@@ -1,4 +1,4 @@
-from matplotlib import pyplot
+from matplotlib import pyplot, pylab
 from matplotlib.projections.polar import PolarTransform
 from mpl_toolkits.axisartist import SubplotZero
 import numpy as np
@@ -64,7 +64,8 @@ class TargetDiagram(Diagram):
         for direction in ["left", "right", "bottom", "top"]:
             ax.axis[direction].set_visible(False)
 
-        ax.set_ylim([-1.0, 1.0])
+        pylab.xlim(-1.0, 1.0)
+        pylab.ylim(-1.0, 1.0)
 
         return ax
 
