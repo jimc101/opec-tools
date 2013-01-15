@@ -3,9 +3,9 @@ import numpy as np
 
 class Data(dict):
 
-    def __init__(self, inputFile):
+    def __init__(self, input_file_name):
         super().__init__()
-        self.__netcdf = NetCDFFacade(inputFile)
+        self.__netcdf = NetCDFFacade(input_file_name)
         self.__current_storage = {}
 
     def model_vars(self):
