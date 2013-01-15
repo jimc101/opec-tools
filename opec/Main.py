@@ -56,12 +56,12 @@ def main():
         csv_target_file = '%s\\%s%s_statistics.csv' % (parsed_args.o, config.target_prefix, pair[0])
         collected_csv_target_files.append(csv_target_file)
         output.csv(stats, target_file=csv_target_file, matchup_count=len(matchups), ref_variable_name=pair[0], variable_name=pair[1])
-        logging.info('csv output written to \'%s\'' % csv_target_file)
+        logging.info('CSV output written to \'%s\'' % csv_target_file)
 
     if config.write_taylor_diagram:
         taylor_target_file = '%s\\%staylor.png' % (parsed_args.o, config.target_prefix)
         output.taylor(collected_statistics, taylor_target_file)
-        logging.info('taylor diagram written to \'%s\'' % taylor_target_file)
+        logging.info('Taylor diagram written to \'%s\'' % taylor_target_file)
 
     if config.zip:
         zipfile = ZipFile('%s\\%sbenchmarks.zip' % (parsed_args.o, config.target_prefix), 'w')

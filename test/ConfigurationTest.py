@@ -51,3 +51,7 @@ class ConfigurationTest(unittest.TestCase):
 
     def test_wrong_log_level(self):
         self.assertRaises(RuntimeError, lambda: Configuration(log_level='LOG_EVERYTHING_PLEASE'))
+
+    def test_disabled_log_level(self):
+        c = Configuration(log_level='DISABLED')
+        self.assertEqual(100, c.log_level)

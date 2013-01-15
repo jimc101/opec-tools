@@ -35,15 +35,15 @@ class Configuration(object):
         self.__set(geo_delta, 'geo_delta', float)
         self.__set(time_delta, 'time_delta', int)
         self.__set(depth_delta, 'depth_delta', float)
-        self.__set(log_level, 'log_level', convert_log_level)
-        self.__set(zip, 'zip', convert_bool)
-        self.__set(show_negative_corrcoeff, 'show_negative_corrcoeff', convert_bool)
-        self.__set(show_legend, 'show_legend', convert_bool)
+        self.__set(log_level, 'log_level', log_level_conv)
+        self.__set(zip, 'zip', bool)
+        self.__set(show_negative_corrcoeff, 'show_negative_corrcoeff', bool)
+        self.__set(show_legend, 'show_legend', bool)
         self.__set(target_dir, 'target_dir', str)
         self.__set(target_prefix, 'target_prefix', str)
-        self.__set(separator, 'separator', convert_separator)
-        self.__set(include_header, 'include_header', convert_bool)
-        self.__set(write_taylor_diagram, 'write_taylor_diagram', convert_bool)
+        self.__set(separator, 'separator', separator_conv)
+        self.__set(include_header, 'include_header', bool)
+        self.__set(write_taylor_diagram, 'write_taylor_diagram', bool)
 
     def __set(self, value, name, converter):
         if value is not None:
@@ -137,7 +137,7 @@ class Configuration(object):
 def get_default_config():
     return Configuration()
 
-def convert_log_level(value):
+def log_level_conv(value):
     log_level = value.upper()
     if log_level == 'DEBUG':
         return logging.DEBUG
@@ -145,12 +145,16 @@ def convert_log_level(value):
         return logging.INFO
     if log_level == 'WARNING':
         return logging.WARNING
+    if log_level == 'CRITICAL' or log_level == 'FATAL':
+        return logging.CRITICAL
+    if log_level == 'DISABLED':
+        return 100              # made-up logging value higher than max
     raise RuntimeError('Erroneous log level: %s' % value)
 
-def convert_bool(value):
+def bool(value):
     return str(value).lower() == 'true'
 
-def convert_separator(value):
+def separator_conv(value):
     # I just didn't get escaped strings unescaped, so here's the low-tech version
     if value in ('\\t', 'tab', '\t'):
         return '\t'
