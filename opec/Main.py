@@ -3,11 +3,11 @@ import argparse
 import logging
 import sys
 from zipfile import ZipFile
-from src.main.python import Processor
-from src.main.python.Configuration import Configuration
-from src.main.python.Data import Data
-from src.main.python.MatchupEngine import MatchupEngine
-from src.main.python.Output import Output
+from opec import Processor
+from opec.Configuration import Configuration
+from opec.MatchupEngine import MatchupEngine
+from opec.Data import Data
+from opec.Output import Output
 import numpy as np
 import os
 
@@ -60,7 +60,7 @@ def main():
 
     if config.write_taylor_diagram:
         taylor_target_file = '%s\\%staylor.png' % (parsed_args.o, config.target_prefix)
-        output.taylor(taylor_target_file, collected_statistics)
+        output.taylor(collected_statistics, taylor_target_file)
         logging.info('taylor diagram written to \'%s\'' % taylor_target_file)
 
     if config.zip:
@@ -68,6 +68,7 @@ def main():
         for file in collected_csv_target_files:
             zipfile.write(file, os.path.basename(file))
         if config.write_taylor_diagram:
+            #noinspection PyUnboundLocalVariable
             zipfile.write(taylor_target_file, os.path.basename(taylor_target_file))
         zipfile.close()
         for file in collected_csv_target_files:

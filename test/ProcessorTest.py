@@ -2,15 +2,25 @@ from unittest import TestCase
 import numpy as np
 import numpy.ma as ma
 from numpy.testing import assert_array_equal
-from src.main.python.Configuration import Configuration
-from src.main.python.Data import Data
-from src.main.python.MatchupEngine import MatchupEngine
-from src.main.python.Processor import calculate_statistics, harmonise
+from opec.Processor import calculate_statistics, harmonise
+from opec.Configuration import Configuration
+from opec.MatchupEngine import MatchupEngine
+from opec.Data import Data
+import os
 
 class ProcessorTest(TestCase):
 
+    @classmethod
+    def setUpClass(self):
+        self.cwd = os.getcwd()
+        os.chdir('..')
+
+    @classmethod
+    def tearDownClass(self):
+        os.chdir(self.cwd)
+
     def setUp(self):
-        self.data = Data('../resources/test.nc')
+        self.data = Data('resources/test.nc')
         self.config = Configuration(macro_pixel_size=3, geo_delta=10, time_delta=86400, depth_delta=12, ddof=0, alpha=1, beta=1)
         self.me = MatchupEngine(self.data, self.config)
 

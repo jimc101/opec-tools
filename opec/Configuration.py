@@ -65,7 +65,7 @@ class Configuration(object):
 
     def __read_default_properties(self):
         self.__default_config = configparser.ConfigParser()
-        default_properties_file = open('../../../default.properties')
+        default_properties_file = open('default.properties')
         self.__default_config.read_file(add_section_header(default_properties_file, 'dummy_section'))
         default_properties_file.close()
 

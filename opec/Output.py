@@ -1,7 +1,7 @@
 from datetime import datetime
 import os
-from src.main.python import Plotter
-from src.main.python.Configuration import get_default_config
+from opec import Plotter
+from opec.Configuration import get_default_config
 
 class Output(object):
 
@@ -128,6 +128,6 @@ class Output(object):
             file.write("%s\n" % line)
         file.close()
 
-    def taylor(self, target_file, statistics):
+    def taylor(self, statistics, target_file):
         diagram = Plotter.create_taylor_diagram(statistics, config=self.config)
         diagram.write(target_file)

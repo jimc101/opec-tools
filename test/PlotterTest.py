@@ -1,10 +1,20 @@
 import unittest
 #import matplotlib.pyplot as pypl
 import numpy as np
-from src.main.python import Processor
-import src.main.python.Plotter as plotter
+from opec import Processor
+import opec.Plotter as plotter
+import os
 
 class PlotterTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(self):
+        self.cwd = os.getcwd()
+        os.chdir('..')
+
+    @classmethod
+    def tearDownClass(self):
+        os.chdir(self.cwd)
 
     def test_taylor_diagram(self):
         values = np.array([0, 15, 2, 3, 15, 8, 5, 3, 9, 11, 12, 1, 7, 7, 6])

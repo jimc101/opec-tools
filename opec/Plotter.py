@@ -4,7 +4,7 @@ from mpl_toolkits.axisartist import SubplotZero
 import numpy as np
 import mpl_toolkits.axisartist.floating_axes as FA
 import mpl_toolkits.axisartist.grid_finder as GF
-from src.main.python.Configuration import get_default_config
+from opec.Configuration import get_default_config
 
 def create_taylor_diagram(statistics, max_stddev=None, config=None):
     if config is None:

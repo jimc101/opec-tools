@@ -1,5 +1,5 @@
 import unittest
-from src.main.python.Main import parse_arguments
+from opec.Main import parse_arguments
 
 class MainTest(unittest.TestCase):
 

@@ -1,5 +1,5 @@
-from src.main.python.NetCDFFacade import NetCDFFacade
 import numpy as np
+from opec.NetCDFFacade import NetCDFFacade
 
 class Data(dict):
 

@@ -2,16 +2,26 @@ import logging
 from unittest import TestCase
 import math
 import numpy.testing as np
-from src.main.python.Configuration import Configuration
-from src.main.python.MatchupEngine import MatchupEngine, ReferenceRecord, find_ref_coordinate_names, delta, normalise
-from src.main.python.Data import Data
+from opec.MatchupEngine import ReferenceRecord, find_ref_coordinate_names, delta, normalise
+from opec.Configuration import Configuration
+from opec.MatchupEngine import MatchupEngine
+from opec.Data import Data
+import os
 
 class MatchupEngineTest(TestCase):
 
-    def setUp(self):
-        self.data = Data('../resources/test.nc')
-        logging.basicConfig(level=logging.DEBUG)
+    @classmethod
+    def setUpClass(self):
+        self.cwd = os.getcwd()
+        os.chdir('..')
 
+    @classmethod
+    def tearDownClass(self):
+        os.chdir(self.cwd)
+
+    def setUp(self):
+        self.data = Data('resources/test.nc')
+        logging.basicConfig(level=logging.DEBUG)
 
     def tearDown(self):
         logging.basicConfig(level=logging.WARNING)
@@ -118,7 +128,7 @@ class MatchupEngineTest(TestCase):
         self.assertAlmostEqual(0.1214, matchup.model_value)
 
     def test_find_matchups_single_no_depth(self):
-        data = Data('../resources/test_without_depth.nc')
+        data = Data('resources/test_without_depth.nc')
         config = Configuration(macro_pixel_size=7, geo_delta=0.1, time_delta=10)
         me = MatchupEngine(data, config)
 
@@ -148,7 +158,7 @@ class MatchupEngineTest(TestCase):
         self.assertEqual(0, len(reference_records))
 
     def test_find_reference_records_no_depth(self):
-        self.data = Data('../resources/test_without_depth.nc')
+        self.data = Data('resources/test_without_depth.nc')
         self.me = MatchupEngine(self.data)
         reference_records = self.me.find_reference_records('chl_ref')
         self.assertEqual(3, len(reference_records))
@@ -187,7 +197,7 @@ class MatchupEngineTest(TestCase):
 
     def test_find_matchups_in_file_containing_fill_values(self):
         config = Configuration(macro_pixel_size=1, geo_delta=10, time_delta=1000, depth_delta=0.00021)
-        data = Data('../resources/test_including_fill_values.nc')
+        data = Data('resources/test_including_fill_values.nc')
         me = MatchupEngine(data, config)
         all_matchups = me.find_all_matchups('chl_ref', 'chl')
         self.assertEqual(0, len(all_matchups))

@@ -1,9 +1,18 @@
 import logging
 import os
 import unittest
-from src.main.python.Configuration import Configuration
+from opec.Configuration import Configuration
 
 class ConfigurationTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(self):
+        self.cwd = os.getcwd()
+        os.chdir('..')
+
+    @classmethod
+    def tearDownClass(self):
+        os.chdir(self.cwd)
 
     def test_initialisation(self):
         c = Configuration(alpha=5, ddof=2, show_legend=False, write_taylor_diagram=False)
@@ -24,7 +33,7 @@ class ConfigurationTest(unittest.TestCase):
         self.assertEqual(False, c.write_taylor_diagram)
 
     def test_initialisation_by_file(self):
-        c = Configuration(alpha=5, ddof=2, log_level='INFO', properties_file_name='../resources/test.properties')
+        c = Configuration(alpha=5, ddof=2, log_level='INFO', properties_file_name='./resources/test.properties')
         self.assertEqual(5, c.alpha)
         self.assertEqual(0.5, c.beta)
         self.assertEqual(2, c.ddof)
@@ -40,5 +49,5 @@ class ConfigurationTest(unittest.TestCase):
         self.assertEqual('benchmark_', c.target_prefix)
         self.assertEqual(True, c.write_taylor_diagram)
 
-def test_wrong_log_level(self):
+    def test_wrong_log_level(self):
         self.assertRaises(RuntimeError, lambda: Configuration(log_level='LOG_EVERYTHING_PLEASE'))

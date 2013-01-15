@@ -1,8 +1,8 @@
 import logging
 from math import fabs, floor, sqrt
-from src.main.python.Configuration import get_default_config
-from src.main.python.Matchup import Matchup
+from opec.Configuration import get_default_config
 import numpy.ma as ma
+from opec.Matchup import Matchup
 
 class ReferenceRecord(object):
 
@@ -20,6 +20,17 @@ class MatchupEngine(object):
         self.data = data
         self.config = configuration if configuration is not None else get_default_config()
 
+    def find_all_matchups(self, ref_variable_name, model_variable_name):
+        """Finds all matchups between the given reference variable and model variable.
+        """
+        reference_records = self.find_reference_records(ref_variable_name)
+        all_matchups = []
+        for rr in reference_records:
+            matchups = self.find_matchups(rr, model_variable_name)
+            all_matchups.extend(matchups)
+        logging.debug('Found %s matchups between \'%s\' and \'%s\'.' % (len(all_matchups), model_variable_name, ref_variable_name))
+        return all_matchups
+
     def find_reference_records(self, variable_name):
         reference_records = []
         if not self.data.has_variable(variable_name):
@@ -27,7 +38,7 @@ class MatchupEngine(object):
             return reference_records
         ref_coordinate_variables = self.data.reference_coordinate_variables()
         ref_lat_variable_name, ref_lon_variable_name, ref_time_variable_name, ref_depth_variable_name = find_ref_coordinate_names(ref_coordinate_variables)
-        self.read_reference_records(ref_depth_variable_name, ref_lat_variable_name, ref_lon_variable_name, ref_time_variable_name, variable_name)
+        self.__read_reference_records(ref_depth_variable_name, ref_lat_variable_name, ref_lon_variable_name, ref_time_variable_name, variable_name)
         for i in range(self.data.reference_records_count()):
             ref_value = self.data[variable_name][i]
             if ref_value is ma.masked:
@@ -49,7 +60,7 @@ class MatchupEngine(object):
             model_variable_name = reference_record.variable_name
         matchup_positions = self.find_matchup_positions(reference_record.lat, reference_record.lon)
         matchup_times = self.find_matchup_times(reference_record.time)
-        matchup_depths = self.find_matchup_depths(reference_record.depth)
+        matchup_depths = self.__find_matchup_depths(reference_record.depth)
         matchups = []
         for matchup_position in matchup_positions:
             for matchup_time in matchup_times:
@@ -74,7 +85,7 @@ class MatchupEngine(object):
                     matchups.append(Matchup(reference_record.variable_name, model_variable_name, reference_record.value, model_value, reference_record.lat, reference_record.lon, reference_record.time, lat_delta, lon_delta, time_delta, reference_record.depth, depth_delta))
         return matchups
 
-    def find_position(self, dimension, target_value):
+    def __find_position(self, dimension, target_value):
         dim_size = self.data.dim_size(dimension)
         pixel_size = self.data[dimension][1] - self.data[dimension][0]
         return normalise((target_value - self.data[dimension][0]) / pixel_size, dim_size - 1)
@@ -83,8 +94,8 @@ class MatchupEngine(object):
         self.__prepare_lat_lon_data()
         offset = int(self.config.macro_pixel_size / 2)
 
-        pixel_x = self.find_position('lon', ref_lon)
-        pixel_y = self.find_position('lat', ref_lat)
+        pixel_x = self.__find_position('lon', ref_lon)
+        pixel_y = self.__find_position('lat', ref_lat)
 
         x_size = self.data.dim_size('lon')
         y_size = self.data.dim_size('lat')
@@ -111,14 +122,14 @@ class MatchupEngine(object):
             self.data.read('lat')
 
     def find_matchup_times(self, ref_time):
-        return self.find_matchup_indices('time', ref_time, self.config.time_delta)
+        return self.__find_matchup_indices('time', ref_time, self.config.time_delta)
 
-    def find_matchup_depths(self, ref_depth):
+    def __find_matchup_depths(self, ref_depth):
         if not self.data.has_variable('depth'):
             return [None]
-        return self.find_matchup_indices('depth', ref_depth, self.config.depth_delta)
+        return self.__find_matchup_indices('depth', ref_depth, self.config.depth_delta)
 
-    def find_matchup_indices(self, dimension, ref, max_delta):
+    def __find_matchup_indices(self, dimension, ref, max_delta):
         self.data.read(dimension)
         dimension_data = self.data[dimension]
         index = 0
@@ -129,18 +140,7 @@ class MatchupEngine(object):
             index += 1
         return matchup_indices
 
-    def find_all_matchups(self, ref_variable_name, model_variable_name):
-        """Finds all matchups between the given reference variable and model variable.
-        """
-        reference_records = self.find_reference_records(ref_variable_name)
-        all_matchups = []
-        for rr in reference_records:
-            matchups = self.find_matchups(rr, model_variable_name)
-            all_matchups.extend(matchups)
-        logging.debug('Found %s matchups between \'%s\' and \'%s\'.' % (len(all_matchups), model_variable_name, ref_variable_name))
-        return all_matchups
-
-    def read_reference_records(self, ref_depth_variable_name, ref_lat_variable_name, ref_lon_variable_name,
+    def __read_reference_records(self, ref_depth_variable_name, ref_lat_variable_name, ref_lon_variable_name,
                                ref_time_variable_name, variable_name):
         logging.debug('Reading reference records')
         self.data.read(variable_name)

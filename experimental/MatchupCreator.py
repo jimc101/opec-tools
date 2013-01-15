@@ -1,4 +1,4 @@
-from src.main.python import NetCDFFacade
+from opec import NetCDFFacade
 
 __author__ = 'Thomas Storm'
 

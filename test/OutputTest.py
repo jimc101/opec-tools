@@ -1,13 +1,22 @@
 from datetime import datetime
 from unittest import TestCase
-from src.main.python import Processor
-from src.main.python.Configuration import Configuration
-from src.main.python.Matchup import Matchup
-from src.main.python.Output import Output
+from opec import Processor
+from opec.Output import Output
+from opec.Configuration import Configuration
+from opec.Matchup import Matchup
 import os.path as path
 import os as os
 
 class OutputTest(TestCase):
+
+    @classmethod
+    def setUpClass(self):
+        self.cwd = os.getcwd()
+        os.chdir('..')
+
+    @classmethod
+    def tearDownClass(self):
+        os.chdir(self.cwd)
 
     def setUp(self):
         self.config = Configuration(1, 1, 0, 123, 12, 1234, 0.234)

@@ -1,14 +1,24 @@
 import logging
 import unittest
 import numpy as np
+import os
 from numpy.testing import assert_array_equal
-from src.main.python.Data import Data
+from opec.Data import Data
 
 class DataTest(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(self):
+        self.cwd = os.getcwd()
+        os.chdir('..')
+
+    @classmethod
+    def tearDownClass(self):
+        os.chdir(self.cwd)
+
     def setUp(self):
         logging.basicConfig(level=logging.DEBUG)
-        self.data = Data('../resources/test.nc')
+        self.data = Data('resources/test.nc')
 
     def tearDown(self):
         logging.basicConfig(level=logging.WARNING)
@@ -23,7 +33,7 @@ class DataTest(unittest.TestCase):
 
     def test_reference_records_count(self):
         self.assertEqual(3, self.data.reference_records_count())
-        self.data = Data('../resources/test_without_records.nc')
+        self.data = Data('resources/test_without_records.nc')
         self.assertEqual(0, self.data.reference_records_count())
 
     def tearDown(self):
