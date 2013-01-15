@@ -17,5 +17,6 @@ class MyFormatter(logging.Formatter):
         .replace('FATAL', 'C')
 
 handler = logging.StreamHandler()
-handler.setFormatter(MyFormatter(format='[%(levelname)s] %(asctime)-15s - %(message)s', datefmt='%Y-%d-%mT%H:%M:%S'))
+formatter = MyFormatter(format='[%(levelname)s] %(asctime)-15s - %(message)s', datefmt='%Y-%d-%mT%H:%M:%S')
+handler.setFormatter(formatter)
 logging.getLogger().addHandler(handler)

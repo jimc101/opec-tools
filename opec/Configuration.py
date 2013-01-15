@@ -12,9 +12,9 @@ def add_section_header(properties_file, header_name):
 class Configuration(object):
 
     def __init__(self, alpha=None, beta=None, ddof=None, macro_pixel_size=None, geo_delta=None, time_delta=None,
-                 depth_delta=None, log_level=None, zip=None, show_negative_corrcoeff=None, show_legend=None,
-                 target_dir=None, target_prefix=None, include_header=None, separator=None, properties_file_name=None,
-                 write_taylor_diagram=None):
+                 depth_delta=None, log_level=None, write_log_file=None, log_file=None, zip=None,
+                 show_negative_corrcoeff=None, show_legend=None, target_dir=None, target_prefix=None,
+                 include_header=None, separator=None, properties_file_name=None, write_taylor_diagram=None):
         """
         Priority:
         1) what is passed as parameter
@@ -28,22 +28,24 @@ class Configuration(object):
             target_dir = os.getcwd() # needed because if default shall be CWD, it cannot be put in the static config file
 
         self.__dict = {}
-        self.__set(alpha, 'alpha', float)
-        self.__set(beta, 'beta', float)
-        self.__set(ddof, 'ddof', int)
-        self.__set(macro_pixel_size, 'macro_pixel_size', int)
-        self.__set(geo_delta, 'geo_delta', float)
-        self.__set(time_delta, 'time_delta', int)
-        self.__set(depth_delta, 'depth_delta', float)
-        self.__set(log_level, 'log_level', log_level_conv)
-        self.__set(zip, 'zip', bool)
-        self.__set(show_negative_corrcoeff, 'show_negative_corrcoeff', bool)
-        self.__set(show_legend, 'show_legend', bool)
+        self.__set(alpha, 'opec.algo.percentile.alpha', float)
+        self.__set(beta, 'opec.algo.percentile.beta', float)
+        self.__set(ddof, 'opec.algo.stddev.ddof', int)
+        self.__set(macro_pixel_size, 'opec.matchup.macro_pixel_size', int)
+        self.__set(geo_delta, 'opec.matchup.geo_delta', float)
+        self.__set(time_delta, 'opec.matchup.time_delta', int)
+        self.__set(depth_delta, 'opec.matchup.depth_delta', float)
+        self.__set(log_level, 'opec.general.log_level', log_level_conv)
+        self.__set(write_log_file, 'opec.general.write_log_file', bool)
+        self.__set(log_file, 'opec.general.log_file', log_file_conv)
+        self.__set(zip, 'opec.output.zip', bool)
+        self.__set(show_negative_corrcoeff, 'opec.output.plot.taylor.show_negative_corrcoeff', bool)
+        self.__set(show_legend, 'opec.output.plot.taylor.show_legend', bool)
         self.__set(target_dir, 'target_dir', str)
-        self.__set(target_prefix, 'target_prefix', str)
-        self.__set(separator, 'separator', separator_conv)
-        self.__set(include_header, 'include_header', bool)
-        self.__set(write_taylor_diagram, 'write_taylor_diagram', bool)
+        self.__set(target_prefix, 'opec.output.target_prefix', str)
+        self.__set(separator, 'opec.output.csv.separator', separator_conv)
+        self.__set(include_header, 'opec.output.csv.include_header', bool)
+        self.__set(write_taylor_diagram, 'opec.output.plot.write_taylor_diagram', bool)
 
     def __set(self, value, name, converter):
         if value is not None:
@@ -70,52 +72,58 @@ class Configuration(object):
         default_properties_file.close()
 
     def __alpha(self):
-        return self.__dict['alpha']
+        return self.__dict['opec.algo.percentile.alpha']
 
     def __beta(self):
-        return self.__dict['beta']
+        return self.__dict['opec.algo.percentile.beta']
 
     def __ddof(self):
-        return self.__dict['ddof']
+        return self.__dict['opec.algo.stddev.ddof']
 
     def __macro_pixel_size(self):
-        return self.__dict['macro_pixel_size']
+        return self.__dict['opec.matchup.macro_pixel_size']
 
     def __geo_delta(self):
-        return self.__dict['geo_delta']
+        return self.__dict['opec.matchup.geo_delta']
 
     def __time_delta(self):
-        return self.__dict['time_delta']
+        return self.__dict['opec.matchup.time_delta']
 
     def __depth_delta(self):
-        return self.__dict['depth_delta']
+        return self.__dict['opec.matchup.depth_delta']
 
     def __log_level(self):
-        return self.__dict['log_level']
+        return self.__dict['opec.general.log_level']
+
+    def __write_log_file(self):
+        return self.__dict['opec.general.write_log_file']
+
+    def __log_file(self):
+        return self.__dict['opec.general.log_file']
 
     def __zip(self):
-        return self.__dict['zip']
+        return self.__dict['opec.output.zip']
 
     def __show_negative_corrcoeff(self):
-        return self.__dict['show_negative_corrcoeff']
+        return self.__dict['opec.output.plot.taylor.show_negative_corrcoeff']
 
     def __show_legend(self):
-        return self.__dict['show_legend']
+        return self.__dict['opec.output.plot.taylor.show_legend']
 
     def __target_dir(self):
         return self.__dict['target_dir']
 
     def __target_prefix(self):
-        return self.__dict['target_prefix']
+        return self.__dict['opec.output.target_prefix']
 
     def __include_header(self):
-        return self.__dict['include_header']
+        return self.__dict['opec.output.csv.include_header']
 
     def __separator(self):
-        return self.__dict['separator']
+        return self.__dict['opec.output.csv.separator']
 
     def __write_taylor_diagram(self):
-        return self.__dict['write_taylor_diagram']
+        return self.__dict['opec.output.plot.write_taylor_diagram']
 
     alpha = property(__alpha)
     beta = property(__beta)
@@ -125,6 +133,8 @@ class Configuration(object):
     time_delta = property(__time_delta)
     depth_delta = property(__depth_delta)
     log_level = property(__log_level)
+    log_file = property(__log_file)
+    write_log_file = property(__write_log_file)
     zip = property(__zip)
     show_negative_corrcoeff = property(__show_negative_corrcoeff)
     show_legend = property(__show_legend)
@@ -161,3 +171,6 @@ def separator_conv(value):
     if value in ('\' \''):
         return ' '
     return value
+
+def log_file_conv(value):
+    return None if value.strip() == 'None' else value

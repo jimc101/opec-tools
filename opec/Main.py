@@ -39,11 +39,41 @@ def parse_arguments(arguments):
 def ref_stddev(statistics):
     return np.max(list(map(lambda x: x.get('ref_stddev'), statistics)))
 
+def zip(collected_csv_target_files, config, file_handler, log_file, parsed_args, taylor_target_file):
+    zipped_files = []
+    zipfile = ZipFile('%s\\%sbenchmarks.zip' % (parsed_args.o, config.target_prefix), 'w')
+    logging.info('Creating zip file: %s' % zipfile.filename)
+    for file in collected_csv_target_files:
+        zipfile.write(file, os.path.basename(file))
+        zipped_files.append(file)
+    if config.write_taylor_diagram:
+        zipfile.write(taylor_target_file, os.path.basename(taylor_target_file))
+        zipped_files.append(taylor_target_file)
+    if config.write_log_file:
+        logging.getLogger().removeHandler(file_handler)
+        file_handler.flush()
+        file_handler.close()
+        zipfile.write(log_file, os.path.basename(log_file))
+        zipped_files.append(log_file)
+    zipfile.close()
+    for file in zipped_files:
+        os.remove(file)
+
+#noinspection PyUnboundLocalVariable
+def setup_logging(config):
+    if config.write_log_file:
+        log_file = config.log_file if config.log_file is not None else '%s/benchmarking.log' % config.target_dir
+        file_handler = logging.FileHandler(log_file)
+        logging.getLogger().addHandler(file_handler)
+    logging.getLogger().setLevel(level=config.log_level)
+    logging.info('Starting benchmark')
+    return file_handler, log_file
+
+#noinspection PyUnboundLocalVariable
 def main():
     parsed_args = parse_arguments(sys.argv[1:])
     config = Configuration(properties_file_name=parsed_args.a, target_dir=parsed_args.o, target_prefix=parsed_args.p)
-    logging.getLogger().setLevel(level=config.log_level)
-    logging.info('Starting benchmark')
+    file_handler, log_file = setup_logging(config)
     data = Data(parsed_args.path)
     me = MatchupEngine(data, config)
     collected_statistics = []
@@ -64,17 +94,9 @@ def main():
         logging.info('Taylor diagram written to \'%s\'' % taylor_target_file)
 
     if config.zip:
-        zipfile = ZipFile('%s\\%sbenchmarks.zip' % (parsed_args.o, config.target_prefix), 'w')
-        for file in collected_csv_target_files:
-            zipfile.write(file, os.path.basename(file))
-        if config.write_taylor_diagram:
-            #noinspection PyUnboundLocalVariable
-            zipfile.write(taylor_target_file, os.path.basename(taylor_target_file))
-        zipfile.close()
-        for file in collected_csv_target_files:
-            os.remove(file)
-        if config.write_taylor_diagram:
-            os.remove(taylor_target_file)
+        zip(collected_csv_target_files, config, file_handler, log_file, parsed_args, taylor_target_file)
+
+    logging.info('End of process')
 
 if __name__ == '__main__':
     main()
