@@ -42,7 +42,7 @@ def ref_stddev(statistics):
 def main():
     parsed_args = parse_arguments(sys.argv[1:])
     config = Configuration(properties_file_name=parsed_args.a, target_dir=parsed_args.o, target_prefix=parsed_args.p)
-    logging.basicConfig(level=config.log_level, format='[%(levelname)s] %(asctime)-15s - %(message)s', datefmt='%Y-%d-%mT%H:%M:%S')
+    logging.getLogger().setLevel(level=config.log_level)
     logging.info('Starting benchmark')
     data = Data(parsed_args.path)
     me = MatchupEngine(data, config)
