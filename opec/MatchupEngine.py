@@ -62,7 +62,7 @@ class MatchupEngine(object):
                     spacetime_position = [matchup_time[1]] # first dimension: time
                     if matchup_depth is not None:
                         cell_position.append(matchup_depth[0]) # second dimension: depth (if existing)
-                        spacetime_position.append([matchup_depth[1]]) # second dimension: depth (if existing)
+                        spacetime_position.append(matchup_depth[1]) # second dimension: depth (if existing)
                     cell_position.append(matchup_position[1]) # second or third dimension: lat
                     spacetime_position.append(matchup_position[3]) # second or third dimension: lat
                     cell_position.append(matchup_position[0]) # third or fourth dimension: lon

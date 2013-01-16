@@ -55,8 +55,8 @@ class Output(object):
         if matchups is not None:
             lines.append('')
             lines.append('# Matchups:')
-            lines.append('')
             for matchup_number, matchup in enumerate(matchups):
+                lines.append('')
                 lines.append('\n'.join(self.__matchup_infos(matchup_number, matchup)))
 
         if target_file is not None:
@@ -137,6 +137,9 @@ class Output(object):
         for line in lines:
             file.write("%s\n" % line)
         file.close()
+
+    def xhtml(self, statistics, matchups, target_file):
+        pass
 
     def taylor(self, statistics, target_file):
         diagram = Plotter.create_taylor_diagram(statistics, config=self.config)

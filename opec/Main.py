@@ -86,7 +86,7 @@ def main():
         collected_statistics.append(stats)
         csv_target_file = '%s\\%s%s_statistics.csv' % (parsed_args.o, config.target_prefix, pair[0])
         collected_csv_target_files.append(csv_target_file)
-        output.csv(stats, target_file=csv_target_file, matchup_count=len(matchups), ref_variable_name=pair[0], variable_name=pair[1])
+        output.csv(stats, variable_name=pair[1], ref_variable_name=pair[0], matchups=matchups, target_file=csv_target_file)
         logging.info('CSV output written to \'%s\'' % csv_target_file)
 
     if config.write_taylor_diagram:
