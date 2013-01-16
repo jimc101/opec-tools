@@ -19,13 +19,14 @@ Note:
 
 Prerequisites for building:
 
-- Python 3.x interpreter
+- Python 3.2 interpreter
 - numpy 1.6.2
 - scipy 0.11.0
 - netCDF 1.0.1
 - nose 1.2.1
 (- numexpr 2.0.1)
 - argparse 1.1
+- mako 0.7.3
 
 Coding Conventions (loosely based on http://www.python.org/dev/peps/pep-0008/ and http://google-styleguide.googlecode.com/svn/trunk/pyguide.html):
 

@@ -1,3 +1,6 @@
+from io import StringIO
+from mako.runtime import Context
+from mako.template import Template
 from datetime import datetime
 import os
 from opec import Plotter
@@ -72,7 +75,7 @@ class Output(object):
         lines.append('#')
         lines.append('##############################################################')
         lines.append('#')
-        lines.append('# Created on {}'.format(datetime.now().strftime('%b %d, %Y at %H:%M:%S')))
+        lines.append('# Performed at {}'.format(datetime.now().strftime('%b %d, %Y at %H:%M:%S')))
         lines.append('#')
         if matchups is not None:
             lines.append('# Number of matchups: %s' % len(matchups))
@@ -138,8 +141,30 @@ class Output(object):
             file.write("%s\n" % line)
         file.close()
 
-    def xhtml(self, statistics, matchups, target_file):
-        pass
+    def xhtml(self, statistics, matchups, target_file=None):
+        template = Template(filename='resources/matchup_report_template.xml')
+        buf = StringIO()
+        ctx = Context(buf,
+            performedAt=datetime.now().strftime('%b %d, %Y at %H:%M:%S'),
+            recordCount=len(matchups),
+            geoDelta=self.config.geo_delta,
+            timeDelta=self.config.time_delta,
+            depthDelta=self.config.depth_delta,
+            ddof=self.config.ddof,
+            alpha=self.config.alpha,
+            beta=self.config.beta,
+            combinedStats={'rmse':0.3, 'bias':0.5})
+        template.render_context(ctx)
+        xml = buf.getvalue()
+
+        if target_file is not None:
+            directory = os.path.dirname(target_file)
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+            file = open(target_file, 'w')
+            file.write(xml)
+            file.close()
+        return xml, None
 
     def taylor(self, statistics, target_file):
         diagram = Plotter.create_taylor_diagram(statistics, config=self.config)

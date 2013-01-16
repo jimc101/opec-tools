@@ -4,3 +4,5 @@
 test_output.csv
 resources/target_test.png
 resources/taylor_test.png
+resources/matchup_report.xml
+resources/matchup_report.xsl

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="analysis-summary.xsl"?>
+
+<analysisSummary>
+
+  <performedAt>${performedAt}</performedAt>
+  <recordCount>${recordCount}</recordCount>
+
+  <configuration>
+    <property>
+      <name>Maximum geographic delta</name>
+      <value>${geoDelta}</value>
+    </property>
+    <property>
+      <name>Maximum time delta</name>
+      <value>${timeDelta}</value>
+    </property>
+    <property>
+      <name>Maximum depth delta</name>
+      <value>${depthDelta}</value>
+    </property>
+    <property>
+      <name>delta degrees of freedom</name>
+      <value>${ddof}</value>
+    </property>
+    <property>
+      <name>alpha</name>
+      <value>${alpha}</value>
+    </property>
+    <property>
+      <name>beta</name>
+      <value>${beta}</value>
+    </property>
+  </configuration>
+
+  <statistics>
+    % for var in combinedStats.keys():
+    <stat>
+      <variable_name></variable_name>
+      <ref_variable_name></ref_variable_name>
+        <stats>
+          <name>buh</name>
+          <value>beh</value>
+        </stats>
+    </stat>
+    % endfor
+  </statistics>
+
+</analysisSummary>

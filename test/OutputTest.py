@@ -31,9 +31,7 @@ class OutputTest(TestCase):
                 self.fail('Failed to delete {}'.format(self.temp_filename))
 
     def test_output_csv(self):
-
         output = Output(config=self.config)
-
         expected_result = []
         expected_result.append("##############################################################")
         expected_result.append("#")
@@ -41,7 +39,7 @@ class OutputTest(TestCase):
         expected_result.append("#")
         expected_result.append("##############################################################")
         expected_result.append("#")
-        expected_result.append("# Created on {}".format(datetime.now().strftime('%b %d, %Y at %H:%M:%S')))
+        expected_result.append("# Performed at {}".format(datetime.now().strftime('%b %d, %Y at %H:%M:%S')))
         expected_result.append("#")
         expected_result.append("# Number of matchups: 1")
         expected_result.append("#")
@@ -102,9 +100,18 @@ class OutputTest(TestCase):
         self.assertTrue(output.csv(self.stats, 'chl', 'chl_ref', matchups=matchups).startswith("\n".join(expected_result)))
 
     def test_write_csv_file(self):
-        output = Output(statistics=self.stats)
+        output = Output()
         self.assertFalse(path.exists(self.temp_filename))
         output.csv(self.stats, 'Heidi', 'some_ref', target_file=self.temp_filename)
         self.assertTrue(path.exists(self.temp_filename))
         os.remove(self.temp_filename)
         self.assertFalse(path.exists(self.temp_filename))
+
+    def test_output_xhtml(self):
+        output = Output()
+        matchup_1 = Matchup([0, 0, 0, 0], [300000, 0.12, 55.1, 5.3], ReferenceRecord(0, 5.4, 55.3, 300200, 0.11))
+        matchup_2 = Matchup([0, 0, 0, 1], [300000, 0.12, 55.1, 5.3], ReferenceRecord(1, 5.8, 57.2, 300400, 0.12))
+        matchups = [matchup_1, matchup_2]
+        self.xml_target_file = 'resources/matchup_report.xml'
+        output.xhtml(self.stats, matchups, self.xml_target_file)
+#        os.remove(self.xml_target_file)
