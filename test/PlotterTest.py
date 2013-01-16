@@ -23,7 +23,7 @@ class PlotterTest(unittest.TestCase):
 
         values1 = np.array([2, 14, 8, 6, 10, 9, 6, 7, 2, 15, 10, 0, 2, 2, 8])
         reference_values1 = np.array([9, 10, 1, 2, 11, 3, 7, 5, 4, 12, 7, 8, 5, 1, 14])
-        stats1 = Processor.calculate_statistics(model_values=values1, reference_values=reference_values1, model_name='Kate Moss value')
+        stats1 = Processor.calculate_statistics(model_values=values1, reference_values=reference_values1, model_name='Kate')
 
         values2 = np.array([-2, -14, -8, -6, -10, -9, -6, 7, 2, 15, 10, 0, 2, 2, 8])
         reference_values2 = np.array([9, 10, 1, 2, 11, 3, 7, 5, 4, 12, 7, 8, 5, 1, 14])
@@ -40,7 +40,7 @@ class PlotterTest(unittest.TestCase):
      #   print('corrcoeff: %s' % stats2['corrcoeff'])
 
         diagram = plotter.create_taylor_diagram((stats, stats1), 10)
-        diagram.plot_sample(stats2['corrcoeff'], stats2['stddev'], model_name='Linda Evangelista value')
+        diagram.plot_sample(stats2['corrcoeff'], stats2['stddev'], model_name='Linda')
         diagram.write('../resources/taylor_test.png')
         # pypl.show()
 
@@ -68,5 +68,5 @@ class PlotterTest(unittest.TestCase):
      #   print('corrcoeff: %s' % stats2['corrcoeff'])
 
         diagram = plotter.create_target_diagram((stats, stats1))
-        diagram.write('../resources/target_test.png')
+        diagram.write('resources/target_test.png')
         # pypl.show()
