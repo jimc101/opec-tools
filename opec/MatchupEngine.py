@@ -29,7 +29,7 @@ class MatchupEngine(object):
         for rr in reference_records:
             matchups = self.find_matchups(rr)
             all_matchups.extend(matchups)
-        logging.debug('Found %s matchups.' % len(all_matchups))
+        logging.debug('Found %s matchups' % len(all_matchups))
         return all_matchups
 
     def find_reference_records(self):
@@ -47,7 +47,7 @@ class MatchupEngine(object):
                 ref_depth = None
             rr = ReferenceRecord(record_number, ref_lat, ref_lon, ref_time, ref_depth)
             reference_records.append(rr)
-        logging.debug('Found %s reference records.' % (len(reference_records)))
+        logging.debug('Found %s reference records' % (len(reference_records)))
         return reference_records
 
     def find_matchups(self, reference_record):

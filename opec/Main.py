@@ -3,7 +3,7 @@ import argparse
 import logging
 import sys
 from zipfile import ZipFile
-from opec import Processor
+from opec import Processor, Utils
 from opec.Configuration import Configuration
 from opec.MatchupEngine import MatchupEngine
 from opec.Data import Data
@@ -63,7 +63,8 @@ def zip(collected_csv_target_files, config, file_handler, log_file, parsed_args,
 def setup_logging(config):
     if config.write_log_file:
         log_file = config.log_file if config.log_file is not None else '%s/benchmarking.log' % config.target_dir
-        file_handler = logging.FileHandler(log_file)
+        file_handler = logging.FileHandler(log_file, 'w')
+        file_handler.setFormatter(Utils.get_logging_formatter())
         logging.getLogger().addHandler(file_handler)
     logging.getLogger().setLevel(level=config.log_level)
     logging.info('Starting benchmark')
@@ -79,8 +80,8 @@ def main():
     collected_statistics = []
     collected_csv_target_files = []
     output = Output(config=config, source_file=parsed_args.path)
+    matchups = me.find_all_matchups()
     for pair in parsed_args.v:
-        matchups = me.find_all_matchups()
         stats = Processor.calculate_statistics(matchups=matchups, config=config, model_name=pair[1], ref_name=pair[0], data=data)
         collected_statistics.append(stats)
         csv_target_file = '%s\\%s%s_statistics.csv' % (parsed_args.o, config.target_prefix, pair[0])
