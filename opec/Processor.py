@@ -3,13 +3,15 @@ import numpy.ma as ma
 import scipy.stats.mstats as mstats
 from opec.Configuration import get_default_config
 
-def extract_values(matchups):
+def extract_values(matchups, data, ref_name, model_name):
     reference_values = np.empty(len(matchups))
     model_values = np.empty(len(matchups))
     index = 0
     for matchup in matchups:
-        reference_values[index] = matchup.ref_value
-        model_values[index] = matchup.model_value
+        model_origin = matchup.cell_position
+        shape = np.ones([len(model_origin)], int)
+        reference_values[index] = data.read(ref_name, [matchup.reference_record.record_number], [1])
+        model_values[index] = data.read(model_name, model_origin, shape)
         index += 1
     return reference_values, model_values
 
@@ -83,13 +85,22 @@ def harmonise(reference_values, model_values):
     model_values.mask = reference_values.mask | model_values.mask
     return reference_values, model_values
 
-def calculate_statistics(matchups=None, reference_values=None, model_values=None, config=None, model_name=None, ref_name=None):
-    if reference_values is None or model_values is None:
-        reference_values, model_values = extract_values(matchups)
-        if model_name is None:
-            model_name = matchups[0].model_variable_name
-        if ref_name is None:
-            ref_name = matchups[0].ref_variable_name
+def calculate_statistics(matchups=None, reference_values=None, model_values=None, config=None, ref_name=None, model_name=None, data=None):
+    """Calculate the statistics for either the given matchups or the given reference and model arrays.
+    If matchups are given, the reference and model arrays are NOT considered and vice versa.
+    If matchups are given, the data, model_name, and ref_name arguments are mandatory. Otherwise, it is recommended to
+    provide model_name and ref_name.
+    """
+
+    if matchups is not None:
+        if model_name is None or ref_name is None:
+            raise ValueError('Cannot calculate statistics from matchups: model_name or ref_name missing.')
+        if data is None:
+            raise ValueError('Cannot calculate statistics from matchups: data missing.')
+        reference_values, model_values = extract_values(matchups, data, ref_name, model_name)
+    elif reference_values is None or model_values is None:
+        raise ValueError('Cannot calculate statistics from matchups: missing either matchups or reference and model values.')
+
     reference_values, model_values = harmonise(reference_values, model_values)
     if ma.count(model_values) != ma.count(reference_values):
         raise ValueError("len(values) != len(reference_values)")

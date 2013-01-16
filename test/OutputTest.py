@@ -3,7 +3,6 @@ from unittest import TestCase
 from opec import Processor
 from opec.Output import Output
 from opec.Configuration import Configuration
-from opec.Matchup import Matchup
 import os.path as path
 import os as os
 
@@ -20,13 +19,7 @@ class OutputTest(TestCase):
 
     def setUp(self):
         self.config = Configuration(1, 1, 0, 123, 12, 1234, 0.234)
-        matchups = [
-            Matchup('chl_ref', 'chl', 10, 11, 55, 20, 10000, 0, 0, 0, 0.1, 0),
-            Matchup('chl_ref', 'chl', 10, 9, 55, 20, 10000, 0, 0, 0, 0.1, 0),
-            Matchup('chl_ref', 'chl', 10, 11.2, 55, 20, 10000, 0, 0, 0, 0.1, 0),
-            Matchup('chl_ref', 'chl', 10, 10.5, 55, 20, 10000, 0, 0, 0, 0.1, 0)
-        ]
-        self.stats = Processor.calculate_statistics(matchups, config=self.config)
+        self.stats = Processor.calculate_statistics(reference_values=[10, 10, 10, 10], model_values=[11, 9, 11.2, 10.5], config=self.config)
         self.temp_filename = '../resources/test_output.csv'
 
     def tearDown(self):

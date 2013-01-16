@@ -80,8 +80,8 @@ def main():
     collected_csv_target_files = []
     output = Output(config=config, source_file=parsed_args.path)
     for pair in parsed_args.v:
-        matchups = me.find_all_matchups(pair[0], pair[1])
-        stats = Processor.calculate_statistics(matchups=matchups, config=config, model_name=pair[1], ref_name=pair[0])
+        matchups = me.find_all_matchups()
+        stats = Processor.calculate_statistics(matchups=matchups, config=config, model_name=pair[1], ref_name=pair[0], data=data)
         collected_statistics.append(stats)
         csv_target_file = '%s\\%s%s_statistics.csv' % (parsed_args.o, config.target_prefix, pair[0])
         collected_csv_target_files.append(csv_target_file)

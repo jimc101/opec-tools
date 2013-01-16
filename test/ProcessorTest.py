@@ -28,8 +28,8 @@ class ProcessorTest(TestCase):
         self.data.close()
 
     def test_compute_statistics_for_matchups(self):
-        matchups = self.me.find_all_matchups('chl_ref', 'chl')
-        stats = calculate_statistics(matchups, config=self.config)
+        matchups = self.me.find_all_matchups()
+        stats = calculate_statistics(matchups, config=self.config, ref_name='chl_ref', model_name='chl', data=self.data)
         self.assertEqual('chl', stats['model_name'])
         self.assertEqual('chl_ref', stats['ref_name'])
         self.assertAlmostEqual(0.0960456, stats['rmse'], 5)
