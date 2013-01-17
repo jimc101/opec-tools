@@ -1,0 +1,54 @@
+from opec import *
+data = load('resources/test.nc')
+data
+
+data.ref_vars()
+data.model_vars()
+
+stats = calculate_statistics('chl', 'chl_ref', data)
+stats
+stats['rmse']
+stats['unbiased_rmse']
+stats['p90']
+
+m = get_matchups(data)
+m
+print(m[0])
+
+valid_matchups = [m[1]]
+valid_matchups
+
+stats2 = calculate_statistics_from_matchups(valid_matchups, 'chl', 'chl_ref', data)
+stats2['rmse']
+stats2['unbiased_rmse']
+stats2['p90']
+
+reference_data, model_data = extract_values_from_matchups(valid_matchups, 'chl', 'chl_ref', data)
+reference_data
+
+model_data
+model_data[0] = 0.5
+
+stats3 = calculate_statistics_from_values(model_data, reference_data)
+stats3['rmse']
+stats3['unbiased_rmse']
+stats3['p90']
+
+write_csv(stats3, 'chl', 'chl_ref', valid_matchups, './chl_stats.csv')
+
+#
+# More customisation
+#
+
+config = Configuration(geo_delta=20, time_delta=86400, depth_delta=2.0, alpha=0.4, beta=0.4)
+
+m = get_matchups(data, config)
+m
+
+stats4 = calculate_statistics_from_matchups(m, 'chl', 'chl_ref', data, config)
+stats4['rmse']
+stats4['unbiased_rmse']
+stats4['p90']
+
+write_csv(stats4, 'chl', 'chl_ref', m, './chl_stats_2.csv', config)
+write_taylor_diagram(stats4, './chl_stats.png')

@@ -26,7 +26,7 @@ class Output(object):
             config -- the configuration the processors and matchup engine have been run with (optional)
             source_file -- a reference to the file the benchmarks were computed on (optional)
         """
-        self.config = kwargs['config'] if 'config' in kwargs.keys() else get_default_config()
+        self.config = kwargs['config'] if 'config' in kwargs.keys() and kwargs['config'] is not None else get_default_config()
         self.source_file = kwargs['source_file'] if 'source_file' in kwargs.keys() else None
         self.separator = self.config.separator
 
