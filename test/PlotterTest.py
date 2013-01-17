@@ -41,7 +41,7 @@ class PlotterTest(unittest.TestCase):
 
         diagram = plotter.create_taylor_diagram((stats, stats1), 10)
         diagram.plot_sample(stats2['corrcoeff'], stats2['stddev'], model_name='Linda')
-        diagram.write('../resources/taylor_test.png')
+        diagram.write('resources/taylor_test.png')
         # pypl.show()
 
     def test_target_diagram(self):

@@ -11,11 +11,10 @@ def add_section_header(properties_file, header_name):
 
 class Configuration(object):
 
-    def __init__(self, alpha=None, beta=None, ddof=None, macro_pixel_size=None, geo_delta=None, time_delta=None,
-                 depth_delta=None, log_level=None, write_log_file=None, log_file=None, zip=None,
-                 show_negative_corrcoeff=None, show_legend=None, target_dir=None, target_prefix=None,
-                 include_header=None, separator=None, properties_file_name=None, write_taylor_diagram=None,
-                 write_xhtml=None, write_csv=None):
+    def __init__(self, alpha=None, beta=None, ddof=None, geo_delta=None, time_delta=None, depth_delta=None,
+                 log_level=None, write_log_file=None, log_file=None, zip=None, show_negative_corrcoeff=None,
+                 show_legend=None, target_dir=None, target_prefix=None, include_header=None, separator=None,
+                 properties_file_name=None, write_taylor_diagram=None, write_xhtml=None, write_csv=None):
         """
         Priority:
         1) what is passed as parameter
@@ -32,7 +31,6 @@ class Configuration(object):
         self.__set(alpha, 'opec.algo.percentile.alpha', float)
         self.__set(beta, 'opec.algo.percentile.beta', float)
         self.__set(ddof, 'opec.algo.stddev.ddof', int)
-        self.__set(macro_pixel_size, 'opec.matchup.macro_pixel_size', int)
         self.__set(geo_delta, 'opec.matchup.geo_delta', float)
         self.__set(time_delta, 'opec.matchup.time_delta', int)
         self.__set(depth_delta, 'opec.matchup.depth_delta', float)
@@ -82,9 +80,6 @@ class Configuration(object):
 
     def __ddof(self):
         return self.__dict['opec.algo.stddev.ddof']
-
-    def __macro_pixel_size(self):
-        return self.__dict['opec.matchup.macro_pixel_size']
 
     def __geo_delta(self):
         return self.__dict['opec.matchup.geo_delta']
@@ -137,7 +132,6 @@ class Configuration(object):
     alpha = property(__alpha)
     beta = property(__beta)
     ddof = property(__ddof)
-    macro_pixel_size = property(__macro_pixel_size)
     geo_delta = property(__geo_delta)
     time_delta = property(__time_delta)
     depth_delta = property(__depth_delta)

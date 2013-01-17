@@ -21,7 +21,6 @@ class ConfigurationTest(unittest.TestCase):
         self.assertEqual(2, c.ddof)
         self.assertEqual(12, c.depth_delta)
         self.assertEqual(1, c.geo_delta)
-        self.assertEqual(3, c.macro_pixel_size)
         self.assertEqual(86400, c.time_delta)
         self.assertEqual(logging.INFO, c.log_level)
         self.assertEqual(False, c.zip)
@@ -43,7 +42,6 @@ class ConfigurationTest(unittest.TestCase):
         self.assertEqual(2, c.ddof)
         self.assertEqual(3, c.depth_delta)
         self.assertEqual(1, c.geo_delta)
-        self.assertEqual(5, c.macro_pixel_size)
         self.assertEqual(200, c.time_delta)
         self.assertEqual(logging.INFO, c.log_level)    # does not appear in test.properties, so it is taken from default file
         self.assertEqual(False, c.zip)             # does not appear in test.properties, so it is taken from default file

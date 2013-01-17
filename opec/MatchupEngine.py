@@ -27,8 +27,9 @@ class MatchupEngine(object):
         reference_records = self.find_reference_records()
         all_matchups = []
         for rr in reference_records:
-            matchups = self.find_matchups(rr)
-            all_matchups.extend(matchups)
+            matchup = self.find_matchup(rr)
+            if matchup is not None:
+                all_matchups.append(matchup)
         logging.debug('Found %s matchups' % len(all_matchups))
         return all_matchups
 
@@ -50,57 +51,45 @@ class MatchupEngine(object):
         logging.debug('Found %s reference records' % (len(reference_records)))
         return reference_records
 
-    def find_matchups(self, reference_record):
-        matchup_positions = self.find_matchup_positions(reference_record.lat, reference_record.lon)
-        matchup_times = self.find_matchup_times(reference_record.time)
-        matchup_depths = self.__find_matchup_depths(reference_record.depth)
-        matchups = []
-        for matchup_position in matchup_positions:
-            for matchup_time in matchup_times:
-                for matchup_depth in matchup_depths:
-                    cell_position = [matchup_time[0]] # first dimension: time
-                    spacetime_position = [matchup_time[1]] # first dimension: time
-                    if matchup_depth is not None:
-                        cell_position.append(matchup_depth[0]) # second dimension: depth (if existing)
-                        spacetime_position.append(matchup_depth[1]) # second dimension: depth (if existing)
-                    cell_position.append(matchup_position[1]) # second or third dimension: lat
-                    spacetime_position.append(matchup_position[3]) # second or third dimension: lat
-                    cell_position.append(matchup_position[0]) # third or fourth dimension: lon
-                    spacetime_position.append(matchup_position[2]) # third or fourth dimension: lon
+    def find_matchup(self, reference_record):
+        matchup_position = self.find_matchup_position(reference_record.lat, reference_record.lon)
+        matchup_time = self.find_matchup_time(reference_record.time)
+        matchup_depth = self.__find_matchup_depth(reference_record.depth)
+        if None in (matchup_position, matchup_time):
+            return None
 
-                    matchup = Matchup(cell_position, spacetime_position, reference_record)
-                    matchups.append(matchup)
-        return matchups
+        cell_position = [matchup_time[0]] # first dimension: time
+        spacetime_position = [matchup_time[1]] # first dimension: time
+        if matchup_depth is not None:
+            cell_position.append(matchup_depth[0]) # second dimension: depth (if existing)
+            spacetime_position.append(matchup_depth[1]) # second dimension: depth (if existing)
+        cell_position.append(matchup_position[1]) # second or third dimension: lat
+        spacetime_position.append(matchup_position[3]) # second or third dimension: lat
+        cell_position.append(matchup_position[0]) # third or fourth dimension: lon
+        spacetime_position.append(matchup_position[2]) # third or fourth dimension: lon
+
+        return Matchup(cell_position, spacetime_position, reference_record)
 
     def __find_position(self, dimension, target_value):
         dim_size = self.data.dim_size(dimension)
         pixel_size = self.data[dimension][1] - self.data[dimension][0]
         return normalise((target_value - self.data[dimension][0]) / pixel_size, dim_size - 1)
 
-    def find_matchup_positions(self, ref_lat, ref_lon):
+    def find_matchup_position(self, ref_lat, ref_lon):
         self.__prepare_lat_lon_data()
-        offset = int(self.config.macro_pixel_size / 2)
 
         pixel_x = self.__find_position('lon', ref_lon)
         pixel_y = self.__find_position('lat', ref_lat)
 
-        x_size = self.data.dim_size('lon')
-        y_size = self.data.dim_size('lat')
+        pixel_position = None
 
-        pixel_positions = []
-        min_x = max(pixel_x - offset, 0)
-        max_x = min(pixel_x + offset, x_size - 1)
-        min_y = max(pixel_y - offset, 0)
-        max_y = min(pixel_y + offset, y_size - 1)
+        current_lon = self.data['lon'][pixel_x]
+        current_lat = self.data['lat'][pixel_y]
 
-        for x in range(min_x, max_x + 1):
-            current_lon = self.data['lon'][x]
-            for y in range(min_y, max_y + 1):
-                current_lat = self.data['lat'][y]
-                if delta(current_lat, current_lon, ref_lat, ref_lon) < self.config.geo_delta:
-                    pixel_positions.append((x, y, current_lon, current_lat))
+        if delta(current_lat, current_lon, ref_lat, ref_lon) < self.config.geo_delta:
+            pixel_position = (pixel_x, pixel_y, current_lon, current_lat)
 
-        return pixel_positions
+        return pixel_position
 
     def __prepare_lat_lon_data(self):
         if not 'lon' in self.data:
@@ -108,24 +97,27 @@ class MatchupEngine(object):
         if not 'lat' in self.data:
             self.data.read('lat')
 
-    def find_matchup_times(self, ref_time):
-        return self.__find_matchup_indices('time', ref_time, self.config.time_delta)
+    def find_matchup_time(self, ref_time):
+        return self.__find_matchup_index('time', ref_time, self.config.time_delta)
 
-    def __find_matchup_depths(self, ref_depth):
+    def __find_matchup_depth(self, ref_depth):
         if not self.data.has_variable('depth'):
-            return [None]
-        return self.__find_matchup_indices('depth', ref_depth, self.config.depth_delta)
+            return None
+        return self.__find_matchup_index('depth', ref_depth, self.config.depth_delta)
 
-    def __find_matchup_indices(self, dimension, ref, max_delta):
+    def __find_matchup_index(self, dimension, ref, max_delta):
         self.data.read(dimension)
         dimension_data = self.data[dimension]
+        current_delta = float("inf")
         index = 0
-        matchup_indices = []
+        matchup_index = None
         for d in dimension_data:
-            if fabs(ref - d) < max_delta:
-                matchup_indices.append((index, d))
+            difference = fabs(ref - d)
+            if difference < current_delta and difference < max_delta:
+                current_delta = difference
+                matchup_index = index, d
             index += 1
-        return matchup_indices
+        return matchup_index
 
     def __read_reference_dimensions(self, ref_depth_variable_name, ref_lat_variable_name, ref_lon_variable_name,
                                ref_time_variable_name):

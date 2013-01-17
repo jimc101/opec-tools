@@ -20,7 +20,7 @@ class OutputTest(TestCase):
         os.chdir(self.cwd)
 
     def setUp(self):
-        self.config = Configuration(1, 1, 0, 123, 12, 1234, 0.234)
+        self.config = Configuration(1, 1, 0, 12, 1234, 0.234)
         self.stats = Processor.calculate_statistics(reference_values=[10, 10, 10, 10], model_values=[11, 9, 11.2, 10.5], config=self.config, ref_name='chl_ref', model_name='chl')
         self.temp_filename = 'resources/test_output.csv'
 
