@@ -39,15 +39,21 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class="name">Model variable:</td>
+                        <td class="name">Model variables:</td>
                         <td class="value">
-                            <xsl:value-of select="analysisSummary/modelVariable"/>
+                            <xsl:for-each select="analysisSummary/modelVariables/modelVariable">
+                                <xsl:value-of select="text()"/>
+                                <br/>
+                            </xsl:for-each>
                         </td>
                     </tr>
                     <tr>
-                        <td class="name">Reference variable:</td>
+                        <td class="name">Reference variables:</td>
                         <td class="value">
-                            <xsl:value-of select="analysisSummary/referenceVariable"/>
+                            <xsl:for-each select="analysisSummary/referenceVariables/referenceVariable">
+                                <xsl:value-of select="text()"/>
+                                <br/>
+                            </xsl:for-each>
                         </td>
                     </tr>
                 </table>
@@ -81,89 +87,96 @@
                     </xsl:for-each>
                 </table>
 
-                <h3>Relative Statistics for
-                    <xsl:value-of select="analysisSummary/modelVariable"/>
-                    and
-                    <xsl:value-of select="analysisSummary/referenceVariable"/>
-                </h3>
+                <xsl:for-each select="analysisSummary/statistics/statistic[@type='relative']">
+                    <h3>Relative Statistics for
+                        <xsl:value-of select="model_name"/>
+                        with
+                        <xsl:value-of select="ref_name"/>
+                    </h3>
 
-                <table>
-                    <tr class="table_header">
-                        <td>
-                            Statistical Term
-                        </td>
-                        <td>
-                            Value
-                        </td>
-                    </tr>
-                    <xsl:for-each select="analysisSummary/statistics/statistic[@type='relative']/properties/property">
-                        <tr>
-                            <td class="name">
-                                <xsl:value-of select="name"/>
+                    <table>
+                        <tr class="table_header">
+                            <td>
+                                Statistical Term
                             </td>
-                            <td class="value">
-                                <xsl:value-of select="value"/>
+                            <td>
+                                Value
                             </td>
                         </tr>
-                    </xsl:for-each>
-                </table>
+                        <xsl:for-each select="properties/property">
+                            <tr>
+                                <td class="name">
+                                    <xsl:value-of select="name"/>
+                                </td>
+                                <td class="value">
+                                    <xsl:value-of select="value"/>
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                    </table>
+                </xsl:for-each>
 
-                <h3>Statistics for
-                    <xsl:value-of select="analysisSummary/modelVariable"/>
-                </h3>
+                <xsl:for-each select="analysisSummary/statistics/statistic[@type='model']">
+                    <h3>Statistics for
+                        <xsl:value-of select="model_name"/>
+                    </h3>
 
-                <table>
-                    <tr class="table_header">
-                        <td>
-                            Statistical Term
-                        </td>
-                        <td>
-                            Value
-                        </td>
-                    </tr>
-                    <xsl:for-each select="analysisSummary/statistics/statistic[@type='model']/properties/property">
-                        <tr>
-                            <td class="name">
-                                <xsl:value-of select="name"/>
+                    <table>
+                        <tr class="table_header">
+                            <td>
+                                Statistical Term
                             </td>
-                            <td class="value">
-                                <xsl:value-of select="value"/>
-                            </td>
-                        </tr>
-                    </xsl:for-each>
-                </table>
-
-                <h3>Statistics for
-                    <xsl:value-of select="analysisSummary/referenceVariable"/>
-                </h3>
-
-                <table>
-                    <tr class="table_header">
-                        <td>
-                            Statistical Term
-                        </td>
-                        <td>
-                            Value
-                        </td>
-                    </tr>
-                    <xsl:for-each select="analysisSummary/statistics/statistic[@type='reference']/properties/property">
-                        <tr>
-                            <td class="name">
-                                <xsl:value-of select="name"/>
-                            </td>
-                            <td class="value">
-                                <xsl:value-of select="value"/>
+                            <td>
+                                Value
                             </td>
                         </tr>
-                    </xsl:for-each>
-                </table>
+                        <xsl:for-each select="properties/property">
+                            <tr>
+                                <td class="name">
+                                    <xsl:value-of select="name"/>
+                                </td>
+                                <td class="value">
+                                    <xsl:value-of select="value"/>
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                    </table>
+                </xsl:for-each>
+
+                <xsl:for-each select="analysisSummary/statistics/statistic[@type='reference']">
+                    <h3>Statistics for
+                        <xsl:value-of select="ref_name"/>
+                    </h3>
+
+                    <table>
+                        <tr class="table_header">
+                            <td>
+                                Statistical Term
+                            </td>
+                            <td>
+                                Value
+                            </td>
+                        </tr>
+                        <xsl:for-each select="properties/property">
+                            <tr>
+                                <td class="name">
+                                    <xsl:value-of select="name"/>
+                                </td>
+                                <td class="value">
+                                    <xsl:value-of select="value"/>
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                    </table>
+                </xsl:for-each>
 
                 <h3>Matchups</h3>
 
                 <table class="matchup_table">
                     <xsl:for-each select="analysisSummary/matchups/matchup">
                         <tr>
-                            <td class="matchup" rowspan="9">Matchup <xsl:value-of select="recordNumber"/>
+                            <td class="matchup" rowspan="9">Matchup
+                                <xsl:value-of select="recordNumber"/>
                             </td>
                         </tr>
                         <xsl:for-each select="property">

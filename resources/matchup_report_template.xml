@@ -6,8 +6,17 @@
     <performedAt>${performed_at}</performedAt>
     <recordCount>${record_count}</recordCount>
 
-    <modelVariable>${model_name}</modelVariable>
-    <referenceVariable>${ref_name}</referenceVariable>
+    <modelVariables>
+        % for pair in pairs:
+        <modelVariable>${pair[0]}</modelVariable>
+        % endfor
+    </modelVariables>
+
+    <referenceVariables>
+        % for pair in pairs:
+        <referenceVariable>${pair[1]}</referenceVariable>
+        % endfor
+    </referenceVariables>
 
     <configuration>
         <property>
@@ -40,40 +49,48 @@
     </configuration>
 
     <statistics>
+        % for pair in all_relative_stats:
         <statistic type="relative">
-            <variable_name>${model_name}</variable_name>
-            <ref_variable_name>${ref_name}</ref_variable_name>
+            <model_name>${pair[0]}</model_name>
+            <ref_name>${pair[1]}</ref_name>
             <properties>
-                % for var in relative_stats.keys():
+                % for var in pair[2].keys():
                 <property>
                     <name>${var}</name>
-                    <value>${relative_stats[var]}</value>
+                    <value>${pair[2][var]}</value>
                 </property>
                 % endfor
             </properties>
         </statistic>
+        % endfor
+
+        % for pair in all_model_stats:
         <statistic type="model">
-            <variable_name>${model_name}</variable_name>
+            <model_name>${pair[0]}</model_name>
             <properties>
-                % for var in single_stats_model.keys():
+                % for var in pair[1].keys():
                 <property>
                     <name>${var}</name>
-                    <value>${single_stats_model[var]}</value>
+                    <value>${pair[1][var]}</value>
                 </property>
                 % endfor
             </properties>
         </statistic>
+        % endfor
+
+        % for pair in all_ref_stats:
         <statistic type="reference">
-            <variable_name>${ref_name}</variable_name>
+            <ref_name>${pair[0]}</ref_name>
             <properties>
-                % for var in single_stats_ref.keys():
+                % for var in pair[1].keys():
                 <property>
                     <name>${var}</name>
-                    <value>${single_stats_ref[var]}</value>
+                    <value>${pair[1][var]}</value>
                 </property>
                 % endfor
             </properties>
         </statistic>
+        % endfor
     </statistics>
 
     <matchups>

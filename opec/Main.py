@@ -100,7 +100,7 @@ def main():
         xml_target_file = '%s\\%sreport.xml' % (parsed_args.o, config.target_prefix)
         xsl = 'resources/analysis-summary.xsl'
         css = 'resources/styleset.css'
-        output.xhtml(collected_statistics[0], matchups, xml_target_file) # todo - create xml for multiple vars
+        output.xhtml(collected_statistics, matchups, xml_target_file)
         logging.info('XHTML report written to \'%s\'' % xml_target_file)
         shutil.copy(xsl, parsed_args.o)
         logging.info('XHTML support file written to \'%s/%s\'' % (parsed_args.o, 'analysis-summary.xsl'))

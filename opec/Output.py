@@ -141,25 +141,32 @@ class Output(object):
             file.write("%s\n" % line)
         file.close()
 
-    def xhtml(self, statistics, matchups, target_file=None):
+    def xhtml(self, statistics_list, matchups, target_file=None):
         template = Template(filename='resources/matchup_report_template.xml')
         buf = StringIO()
 
-        relative_stats = {}
-        for key in ('rmse', 'unbiased_rmse', 'bias', 'pbias', 'corrcoeff', 'reliability_index', 'model_efficiency'):
-            relative_stats[key] = statistics[key]
+        all_relative_stats = []
+        all_model_stats = []
+        all_ref_stats = []
+        for stats in statistics_list:
+            pair_statistics = {}
+            for key in ('rmse', 'unbiased_rmse', 'bias', 'pbias', 'corrcoeff', 'reliability_index', 'model_efficiency'):
+                pair_statistics[key] = stats[key]
+            pair = (stats['model_name'], stats['ref_name'], pair_statistics)
+            all_relative_stats.append(pair)
 
-        single_stats_model = {}
-        for key in ('min', 'max', 'mean', 'stddev', 'median', 'p90', 'p95'):
-            single_stats_model[key] = statistics[key]
+            model_pair = {}
+            for key in ('min', 'max', 'mean', 'stddev', 'median', 'p90', 'p95'):
+                model_pair[key] = stats[key]
+            all_model_stats.append((stats['model_name'], model_pair))
 
-        single_stats_ref = {}
-        for key in ('ref_min', 'ref_max', 'ref_mean', 'ref_stddev', 'ref_median', 'ref_p90', 'ref_p95'):
-            single_stats_ref[key.replace('ref_', '')] = statistics[key]
+            ref_pair = {}
+            for key in ('ref_min', 'ref_max', 'ref_mean', 'ref_stddev', 'ref_median', 'ref_p90', 'ref_p95'):
+                ref_pair[key.replace('ref_', '')] = stats[key]
+            all_ref_stats.append((stats['ref_name'], ref_pair))
 
         ctx = Context(buf,
-            model_name=statistics['model_name'],
-            ref_name=statistics['ref_name'],
+            pairs=all_relative_stats,
             performed_at=datetime.now().strftime('%b %d, %Y at %H:%M:%S'),
             record_count=len(matchups),
             geo_delta=self.config.geo_delta,
@@ -168,9 +175,9 @@ class Output(object):
             ddof=self.config.ddof,
             alpha=self.config.alpha,
             beta=self.config.beta,
-            relative_stats=relative_stats,
-            single_stats_model=single_stats_model,
-            single_stats_ref=single_stats_ref,
+            all_relative_stats=all_relative_stats,
+            all_model_stats=all_model_stats,
+            all_ref_stats=all_ref_stats,
             matchups=matchups)
         template.render_context(ctx)
         xml = buf.getvalue()
@@ -182,7 +189,7 @@ class Output(object):
             file = open(target_file, 'w')
             file.write(xml)
             file.close()
-        return xml, None
+        return xml
 
     def taylor(self, statistics, target_file):
         diagram = Plotter.create_taylor_diagram(statistics, config=self.config)

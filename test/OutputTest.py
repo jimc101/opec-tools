@@ -113,5 +113,15 @@ class OutputTest(TestCase):
         matchup_2 = Matchup([0, 0, 0, 1], [300020, 0.54, 56.1, 5.7], ReferenceRecord(1, 5.8, 57.2, 300400, 0.12))
         matchups = [matchup_1, matchup_2]
         self.xml_target_file = 'resources/matchup_report.xml'
-        output.xhtml(self.stats, matchups, self.xml_target_file)
-#        os.remove(self.xml_target_file)
+#        output.xhtml([self.stats], matchups, self.xml_target_file)
+
+    def test_output_xhtml_multiple_stats(self):
+        output = Output()
+        matchup_1 = Matchup([0, 0, 0, 0], [300000, 0.12, 55.1, 5.3], ReferenceRecord(0, 5.4, 55.3, 300200, 0.11))
+        matchup_2 = Matchup([0, 0, 0, 1], [300020, 0.54, 56.1, 5.7], ReferenceRecord(1, 5.8, 57.2, 300400, 0.12))
+        matchups = [matchup_1, matchup_2]
+        self.xml_target_file = 'resources/matchup_report.xml'
+
+        second_stats = Processor.calculate_statistics(reference_values=[2, 3, 4, 3], model_values=[2.2, 3.8, 4.4, 9.2], config=self.config, ref_name='sst_ref', model_name='sst')
+
+        output.xhtml((self.stats, second_stats), matchups, self.xml_target_file)
