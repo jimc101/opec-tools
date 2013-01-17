@@ -62,14 +62,20 @@
                         <td>
                             Value
                         </td>
+                        <td>
+                            Unit
+                        </td>
                     </tr>
                     <xsl:for-each select="analysisSummary/configuration/property">
                         <tr>
                             <td class="name">
                                 <xsl:value-of select="name"/>
                             </td>
-                            <td class="value">
+                            <td class="std">
                                 <xsl:value-of select="value"/>
+                            </td>
+                            <td class="std">
+                                <xsl:value-of select="unit"/>
                             </td>
                         </tr>
                     </xsl:for-each>

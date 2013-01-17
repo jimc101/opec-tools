@@ -41,11 +41,11 @@ td {
     font-family: Tahoma, sans-serif;
     font-size: 1em;
     padding: 3px 7px 2px 7px;
+    border: 1px dotted gray;
 }
 
 td.matchup {
     border-collapse: collapse;
-    border: 1px dotted gray;
     vertical-align: top;
     padding: 10px;
     color: #004219;
@@ -54,12 +54,10 @@ td.matchup {
 
 td.name {
     color: #0000BB;
-    border: 1px dotted gray;
 }
 
-td.value {
+td.std {
     font-family: Verdana, sans-serif;
-    border: 1px dotted gray;
 }
 
 td.dataset-info {

@@ -13,14 +13,17 @@
         <property>
             <name>Maximum geographic delta</name>
             <value>${geo_delta}</value>
+            <unit>pseudo-degrees</unit>
         </property>
         <property>
             <name>Maximum time delta</name>
             <value>${time_delta}</value>
+            <unit>seconds</unit>
         </property>
         <property>
             <name>Maximum depth delta</name>
             <value>${depth_delta}</value>
+            <unit>meter</unit>
         </property>
         <property>
             <name>delta degrees of freedom</name>
