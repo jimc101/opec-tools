@@ -14,7 +14,8 @@ class Configuration(object):
     def __init__(self, alpha=None, beta=None, ddof=None, macro_pixel_size=None, geo_delta=None, time_delta=None,
                  depth_delta=None, log_level=None, write_log_file=None, log_file=None, zip=None,
                  show_negative_corrcoeff=None, show_legend=None, target_dir=None, target_prefix=None,
-                 include_header=None, separator=None, properties_file_name=None, write_taylor_diagram=None):
+                 include_header=None, separator=None, properties_file_name=None, write_taylor_diagram=None,
+                 write_xhtml=None, write_csv=None):
         """
         Priority:
         1) what is passed as parameter
@@ -46,6 +47,8 @@ class Configuration(object):
         self.__set(separator, 'opec.output.csv.separator', separator_conv)
         self.__set(include_header, 'opec.output.csv.include_header', bool)
         self.__set(write_taylor_diagram, 'opec.output.plot.write_taylor_diagram', bool)
+        self.__set(write_xhtml, 'opec.output.xhtml.write_xhtml', bool)
+        self.__set(write_csv, 'opec.output.csv.write_csv', bool)
 
     def __set(self, value, name, converter):
         if value is not None:
@@ -125,6 +128,12 @@ class Configuration(object):
     def __write_taylor_diagram(self):
         return self.__dict['opec.output.plot.write_taylor_diagram']
 
+    def __write_csv(self):
+        return self.__dict['opec.output.csv.write_csv']
+
+    def __write_xhtml(self):
+        return self.__dict['opec.output.xhtml.write_xhtml']
+
     alpha = property(__alpha)
     beta = property(__beta)
     ddof = property(__ddof)
@@ -143,6 +152,8 @@ class Configuration(object):
     include_header = property(__include_header)
     separator = property(__separator)
     write_taylor_diagram = property(__write_taylor_diagram)
+    write_csv = property(__write_csv)
+    write_xhtml = property(__write_xhtml)
 
 def get_default_config():
     return Configuration()

@@ -33,6 +33,8 @@ class ConfigurationTest(unittest.TestCase):
         self.assertEqual(False, c.write_taylor_diagram)
         self.assertEqual(None, c.log_file)
         self.assertEqual(True, c.write_log_file)
+        self.assertEqual(True, c.write_csv)
+        self.assertEqual(True, c.write_xhtml)
 
     def test_initialisation_by_file(self):
         c = Configuration(alpha=5, ddof=2, log_level='INFO', write_log_file='FALSE', properties_file_name='./resources/test.properties')
@@ -52,6 +54,8 @@ class ConfigurationTest(unittest.TestCase):
         self.assertEqual(True, c.write_taylor_diagram)
         self.assertEqual(None, c.log_file)
         self.assertEqual(False, c.write_log_file)
+        self.assertEqual(False, c.write_csv)
+        self.assertEqual(False, c.write_xhtml)
 
     def test_wrong_log_level(self):
         self.assertRaises(RuntimeError, lambda: Configuration(log_level='LOG_EVERYTHING_PLEASE'))
