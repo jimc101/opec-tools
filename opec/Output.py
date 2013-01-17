@@ -144,16 +144,34 @@ class Output(object):
     def xhtml(self, statistics, matchups, target_file=None):
         template = Template(filename='resources/matchup_report_template.xml')
         buf = StringIO()
+
+        relative_stats = {}
+        for key in ('rmse', 'unbiased_rmse', 'bias', 'pbias', 'corrcoeff', 'reliability_index', 'model_efficiency'):
+            relative_stats[key] = statistics[key]
+
+        single_stats_model = {}
+        for key in ('min', 'max', 'mean', 'stddev', 'median', 'p90', 'p95'):
+            single_stats_model[key] = statistics[key]
+
+        single_stats_ref = {}
+        for key in ('ref_min', 'ref_max', 'ref_mean', 'ref_stddev', 'ref_median', 'ref_p90', 'ref_p95'):
+            single_stats_ref[key.replace('ref_', '')] = statistics[key]
+
         ctx = Context(buf,
-            performedAt=datetime.now().strftime('%b %d, %Y at %H:%M:%S'),
-            recordCount=len(matchups),
-            geoDelta=self.config.geo_delta,
-            timeDelta=self.config.time_delta,
-            depthDelta=self.config.depth_delta,
+            model_name=statistics['model_name'],
+            ref_name=statistics['ref_name'],
+            performed_at=datetime.now().strftime('%b %d, %Y at %H:%M:%S'),
+            record_count=len(matchups),
+            geo_delta=self.config.geo_delta,
+            time_delta=self.config.time_delta,
+            depth_delta=self.config.depth_delta,
             ddof=self.config.ddof,
             alpha=self.config.alpha,
             beta=self.config.beta,
-            combinedStats={'rmse':0.3, 'bias':0.5})
+            relative_stats=relative_stats,
+            single_stats_model=single_stats_model,
+            single_stats_ref=single_stats_ref,
+            matchups=matchups)
         template.render_context(ctx)
         xml = buf.getvalue()
 

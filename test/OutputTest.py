@@ -21,7 +21,7 @@ class OutputTest(TestCase):
 
     def setUp(self):
         self.config = Configuration(1, 1, 0, 123, 12, 1234, 0.234)
-        self.stats = Processor.calculate_statistics(reference_values=[10, 10, 10, 10], model_values=[11, 9, 11.2, 10.5], config=self.config)
+        self.stats = Processor.calculate_statistics(reference_values=[10, 10, 10, 10], model_values=[11, 9, 11.2, 10.5], config=self.config, ref_name='chl_ref', model_name='chl')
         self.temp_filename = 'resources/test_output.csv'
 
     def tearDown(self):
@@ -110,7 +110,7 @@ class OutputTest(TestCase):
     def test_output_xhtml(self):
         output = Output()
         matchup_1 = Matchup([0, 0, 0, 0], [300000, 0.12, 55.1, 5.3], ReferenceRecord(0, 5.4, 55.3, 300200, 0.11))
-        matchup_2 = Matchup([0, 0, 0, 1], [300000, 0.12, 55.1, 5.3], ReferenceRecord(1, 5.8, 57.2, 300400, 0.12))
+        matchup_2 = Matchup([0, 0, 0, 1], [300020, 0.54, 56.1, 5.7], ReferenceRecord(1, 5.8, 57.2, 300400, 0.12))
         matchups = [matchup_1, matchup_2]
         self.xml_target_file = 'resources/matchup_report.xml'
         output.xhtml(self.stats, matchups, self.xml_target_file)

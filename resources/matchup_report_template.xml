@@ -1,49 +1,116 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="ISO-8859-1"?>
 <?xml-stylesheet type="text/xsl" href="analysis-summary.xsl"?>
 
 <analysisSummary>
 
-  <performedAt>${performedAt}</performedAt>
-  <recordCount>${recordCount}</recordCount>
+    <performedAt>${performed_at}</performedAt>
+    <recordCount>${record_count}</recordCount>
 
-  <configuration>
-    <property>
-      <name>Maximum geographic delta</name>
-      <value>${geoDelta}</value>
-    </property>
-    <property>
-      <name>Maximum time delta</name>
-      <value>${timeDelta}</value>
-    </property>
-    <property>
-      <name>Maximum depth delta</name>
-      <value>${depthDelta}</value>
-    </property>
-    <property>
-      <name>delta degrees of freedom</name>
-      <value>${ddof}</value>
-    </property>
-    <property>
-      <name>alpha</name>
-      <value>${alpha}</value>
-    </property>
-    <property>
-      <name>beta</name>
-      <value>${beta}</value>
-    </property>
-  </configuration>
+    <modelVariable>${model_name}</modelVariable>
+    <referenceVariable>${ref_name}</referenceVariable>
 
-  <statistics>
-    % for var in combinedStats.keys():
-    <stat>
-      <variable_name></variable_name>
-      <ref_variable_name></ref_variable_name>
-        <stats>
-          <name>buh</name>
-          <value>beh</value>
-        </stats>
-    </stat>
-    % endfor
-  </statistics>
+    <configuration>
+        <property>
+            <name>Maximum geographic delta</name>
+            <value>${geo_delta}</value>
+        </property>
+        <property>
+            <name>Maximum time delta</name>
+            <value>${time_delta}</value>
+        </property>
+        <property>
+            <name>Maximum depth delta</name>
+            <value>${depth_delta}</value>
+        </property>
+        <property>
+            <name>delta degrees of freedom</name>
+            <value>${ddof}</value>
+        </property>
+        <property>
+            <name>alpha</name>
+            <value>${alpha}</value>
+        </property>
+        <property>
+            <name>beta</name>
+            <value>${beta}</value>
+        </property>
+    </configuration>
+
+    <statistics>
+        <statistic type="relative">
+            <variable_name>${model_name}</variable_name>
+            <ref_variable_name>${ref_name}</ref_variable_name>
+            <properties>
+                % for var in relative_stats.keys():
+                <property>
+                    <name>${var}</name>
+                    <value>${relative_stats[var]}</value>
+                </property>
+                % endfor
+            </properties>
+        </statistic>
+        <statistic type="model">
+            <variable_name>${model_name}</variable_name>
+            <properties>
+                % for var in single_stats_model.keys():
+                <property>
+                    <name>${var}</name>
+                    <value>${single_stats_model[var]}</value>
+                </property>
+                % endfor
+            </properties>
+        </statistic>
+        <statistic type="reference">
+            <variable_name>${ref_name}</variable_name>
+            <properties>
+                % for var in single_stats_ref.keys():
+                <property>
+                    <name>${var}</name>
+                    <value>${single_stats_ref[var]}</value>
+                </property>
+                % endfor
+            </properties>
+        </statistic>
+    </statistics>
+
+    <matchups>
+        % for matchup in matchups:
+        <matchup>
+            <recordNumber>${matchup.reference_record.record_number}</recordNumber>
+            <property>
+                <name>time</name>
+                <value>${matchup.spacetime_position[0]}</value>
+            </property>
+            <property>
+                <name>depth</name>
+                <value>${matchup.spacetime_position[1]}</value>
+            </property>
+            <property>
+                <name>lat</name>
+                <value>${matchup.spacetime_position[2]}</value>
+            </property>
+            <property>
+                <name>lon</name>
+                <value>${matchup.spacetime_position[3]}</value>
+            </property>
+            <property>
+                <name>reference_time</name>
+                <value>${matchup.reference_record.time}</value>
+            </property>
+            <property>
+                <name>reference_depth</name>
+                <value>${matchup.reference_record.depth}</value>
+            </property>
+            <property>
+                <name>reference_lat</name>
+                <value>${matchup.reference_record.lat}</value>
+            </property>
+            <property>
+                <name>reference_lon</name>
+                <value>${matchup.reference_record.lon}</value>
+            </property>
+        </matchup>
+        % endfor
+    </matchups>
 
 </analysisSummary>
