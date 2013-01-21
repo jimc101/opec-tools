@@ -64,8 +64,10 @@ def log_warning(msg, category, filename, lineno, file=None, line=None):
 
 #noinspection PyUnboundLocalVariable
 def setup_logging(config):
+    file_handler = None
+    log_file = None
     warnings.showwarning = log_warning
-    if config.write_log_file:
+    if config.write_log_file and config.log_level <= logging.CRITICAL:
         log_file = config.log_file if config.log_file is not None else '%s/benchmarking.log' % config.target_dir
         file_handler = logging.FileHandler(log_file, 'w')
         file_handler.setFormatter(Utils.get_logging_formatter())
