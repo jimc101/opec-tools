@@ -59,7 +59,7 @@ class MatchupEngineTest(TestCase):
         lon2 = 6.0
         self.assertAlmostEqual(0.20048850, delta(lat1, lon1, lat2, lon2), 5)
 
-    def test_find_matchups_all(self):
+    def test_find_matchup(self):
         reference_record = ReferenceRecord(0, 55.1, 5.5, 1261440252, 0.0012)
         me = MatchupEngine(self.data, Configuration(geo_delta=10))
         matchup = me.find_matchup(reference_record)
@@ -68,6 +68,10 @@ class MatchupEngineTest(TestCase):
         self.assertEqual(5.5, matchup.reference_record.lon)
         self.assertEqual(1261440252, matchup.reference_record.time)
         self.assertEqual(0.0012, matchup.reference_record.depth)
+        self.assertEqual(3, len(matchup.values))
+        self.assertAlmostEqual(0.1111, matchup.values['chl'], 5)
+        self.assertAlmostEqual(1.1111, matchup.values['sst'], 5)
+        self.assertAlmostEqual(0.1, matchup.values['chl_ref'], 5)
 
     def test_find_matchups_single(self):
         reference_record = ReferenceRecord(0, 55.20123, 6.30048, 1261447205, 0.0020015)

@@ -3,6 +3,8 @@ from math import fabs, floor
 import math
 from opec.Configuration import get_default_config
 from opec.Matchup import Matchup
+import numpy as np
+from opec.Utils import retrieve_origin
 
 class ReferenceRecord(object):
 
@@ -68,7 +70,10 @@ class MatchupEngine(object):
         cell_position.append(matchup_position[0]) # fourth dimension: lon
         spacetime_position.append(matchup_position[2]) # fourth dimension: lon
 
-        return Matchup(cell_position, spacetime_position, reference_record)
+        matchup = Matchup(cell_position, spacetime_position, reference_record)
+        self.__fill_matchup(matchup)
+
+        return matchup
 
     def __find_position(self, dimension, target_value):
         dim_size = self.data.dim_size(dimension)
@@ -127,6 +132,15 @@ class MatchupEngine(object):
         self.data.read(ref_time_variable_name)
         if ref_depth_variable_name is not None:
             self.data.read(ref_depth_variable_name)
+
+    def __fill_matchup(self, matchup):
+        for model_name in self.data.model_vars():
+            origin = list(retrieve_origin(matchup.cell_position))
+            value = self.data.read(model_name, origin, np.ones([len(origin)], int))
+            matchup.add_variable_value(model_name, value.flatten()[0])
+        for ref_name in self.data.ref_vars():
+            value = self.data.read(ref_name, [matchup.reference_record.record_number], [1])
+            matchup.add_variable_value(ref_name, value.flatten()[0])
 
 def find_ref_coordinate_names(ref_coordinate_variables):
     lat = None

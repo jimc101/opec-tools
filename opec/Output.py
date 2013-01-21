@@ -87,7 +87,6 @@ class Output(object):
         lines.append('# Matchup criteria:')
         lines.append('#    Maximum geographic delta = {} \"degrees\"'.format(self.config.geo_delta))
         lines.append('#    Maximum time delta = {} seconds'.format(self.config.time_delta))
-        # TODO - exclude depth if source file contains no depth dimension
         lines.append('#    Maximum depth delta = {} meters'.format(self.config.depth_delta))
         lines.append('#')
         lines.append('# Algorithm parameters:')
@@ -134,6 +133,8 @@ class Output(object):
         lines.append('model_depth:%s%s' % (self.separator, matchup.spacetime_position[1]))
         lines.append('model_lat:%s%s' % (self.separator, matchup.spacetime_position[2]))
         lines.append('model_lon:%s%s' % (self.separator, matchup.spacetime_position[3]))
+        for var in matchup.values:
+            lines.append('%s:%s%s' % (var, self.separator, matchup.values[var]))
         return lines
 
     def __write_csv_to_file(self, target_file, lines):

@@ -175,7 +175,7 @@
                 <table class="matchup_table">
                     <xsl:for-each select="analysisSummary/matchups/matchup">
                         <tr>
-                            <td class="matchup" rowspan="9">Matchup
+                            <td class="matchup" rowspan="{rowspan}">Matchup
                                 <xsl:value-of select="recordNumber"/>
                             </td>
                         </tr>

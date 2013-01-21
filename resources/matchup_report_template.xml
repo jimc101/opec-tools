@@ -22,7 +22,7 @@
         <property>
             <name>Maximum geographic delta</name>
             <value>${geo_delta}</value>
-            <unit>pseudo-degrees</unit>
+            <unit>degrees</unit>
         </property>
         <property>
             <name>Maximum time delta</name>
@@ -96,6 +96,7 @@
     <matchups>
         % for matchup in matchups:
         <matchup>
+            <rowspan>${len(matchup.values) + 9}</rowspan>
             <recordNumber>${matchup.reference_record.record_number}</recordNumber>
             <property>
                 <name>time</name>
@@ -129,6 +130,12 @@
                 <name>reference_lon</name>
                 <value>${matchup.reference_record.lon}</value>
             </property>
+            % for var in matchup.values:
+            <property>
+                <name>${var}</name>
+                <value>${matchup.values[var]}</value>
+            </property>
+            % endfor
         </matchup>
         % endfor
     </matchups>
