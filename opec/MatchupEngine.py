@@ -1,5 +1,6 @@
 import logging
-from math import fabs, floor, sqrt
+from math import fabs, floor
+import math
 from opec.Configuration import get_default_config
 from opec.Matchup import Matchup
 
@@ -155,5 +156,5 @@ def normalise(n, max):
     return number
 
 def delta(lat_position, lon_position, lat, lon):
-    # returns the euclidean distance; sufficient here
-    return sqrt(pow(lat - lat_position, 2) + pow(lon - lon_position, 2))
+    # computing the spherical distance in degrees
+    return math.acos(math.sin(lat_position) * math.sin(lat) + math.cos(lat_position) * math.cos(lat) * math.cos(lon_position - lon))

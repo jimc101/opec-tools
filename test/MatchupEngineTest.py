@@ -1,6 +1,5 @@
 import logging
 from unittest import TestCase
-import math
 import numpy.testing as np
 from opec.MatchupEngine import ReferenceRecord, find_ref_coordinate_names, delta, normalise
 from opec.Configuration import Configuration
@@ -48,8 +47,17 @@ class MatchupEngineTest(TestCase):
         np.assert_array_almost_equal((1, 1261447200), time_positions)
 
     def test_delta(self):
-        self.assertAlmostEqual(math.sqrt(0.13), delta(55.2, 5.3, 55, 5))
-        self.assertAlmostEqual(math.sqrt(6.48), delta(56.8, 6.8, 55, 5))
+        lon1 = 45.0
+        lat1 = -5.0
+        lon2 = 55.0
+        lat2 = 5.0
+        self.assertAlmostEqual(2.98049, delta(lat1, lon1, lat2, lon2), 5)
+
+        lat1 = 55.2
+        lon1 = 5.8
+        lat2 = 55.0
+        lon2 = 6.0
+        self.assertAlmostEqual(0.20048850, delta(lat1, lon1, lat2, lon2), 5)
 
     def test_find_matchups_all(self):
         reference_record = ReferenceRecord(0, 55.1, 5.5, 1261440252, 0.0012)
@@ -112,7 +120,7 @@ class MatchupEngineTest(TestCase):
         self.assertEqual(None, depth)
 
     def test_find_all_matchups(self):
-        me = MatchupEngine(self.data, Configuration(geo_delta=10))
+        me = MatchupEngine(self.data, Configuration(geo_delta=100))
         all_matchups = me.find_all_matchups()
         self.assertIsNotNone(all_matchups)
         expected_matchup_count = 3 #reference_records
