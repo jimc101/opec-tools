@@ -18,7 +18,7 @@ def create_taylor_diagram(statistics, max_stddev=None, config=None):
 
     for v in ref_stddevs:
         if v == 0.0 or np.isnan(v):
-            logging.warning('Unable to create Taylor diagram.')
+            logging.warning('Unable to create Taylor diagram from statistics.')
             logging.debug('Statistics: %s' % statistics)
             return None
 
