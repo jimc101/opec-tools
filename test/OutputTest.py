@@ -20,7 +20,7 @@ class OutputTest(TestCase):
         os.chdir(self.cwd)
 
     def setUp(self):
-        self.config = Configuration(1, 1, 0, 12, 1234, 0.234)
+        self.config = Configuration(1, 1, 0, 12, 1234, 0.234, separate_matchups=False)
         self.stats = Processor.calculate_statistics(reference_values=[10, 10, 10, 10], model_values=[11, 9, 11.2, 10.5], config=self.config, ref_name='chl_ref', model_name='chl')
         self.temp_filename = 'resources/test_output.csv'
 
@@ -82,19 +82,6 @@ class OutputTest(TestCase):
         expected_result.append("median\t10")
         expected_result.append("p90\t10")
         expected_result.append("p95\t10")
-        expected_result.append("")
-        expected_result.append("# Matchups:")
-        expected_result.append("")
-        expected_result.append("# Matchup 1:")
-        expected_result.append("")
-        expected_result.append("reference_time:\t300200")
-        expected_result.append("reference_depth:\t0.11")
-        expected_result.append("reference_lat:\t5.4")
-        expected_result.append("reference_lon:\t55.3")
-        expected_result.append("model_time:\t300000")
-        expected_result.append("model_depth:\t0.12")
-        expected_result.append("model_lat:\t55.1")
-        expected_result.append("model_lon:\t5.3")
 
         matchups = [Matchup([0, 0, 0, 0], [300000, 0.12, 55.1, 5.3], ReferenceRecord(0, 5.4, 55.3, 300200, 0.11))]
         self.assertTrue(output.csv(self.stats, 'chl', 'chl_ref', matchups=matchups).startswith("\n".join(expected_result)))

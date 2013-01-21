@@ -172,24 +172,59 @@
 
                 <h3>Matchups</h3>
 
-                <table class="matchup_table">
-                    <xsl:for-each select="analysisSummary/matchups/matchup">
-                        <tr>
-                            <td class="matchup" rowspan="{rowspan}">Matchup
-                                <xsl:value-of select="recordNumber"/>
-                            </td>
-                        </tr>
-                        <xsl:for-each select="property">
-                            <tr>
-                                <td class="name">
-                                    <xsl:value-of select="name"/>
-                                </td>
-                                <td class="value">
-                                    <xsl:value-of select="value"/>
-                                </td>
-                            </tr>
+                <table class="matchup">
+                    <tr class="table_header">
+                        <td>Matchup #</td>
+                        <td>Time</td>
+                        <td>Depth</td>
+                        <td>Lat</td>
+                        <td>Lon</td>
+                        <td>Reference Time</td>
+                        <td>Reference Depth</td>
+                        <td>Reference Lat</td>
+                        <td>Reference Lon</td>
+                        <xsl:for-each select="analysisSummary/matchups/variables/var">
+                            <td><xsl:value-of select="text()"/></td>
                         </xsl:for-each>
+                    </tr>
+
+                    <xsl:for-each select="analysisSummary/matchups/matchup">
+                    <tr>
+                        <td>
+                            <xsl:value-of select="recordNumber"/>
+                        </td>
+                        <td class="value">
+                            <xsl:value-of select="time"/>
+                        </td>
+                        <td class="value">
+                            <xsl:value-of select="depth"/>
+                        </td>
+                        <td class="value">
+                            <xsl:value-of select="lat"/>
+                        </td>
+                        <td class="value">
+                            <xsl:value-of select="lon"/>
+                        </td>
+                        <td class="value">
+                            <xsl:value-of select="reference_time"/>
+                        </td>
+                        <td class="value">
+                            <xsl:value-of select="reference_depth"/>
+                        </td>
+                        <td class="value">
+                            <xsl:value-of select="reference_lat"/>
+                        </td>
+                        <td class="value">
+                            <xsl:value-of select="reference_lon"/>
+                        </td>
+
+                        <xsl:for-each select="property">
+                            <td><xsl:value-of select="value"/></td>
+                        </xsl:for-each>
+
+                    </tr>
                     </xsl:for-each>
+
                 </table>
 
             </body>

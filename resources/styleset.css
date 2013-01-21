@@ -31,6 +31,10 @@ table {
     border-collapse: collapse;
 }
 
+table.matchup {
+    width: 100%;
+}
+
 tr.table_header {
     background-color: #F0F0F0;
     color: #004219;

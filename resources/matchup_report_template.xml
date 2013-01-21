@@ -94,46 +94,32 @@
     </statistics>
 
     <matchups>
+        <variables>
+            <% vars = [] %>
+            % for matchup in matchups:
+                % for var in matchup.values:
+                    % if not var in vars:
+                        <var>${var}</var>
+                        <% vars.append(var) %>
+                    % endif
+                % endfor
+            % endfor
+        </variables>
         % for matchup in matchups:
         <matchup>
-            <rowspan>${len(matchup.values) + 9}</rowspan>
             <recordNumber>${matchup.reference_record.record_number}</recordNumber>
-            <property>
-                <name>time</name>
-                <value>${matchup.spacetime_position[0]}</value>
-            </property>
-            <property>
-                <name>depth</name>
-                <value>${matchup.spacetime_position[1]}</value>
-            </property>
-            <property>
-                <name>lat</name>
-                <value>${matchup.spacetime_position[2]}</value>
-            </property>
-            <property>
-                <name>lon</name>
-                <value>${matchup.spacetime_position[3]}</value>
-            </property>
-            <property>
-                <name>reference_time</name>
-                <value>${matchup.reference_record.time}</value>
-            </property>
-            <property>
-                <name>reference_depth</name>
-                <value>${matchup.reference_record.depth}</value>
-            </property>
-            <property>
-                <name>reference_lat</name>
-                <value>${matchup.reference_record.lat}</value>
-            </property>
-            <property>
-                <name>reference_lon</name>
-                <value>${matchup.reference_record.lon}</value>
-            </property>
-            % for var in matchup.values:
+            <time>${matchup.spacetime_position[0]}</time>
+            <depth>${matchup.spacetime_position[1]}</depth>
+            <lat>${matchup.spacetime_position[2]}</lat>
+            <lon>${matchup.spacetime_position[3]}</lon>
+            <reference_time>${matchup.reference_record.time}</reference_time>
+            <reference_depth>${matchup.reference_record.depth}</reference_depth>
+            <reference_lat>${matchup.reference_record.lat}</reference_lat>
+            <reference_lon>${matchup.reference_record.lon}</reference_lon>
+            % for var in vars:
             <property>
                 <name>${var}</name>
-                <value>${matchup.values[var]}</value>
+                <value>${matchup.values[var] if var in matchup.values else '--'}</value>
             </property>
             % endfor
         </matchup>

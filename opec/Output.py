@@ -10,19 +10,21 @@ from opec.Configuration import get_default_config
 def rename(string):
     return string if string is not None else 'Unknown'
 
+
 def format_statistic(statistics, name):
     value = statistics[name]
     if value is np.ma.masked or np.isneginf(value):
         return 'nan'
     return '%g' % round(value, 4)
 
+
 def key(string, is_ref_var):
     if is_ref_var:
         return 'ref_' + string
     return string
 
-class Output(object):
 
+class Output(object):
     def __init__(self, **kwargs):
         """Constructs a new instance of Output.
 
@@ -30,7 +32,8 @@ class Output(object):
             config -- the configuration the processors and matchup engine have been run with (optional)
             source_file -- a reference to the file the benchmarks were computed on (optional)
         """
-        self.config = kwargs['config'] if 'config' in kwargs.keys() and kwargs['config'] is not None else get_default_config()
+        self.config = kwargs['config'] if 'config' in kwargs.keys() and kwargs[
+                                                                        'config'] is not None else get_default_config()
         self.source_file = kwargs['source_file'] if 'source_file' in kwargs.keys() else None
         self.separator = self.config.separator
 
@@ -59,15 +62,20 @@ class Output(object):
         lines.append('\n'.join(self.__single_statistics(statistics, variable_name, False)))
         lines.append('')
         lines.append('\n'.join(self.__single_statistics(statistics, ref_variable_name, True)))
+
         if matchups is not None:
+            matchup_lines = self.__matchup_infos(matchups)
+
+        if matchups is not None and not self.config.separate_matchups:
             lines.append('')
-            lines.append('# Matchups:')
-            for matchup_number, matchup in enumerate(matchups):
-                lines.append('')
-                lines.append('\n'.join(self.__matchup_infos(matchup_number, matchup)))
+            #noinspection PyUnboundLocalVariable
+            lines.extend(matchup_lines)
 
         if target_file is not None:
-            self.__write_csv_to_file(target_file, lines)
+            self.__write_lines_to_file(target_file, lines)
+            if matchups is not None and self.config.separate_matchups:
+                matchup_filename = '%s_matchups.csv' % os.path.splitext(target_file)[0]
+                self.__write_lines_to_file(matchup_filename, matchup_lines)
 
         return '\n'.join(lines)
 
@@ -90,7 +98,8 @@ class Output(object):
         lines.append('#    Maximum depth delta = {} meters'.format(self.config.depth_delta))
         lines.append('#')
         lines.append('# Algorithm parameters:')
-        lines.append('#    ddof (delta degrees of freedom, used for computation of stddev) = {}'.format(self.config.ddof))
+        lines.append(
+            '#    ddof (delta degrees of freedom, used for computation of stddev) = {}'.format(self.config.ddof))
         lines.append('#    alpha (used for percentile computation) = 1'.format(self.config.alpha))
         lines.append('#    beta (used for percentile computation) = 1'.format(self.config.beta))
         lines.append('#')
@@ -118,26 +127,46 @@ class Output(object):
         lines.append('stddev%s%s' % (self.separator, format_statistic(stats, key('stddev', is_ref_var))))
         lines.append('median%s%s' % (self.separator, format_statistic(stats, key('median', is_ref_var))))
         lines.append('p90%s%s' % (self.separator, format_statistic(stats, key('p90', is_ref_var))))
-        lines.append('p95%s%s' % (self.separator, format_statistic(stats,key('p95', is_ref_var))))
+        lines.append('p95%s%s' % (self.separator, format_statistic(stats, key('p95', is_ref_var))))
         return lines
 
-    def __matchup_infos(self, matchup_number, matchup):
+    def __matchup_infos(self, matchups):
+        header = []
+        header.append('Matchup #')
+        header.append('reference_time')
+        header.append('reference_depth')
+        header.append('reference_lat')
+        header.append('reference_lon')
+        header.append('model_time')
+        header.append('model_depth')
+        header.append('model_lat')
+        header.append('model_lon')
+        vars = []
+        for matchup in matchups:
+            for var in matchup.values:
+                if not var in header:
+                    header.append(var)
+                    vars.append(var)
+
         lines = []
-        lines.append('# Matchup %s:' % (matchup_number + 1))
-        lines.append('')
-        lines.append('reference_time:%s%s' % (self.separator, matchup.reference_record.time))
-        lines.append('reference_depth:%s%s' % (self.separator, matchup.reference_record.depth))
-        lines.append('reference_lat:%s%s' % (self.separator, matchup.reference_record.lat))
-        lines.append('reference_lon:%s%s' % (self.separator, matchup.reference_record.lon))
-        lines.append('model_time:%s%s' % (self.separator, matchup.spacetime_position[0]))
-        lines.append('model_depth:%s%s' % (self.separator, matchup.spacetime_position[1]))
-        lines.append('model_lat:%s%s' % (self.separator, matchup.spacetime_position[2]))
-        lines.append('model_lon:%s%s' % (self.separator, matchup.spacetime_position[3]))
-        for var in matchup.values:
-            lines.append('%s:%s%s' % (var, self.separator, matchup.values[var]))
+        lines.append(self.config.separator.join(header))
+        for matchup in matchups:
+            line = []
+            line.append(str(matchup.reference_record.record_number))
+            line.append(str(matchup.reference_record.time))
+            line.append(str(matchup.reference_record.depth))
+            line.append(str(matchup.reference_record.lat))
+            line.append(str(matchup.reference_record.lon))
+            line.append(str(matchup.spacetime_position[0]))
+            line.append(str(matchup.spacetime_position[1]))
+            line.append(str(matchup.spacetime_position[2]))
+            line.append(str(matchup.spacetime_position[3]))
+            for var in vars:
+                line.append(str(matchup.values[var]) if var in matchup.values else '--')
+            lines.append(self.config.separator.join(line))
         return lines
 
-    def __write_csv_to_file(self, target_file, lines):
+    def __write_lines_to_file(self, target_file, lines):
         directory = os.path.dirname(target_file)
         if not os.path.exists(directory):
             os.makedirs(directory)

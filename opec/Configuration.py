@@ -14,7 +14,8 @@ class Configuration(object):
     def __init__(self, alpha=None, beta=None, ddof=None, geo_delta=None, time_delta=None, depth_delta=None,
                  log_level=None, write_log_file=None, log_file=None, zip=None, show_negative_corrcoeff=None,
                  show_legend=None, target_dir=None, target_prefix=None, include_header=None, separator=None,
-                 properties_file_name=None, write_taylor_diagram=None, write_xhtml=None, write_csv=None):
+                 separate_matchups=None, properties_file_name=None, write_taylor_diagram=None, write_xhtml=None,
+                 write_csv=None):
         """
         Priority:
         1) what is passed as parameter
@@ -44,6 +45,7 @@ class Configuration(object):
         self.__set(target_prefix, 'opec.output.target_prefix', str)
         self.__set(separator, 'opec.output.csv.separator', separator_conv)
         self.__set(include_header, 'opec.output.csv.include_header', bool)
+        self.__set(separate_matchups, 'opec.output.csv.separate_matchups', bool)
         self.__set(write_taylor_diagram, 'opec.output.plot.write_taylor_diagram', bool)
         self.__set(write_xhtml, 'opec.output.xhtml.write_xhtml', bool)
         self.__set(write_csv, 'opec.output.csv.write_csv', bool)
@@ -120,6 +122,9 @@ class Configuration(object):
     def __separator(self):
         return self.__dict['opec.output.csv.separator']
 
+    def __separate_matchups(self):
+        return self.__dict['opec.output.csv.separate_matchups']
+
     def __write_taylor_diagram(self):
         return self.__dict['opec.output.plot.write_taylor_diagram']
 
@@ -145,6 +150,7 @@ class Configuration(object):
     target_prefix = property(__target_prefix)
     include_header = property(__include_header)
     separator = property(__separator)
+    separate_matchups = property(__separate_matchups)
     write_taylor_diagram = property(__write_taylor_diagram)
     write_csv = property(__write_csv)
     write_xhtml = property(__write_xhtml)
