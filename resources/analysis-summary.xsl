@@ -227,6 +227,12 @@
 
                 </table>
 
+                <h3>Taylor Diagram</h3>
+
+                <img>
+                    <xsl:attribute name="src"><xsl:value-of select="analysisSummary/taylor"/></xsl:attribute>
+                </img>
+
             </body>
         </html>
     </xsl:template>

@@ -98,6 +98,7 @@ def main():
             output.csv(stats, variable_name=pair[1], ref_variable_name=pair[0], matchups=matchups, target_file=csv_target_file)
             logging.info('CSV output written to \'%s\'' % csv_target_file)
 
+    taylor_target_file = None
     if config.write_taylor_diagram:
         taylor_target_file = '%s\\%staylor.png' % (parsed_args.o, config.target_prefix)
         if output.taylor(collected_statistics, taylor_target_file):
@@ -108,7 +109,7 @@ def main():
         xml_target_file = '%s\\%sreport.xml' % (parsed_args.o, config.target_prefix)
         xsl = 'resources/analysis-summary.xsl'
         css = 'resources/styleset.css'
-        output.xhtml(collected_statistics, matchups, xml_target_file)
+        output.xhtml(collected_statistics, matchups, xml_target_file, taylor_target_file)
         logging.info('XHTML report written to \'%s\'' % xml_target_file)
         shutil.copy(xsl, parsed_args.o)
         logging.info('XHTML support file written to \'%s/%s\'' % (parsed_args.o, 'analysis-summary.xsl'))

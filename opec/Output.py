@@ -175,7 +175,7 @@ class Output(object):
             file.write("%s\n" % line)
         file.close()
 
-    def xhtml(self, statistics_list, matchups, target_file=None):
+    def xhtml(self, statistics_list, matchups, target_file=None, taylor_target_file=None):
         template = Template(filename='resources/matchup_report_template.xml')
         buf = StringIO()
 
@@ -212,7 +212,9 @@ class Output(object):
             all_relative_stats=all_relative_stats,
             all_model_stats=all_model_stats,
             all_ref_stats=all_ref_stats,
-            matchups=matchups)
+            matchups=matchups,
+            write_taylor_diagram=self.config.write_taylor_diagram,
+            taylor_target_file=os.path.basename(taylor_target_file))
         template.render_context(ctx)
         xml = buf.getvalue()
 

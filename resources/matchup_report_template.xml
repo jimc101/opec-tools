@@ -126,4 +126,8 @@
         % endfor
     </matchups>
 
+% if write_taylor_diagram:
+    <taylor>${taylor_target_file}</taylor>
+% endif
+
 </analysisSummary>
