@@ -60,13 +60,12 @@ class MatchupEngine(object):
 
         cell_position = [matchup_time[0]] # first dimension: time
         spacetime_position = [matchup_time[1]] # first dimension: time
-        if matchup_depth is not None:
-            cell_position.append(matchup_depth[0]) # second dimension: depth (if existing)
-            spacetime_position.append(matchup_depth[1]) # second dimension: depth (if existing)
-        cell_position.append(matchup_position[1]) # second or third dimension: lat
-        spacetime_position.append(matchup_position[3]) # second or third dimension: lat
-        cell_position.append(matchup_position[0]) # third or fourth dimension: lon
-        spacetime_position.append(matchup_position[2]) # third or fourth dimension: lon
+        cell_position.append(matchup_depth[0]) # second dimension: depth
+        spacetime_position.append(matchup_depth[1]) # second dimension: depth
+        cell_position.append(matchup_position[1]) # third dimension: lat
+        spacetime_position.append(matchup_position[3]) # third dimension: lat
+        cell_position.append(matchup_position[0]) # fourth dimension: lon
+        spacetime_position.append(matchup_position[2]) # fourth dimension: lon
 
         return Matchup(cell_position, spacetime_position, reference_record)
 
@@ -102,7 +101,7 @@ class MatchupEngine(object):
 
     def __find_matchup_depth(self, ref_depth):
         if not self.data.has_variable('depth'):
-            return None
+            return [None, None]
         return self.__find_matchup_index('depth', ref_depth, self.config.depth_delta)
 
     def __find_matchup_index(self, dimension, ref, max_delta):

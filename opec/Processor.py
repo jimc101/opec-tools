@@ -3,15 +3,20 @@ import numpy.ma as ma
 import scipy.stats.mstats as mstats
 from opec.Configuration import get_default_config
 
+def origin(cell_positions):
+    for p in cell_positions:
+        if p is not None:
+            yield p
+
 def extract_values(matchups, data, ref_name, model_name):
     reference_values = np.ma.empty(len(matchups))
     model_values = np.ma.empty(len(matchups))
     index = 0
     for matchup in matchups:
-        model_origin = matchup.cell_position
-        shape = np.ones([len(model_origin)], int)
+        matchup_origin = list(origin(matchup.cell_position))
+        shape = np.ones([len(matchup_origin)], int)
         reference_values[index] = data.read(ref_name, [matchup.reference_record.record_number], [1])
-        model_values[index] = data.read(model_name, model_origin, shape)
+        model_values[index] = data.read(model_name, matchup_origin, shape)
         index += 1
     return reference_values, model_values
 
