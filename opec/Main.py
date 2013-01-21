@@ -3,6 +3,7 @@ import argparse
 import logging
 import shutil
 import sys
+import warnings
 from zipfile import ZipFile
 from opec import Processor, Utils
 from opec.Configuration import Configuration
@@ -57,8 +58,13 @@ def create_zip(collected_target_files, config, file_handler, log_file, parsed_ar
     for file in zipped_files:
         os.remove(file)
 
+def log_warning(msg, category, filename, lineno, file=None, line=None):
+    msg = msg.args[0].replace('Warning: converting a masked element to nan.', 'converting a masked element to nan')
+    logging.warn('%s in %s:%s' % (msg, filename, lineno))
+
 #noinspection PyUnboundLocalVariable
 def setup_logging(config):
+    warnings.showwarning = log_warning
     if config.write_log_file:
         log_file = config.log_file if config.log_file is not None else '%s/benchmarking.log' % config.target_dir
         file_handler = logging.FileHandler(log_file, 'w')
@@ -92,8 +98,8 @@ def main():
 
     if config.write_taylor_diagram:
         taylor_target_file = '%s\\%staylor.png' % (parsed_args.o, config.target_prefix)
-        output.taylor(collected_statistics, taylor_target_file)
-        logging.info('Taylor diagram written to \'%s\'' % taylor_target_file)
+        if output.taylor(collected_statistics, taylor_target_file):
+            logging.info('Taylor diagram written to \'%s\'' % taylor_target_file)
         collected_target_files.append(taylor_target_file)
 
     if config.write_xhtml:

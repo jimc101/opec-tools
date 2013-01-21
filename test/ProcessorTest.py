@@ -1,12 +1,14 @@
 from unittest import TestCase
 import numpy as np
 import numpy.ma as ma
-from numpy.testing import assert_array_equal
-from opec.Processor import calculate_statistics, harmonise
+from numpy.testing import assert_almost_equal
+from opec.Matchup import Matchup
+from opec.Processor import calculate_statistics, harmonise, extract_values
 from opec.Configuration import Configuration
 from opec.MatchupEngine import MatchupEngine
 from opec.Data import Data
 import os
+from opec.MatchupEngine import ReferenceRecord
 
 class ProcessorTest(TestCase):
 
@@ -216,3 +218,13 @@ class ProcessorTest(TestCase):
 
         assert_array_equal(np.array([1.1, 2.2, 2.9, 3.7]), ref_values)
         assert_array_equal(np.array([True, False, True, False]), ref_values.mask)
+
+    def test_extract_values(self):
+        matchups = [
+            Matchup([0, 0, 0, 0], [1261440000, 0.001, 55.2, 5.3], ReferenceRecord(0, 55.21, 5.31, 1261440250, 0.0012)),
+            Matchup([0, 0, 0, 1], [1261440000, 0.001, 55.2, 5.8], ReferenceRecord(1, 55.8, 5.72, 1261440300, 0.0013))
+        ]
+        data = Data('resources/test_including_fill_values.nc')
+        ref, model = extract_values(matchups, data, 'chl_ref', 'chl')
+        assert_almost_equal(ref, np.ma.array([np.nan, 0.2], mask=[True, False]))
+        assert_almost_equal(model, np.ma.array([0.1111, 0.2111], mask=[False, False]))

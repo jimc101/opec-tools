@@ -4,8 +4,8 @@ import scipy.stats.mstats as mstats
 from opec.Configuration import get_default_config
 
 def extract_values(matchups, data, ref_name, model_name):
-    reference_values = np.empty(len(matchups))
-    model_values = np.empty(len(matchups))
+    reference_values = np.ma.empty(len(matchups))
+    model_values = np.ma.empty(len(matchups))
     index = 0
     for matchup in matchups:
         model_origin = matchup.cell_position
@@ -72,11 +72,11 @@ def model_efficiency(reference_values, model_values):
         return np.nan # if all reference values are equal, no sensible model efficiency can be computed.
     return 1 - np.sum(np.power(reference_values - model_values, 2)) / np.sum(np.power(reference_values - np.mean(reference_values), 2))
 
-def create_masked_array(reference_values):
-    false_mask = np.zeros(len(reference_values))
-    if type(reference_values) is not ma.core.MaskedArray:
-        reference_values = ma.array(reference_values, mask=false_mask)
-    return reference_values
+def create_masked_array(values):
+    false_mask = np.zeros(len(values))
+    if type(values) is not ma.core.MaskedArray:
+        values = ma.array(values, mask=false_mask)
+    return values
 
 def harmonise(reference_values, model_values):
     reference_values = create_masked_array(reference_values)

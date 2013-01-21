@@ -1,3 +1,4 @@
+import numpy as np
 from io import StringIO
 from mako.runtime import Context
 from mako.template import Template
@@ -10,7 +11,10 @@ def rename(string):
     return string if string is not None else 'Unknown'
 
 def format_statistic(statistics, name):
-    return '%g' % round(statistics[name], 4)
+    value = statistics[name]
+    if value is np.ma.masked or np.isneginf(value):
+        return 'nan'
+    return '%g' % round(value, 4)
 
 def key(string, is_ref_var):
     if is_ref_var:
@@ -193,4 +197,7 @@ class Output(object):
 
     def taylor(self, statistics, target_file):
         diagram = Plotter.create_taylor_diagram(statistics, config=self.config)
+        if diagram is None:
+            return False
         diagram.write(target_file)
+        return True

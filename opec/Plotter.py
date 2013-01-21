@@ -1,3 +1,4 @@
+import logging
 from matplotlib import pyplot, pylab
 from matplotlib.projections.polar import PolarTransform
 from mpl_toolkits.axisartist import SubplotZero
@@ -14,6 +15,12 @@ def create_taylor_diagram(statistics, max_stddev=None, config=None):
     ref_names = list(map(lambda x: x.get('ref_name'), statistics))
     ref = tuple(zip(ref_names, ref_stddevs))
     max_stddev = max(ref_stddevs) * 1.5 if max_stddev is None else max_stddev
+
+    for v in ref_stddevs:
+        if v == 0.0 or np.isnan(v):
+            logging.warning('Unable to create Taylor diagram.')
+            logging.debug('Statistics: %s' % statistics)
+            return None
 
     figure = pyplot.figure()
     diagram = TaylorDiagram(figure, ref, config.show_negative_corrcoeff, config.show_legend, max_stddev)

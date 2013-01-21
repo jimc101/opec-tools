@@ -1,6 +1,5 @@
 import functools
 from netCDF4 import Dataset
-import numpy as np
 
 class NetCDFFacade(object):
 
