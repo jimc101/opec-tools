@@ -6,6 +6,8 @@ import numpy as np
 import mpl_toolkits.axisartist.floating_axes as FA
 import mpl_toolkits.axisartist.grid_finder as GF
 from opec.Configuration import get_default_config
+import matplotlib as mpl
+import matplotlib.ticker
 
 def create_taylor_diagram(statistics, max_stddev=None, config=None):
     if config is None:
@@ -43,10 +45,60 @@ def create_target_diagram(statistics, config=None):
 
     return diagram
 
+def create_scatter_plot(reference_values, model_values, ref_name=None, model_name=None):
+    figure = pyplot.figure()
+    diagram = ScatterPlot(figure)
+    diagram.setup_axes(ref_name, model_name)
+    for (ref_value, model_value) in zip(reference_values, model_values):
+        diagram.plot_sample(ref_value, model_value)
+    return diagram
+
 class Diagram(object):
 
     def write(self, target_file):
         pyplot.savefig(target_file)
+
+class ScatterPlot(Diagram):
+
+    def __init__(self, figure):
+        self.fig = figure
+
+    def setup_axes(self, model_name, ref_name):
+        ax = SubplotZero(self.fig, 111)
+        self.fig.add_subplot(ax)
+
+        ax.spines['left'].set_position('center')
+        ax.spines['right'].set_color('none')
+        ax.spines['bottom'].set_position('center')
+        ax.spines['top'].set_color('none')
+        ax.spines['left'].set_smart_bounds(True)
+        ax.spines['bottom'].set_smart_bounds(True)
+        ax.xaxis.set_ticks_position('bottom')
+        ax.yaxis.set_ticks_position('left')
+
+        self.ax = ax
+
+        return ax
+
+    def needs_update(self, value, field_name, func):
+        if not hasattr(self, field_name):
+            self.__setattr__(field_name, value)
+        if value == func(value, self.__getattribute__(field_name)):
+            self.__setattr__(field_name, value * 1.5)
+            return True
+        return False
+
+    def plot_sample(self, ref_value, model_value):
+#        update_ranges = self.needs_update(ref_value, 'xmin', min)
+#        update_ranges |= self.needs_update(model_value, 'ymin', min)
+#        update_ranges |= self.needs_update(ref_value, 'xmax', max)
+#        update_ranges |= self.needs_update(model_value, 'ymax', max)
+#        if update_ranges:
+#            self.ax.axis([self.__getattribute__('xmin'), self.__getattribute__('xmax'), self.__getattribute__('ymin'), self.__getattribute__('ymax')])
+#            pylab.xlim(self.__getattribute__('min'), self.__getattribute__('max'))
+#            pylab.ylim(self.__getattribute__('min'), self.__getattribute__('max'))
+
+        self.ax.plot(ref_value, model_value, 'ko')
 
 class TargetDiagram(Diagram):
     """Target diagram: provides summary information about the pattern
@@ -57,10 +109,6 @@ class TargetDiagram(Diagram):
         self.fig = figure
 
     def setup_axes(self):
-        """Set up Taylor diagram axes, i.e. single quadrant polar
-        plot, using mpl_toolkits.axisartist.floating_axes.
-        """
-
         ax = SubplotZero(self.fig, 111)
         self.fig.add_subplot(ax)
 
@@ -215,3 +263,13 @@ class TaylorDiagram(Diagram):
     def update_legend(self):
         if self.show_legend:
             self.fig.legend(self.sample_points, self.sample_names, numpoints=1, prop=dict(size='small'), loc='upper right')
+
+class CenteredFormatter(mpl.ticker.ScalarFormatter):
+    """Acts exactly like the default Scalar Formatter, but yields an empty
+    label for ticks at "center"."""
+    center = 0
+    def __call__(self, value, pos=None):
+        if value == self.center:
+            return ''
+        else:
+            return mpl.ticker.ScalarFormatter.__call__(self, value, pos)

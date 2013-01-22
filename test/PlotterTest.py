@@ -70,3 +70,13 @@ class PlotterTest(unittest.TestCase):
         diagram = plotter.create_target_diagram((stats, stats1))
         diagram.write('resources/target_test.png')
         # pypl.show()
+
+    def test_scatter_plot(self):
+        values = np.array([0, -15, 2, 3, 15, 8, 5, 3, 9, 11, 12, 1, 7, 7, 6])
+        reference_values = np.array([-9, 10, 1, 2, 11, 3, 7, 5, 4, 12, 7, 8, 5, 1, 14])
+
+        diagram = plotter.create_scatter_plot(reference_values, values, 'Toads', 'Modelled_toads')
+
+        diagram.write('resources/scatter_test.png')
+
+        # pypl.show()
