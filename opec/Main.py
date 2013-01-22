@@ -35,6 +35,7 @@ def parse_arguments(arguments):
     parser.add_argument('-o', help='Path to the target directory', metavar='Target directory')
     parser.add_argument('-p', help='Target prefix', metavar='Target prefix')
     parser.add_argument('-v', help='A list of variable mappings', metavar='Variable mapping', nargs='+', action=VariableMappingsParseAction)
+    parser.add_argument('-r', help='An optional file containing the reference data', metavar='Reference data file')
     parser.add_argument('path', help='Path to the model output file', metavar='<path>')
     return parser.parse_args(arguments)
 
@@ -80,7 +81,10 @@ def main():
     parsed_args = parse_arguments(sys.argv[1:])
     config = Configuration(properties_file_name=parsed_args.a, target_dir=parsed_args.o, target_prefix=parsed_args.p)
     file_handler, log_file = setup_logging(config)
-    data = Data(parsed_args.path)
+    if parsed_args.r is not None:
+        data = Data(parsed_args.path, parsed_args.r)
+    else:
+        data = Data(parsed_args.path)
     me = MatchupEngine(data, config)
     collected_statistics = []
     collected_target_files = []

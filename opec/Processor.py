@@ -11,8 +11,8 @@ def extract_values(matchups, data, ref_name, model_name):
     for matchup in matchups:
         matchup_origin = list(retrieve_origin(matchup.cell_position))
         shape = np.ones([len(matchup_origin)], int)
-        reference_values[index] = data.read(ref_name, [matchup.reference_record.record_number], [1])
-        model_values[index] = data.read(model_name, matchup_origin, shape)
+        reference_values[index] = data.read_reference(ref_name, [matchup.reference_record.record_number], [1])
+        model_values[index] = data.read_model(model_name, matchup_origin, shape)
         index += 1
     return reference_values, model_values
 

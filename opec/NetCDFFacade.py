@@ -131,13 +131,15 @@ class NetCDFFacade(object):
         return result
 
     def get_ref_coordinate_variables(self):
-        ref_variable = self.get_reference_variables()[0]
         ref_coordinate_variables = []
+        if not self.get_reference_variables():
+            return ref_coordinate_variables
+        ref_variable = self.get_reference_variables()[0]
         dimension_string = self.get_dimension_string(ref_variable)
         for var in self.dataSet.variables:
             if self.get_dimension_string(var) == dimension_string and self.is_coordinate_variable(self.dataSet.variables[var]):
                 ref_coordinate_variables.append(var)
         return ref_coordinate_variables
 
-    def has_variable(self, variable_name):
-        return variable_name in self.dataSet.variables
+    def has_model_dimension(self, dimension_name):
+        return dimension_name in self.dataSet.dimensions

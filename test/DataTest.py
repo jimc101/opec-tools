@@ -40,29 +40,29 @@ class DataTest(unittest.TestCase):
         self.data.close()
 
     def test_var_access(self):
-        self.data.read('chl', [0, 0, 0, 0], [1, 1, 1, 1])
+        self.data.read_model('chl', [0, 0, 0, 0], [1, 1, 1, 1])
         chl_data = self.data['chl']
         self.assertEqual(np.ndarray, type(chl_data))
         self.assertEqual(1, chl_data.size)
         self.assertAlmostEqual(0.1111, chl_data[0])
 
-        self.data.read('chl')
+        self.data.read_model('chl')
         chl_data = self.data['chl']
         self.assertEqual(np.ndarray, type(chl_data))
         self.assertEqual(32, chl_data.size)
 
     def test_data_is_read_only_once_full_variable(self):
-        self.data.read('chl')
+        self.data.read_model('chl')
         chl_data = self.data['chl']
         self.assertEqual(32, chl_data.size)
         self.assertAlmostEqual(0.1111, chl_data[0][0][0][0])
 
         self.data['chl'][0][0][0][0] = 0.5
-        chl_data = self.data.read('chl')
+        chl_data = self.data.read_model('chl')
         self.assertAlmostEqual(0.5, chl_data[0][0][0][0])
 
     def test_data_is_read_only_once_part_of_variable(self):
-        self.data.read('chl', [0, 0, 0, 1], [1, 1, 2, 2])
+        self.data.read_model('chl', [0, 0, 0, 1], [1, 1, 2, 2])
         chl_data = self.data['chl']
         self.assertEqual(4, chl_data.size)
         self.assertAlmostEqual(0.2111, chl_data[0][0][0][0])
@@ -71,5 +71,15 @@ class DataTest(unittest.TestCase):
         self.assertAlmostEqual(0.1221, chl_data[0][0][1][1])
 
         self.data['chl'][0][0][0][0] = 0.5
-        chl_data = self.data.read('chl', [0, 0, 0, 1], [1, 1, 2, 2])
+        chl_data = self.data.read_model('chl', [0, 0, 0, 1], [1, 1, 2, 2])
         self.assertAlmostEqual(0.5, chl_data[0][0][0][0])
+
+    def test_data_works_with_split_files(self):
+        data = Data('resources/test_without_records.nc', 'resources/test_only_reference.nc')
+        self.assertEqual(2, len(data.model_vars()))
+        self.assertTrue('chl' in data.model_vars())
+        self.assertTrue('sst' in data.model_vars())
+        self.assertEqual(1, len(data.ref_vars()))
+        self.assertTrue('chl_ref' in data.ref_vars())
+        self.assertEqual(3, data.reference_records_count())
+        self.assertEqual(4, len(data.reference_coordinate_variables()))

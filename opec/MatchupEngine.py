@@ -76,7 +76,7 @@ class MatchupEngine(object):
         return matchup
 
     def __find_position(self, dimension, target_value):
-        dim_size = self.data.dim_size(dimension)
+        dim_size = self.data.model_dim_size(dimension)
         pixel_size = self.data[dimension][1] - self.data[dimension][0]
         return normalise((target_value - self.data[dimension][0]) / pixel_size, dim_size - 1)
 
@@ -98,20 +98,20 @@ class MatchupEngine(object):
 
     def __prepare_lat_lon_data(self):
         if not 'lon' in self.data:
-            self.data.read('lon')
+            self.data.read_model('lon')
         if not 'lat' in self.data:
-            self.data.read('lat')
+            self.data.read_model('lat')
 
     def find_matchup_time(self, ref_time):
-        return self.__find_matchup_index('time', ref_time, self.config.time_delta)
+        return self.__find_matchup_index_in_model_data('time', ref_time, self.config.time_delta)
 
     def __find_matchup_depth(self, ref_depth):
-        if not self.data.has_variable('depth'):
+        if not self.data.has_model_dimension('depth'):
             return [None, None]
-        return self.__find_matchup_index('depth', ref_depth, self.config.depth_delta)
+        return self.__find_matchup_index_in_model_data('depth', ref_depth, self.config.depth_delta)
 
-    def __find_matchup_index(self, dimension, ref, max_delta):
-        self.data.read(dimension)
+    def __find_matchup_index_in_model_data(self, dimension, ref, max_delta):
+        self.data.read_model(dimension)
         dimension_data = self.data[dimension]
         current_delta = float("inf")
         index = 0
@@ -127,19 +127,19 @@ class MatchupEngine(object):
     def __read_reference_dimensions(self, ref_depth_variable_name, ref_lat_variable_name, ref_lon_variable_name,
                                ref_time_variable_name):
         logging.debug('Reading reference records')
-        self.data.read(ref_lat_variable_name)
-        self.data.read(ref_lon_variable_name)
-        self.data.read(ref_time_variable_name)
+        self.data.read_reference(ref_lat_variable_name)
+        self.data.read_reference(ref_lon_variable_name)
+        self.data.read_reference(ref_time_variable_name)
         if ref_depth_variable_name is not None:
-            self.data.read(ref_depth_variable_name)
+            self.data.read_reference(ref_depth_variable_name)
 
     def __fill_matchup(self, matchup):
         for model_name in self.data.model_vars():
             origin = list(retrieve_origin(matchup.cell_position))
-            value = self.data.read(model_name, origin, np.ones([len(origin)], int))
+            value = self.data.read_model(model_name, origin, np.ones([len(origin)], int))
             matchup.add_variable_value(model_name, value.flatten()[0])
         for ref_name in self.data.ref_vars():
-            value = self.data.read(ref_name, [matchup.reference_record.record_number], [1])
+            value = self.data.read_reference(ref_name, [matchup.reference_record.record_number], [1])
             matchup.add_variable_value(ref_name, value.flatten()[0])
 
 def find_ref_coordinate_names(ref_coordinate_variables):

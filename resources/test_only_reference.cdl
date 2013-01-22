@@ -1,0 +1,62 @@
+netcdf test {
+dimensions:
+        record_num = 3 ;
+
+variables:
+        int time_ref(record_num) ;
+                time_ref:units = "seconds since 1960-01-01 00:00:00" ;
+                time_ref:long_name = "reference_time" ;
+                time_ref:axis = "T" ;
+                time_ref:calendar = "standard" ;
+                time_ref:_CoordinateAxisType = "Time" ;
+                time_ref:_FillValue = -999 ;
+        float depth_ref(record_num) ;
+                depth_ref:units = "m" ;
+                depth_ref:long_name = "depth of the reference observations" ;
+                depth_ref:positive = "down" ;
+                depth_ref:axis = "Z" ;
+                depth_ref:valid_min = 0.f ;
+                depth_ref:_CoordinateAxisType = "Height" ;
+                depth_ref:_CoordinateZisPositive = "down" ;
+        float lat_ref(record_num) ;
+                lat_ref:units = "degrees_north" ;
+                lat_ref:long_name = "latitude of the reference observations" ;
+                lat_ref:axis = "Y" ;
+                lat_ref:valid_min = -90.f ;
+                lat_ref:valid_max = 90.f ;
+                lat_ref:_CoordinateAxisType = "latitude" ;
+        float lon_ref(record_num) ;
+                lon_ref:units = "degrees_east" ;
+                lon_ref:long_name = "longitude of the reference observations" ;
+                lon_ref:axis = "X" ;
+                lon_ref:valid_min = -180.f ;
+                lon_ref:valid_max = 180.f ;
+                lon_ref:_CoordinateAxisType = "longitude" ;
+        float chl_ref(record_num) ;
+                chl_ref:_FillValue = -1.f ;
+                chl_ref:missing_value = -1.f ;
+                chl_ref:units = "milligram m-3" ;
+                chl_ref:long_name = "In-situ concentration of chlorophyll in sea water" ;
+                chl_ref:coordinates = "time_ref lat_ref lon_ref depth_ref" ;
+                chl_ref:source = "my_chlorophyll_buoy" ;
+
+// global attributes:
+                :Conventions = "CF-1.6" ;
+                :title = "some title" ;
+                :institution = "institution code" ;        
+                :references = "links to references" ;
+                :source = "method of production" ;
+                :history = "audit trail" ;
+                :comment = "comment" ;
+data:
+
+time_ref = 1261440250, 1261440300, 1261447000 ;
+
+depth_ref = 0.0012, 0.0013, 0.0021 ;
+
+lat_ref = 55.21, 55.8, 56.12 ;
+
+lon_ref = 5.31, 5.72, 12.35 ;
+
+chl_ref = 0.1, 0.2, 0.3 ;
+}  

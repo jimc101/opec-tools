@@ -35,15 +35,15 @@
             <unit>meter</unit>
         </property>
         <property>
-            <name>delta degrees of freedom</name>
+            <name>delta degrees of freedom (stddev)</name>
             <value>${ddof}</value>
         </property>
         <property>
-            <name>alpha</name>
+            <name>alpha (percentile)</name>
             <value>${alpha}</value>
         </property>
         <property>
-            <name>beta</name>
+            <name>beta (percentile)</name>
             <value>${beta}</value>
         </property>
     </configuration>

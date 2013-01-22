@@ -1,3 +1,4 @@
+import os
 import unittest
 from numpy.core.numeric import array
 from numpy.testing.utils import assert_array_equal
@@ -6,8 +7,17 @@ from opec.NetCDFFacade import NetCDFFacade
 
 class NetCDFFacadeTest(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(self):
+        self.cwd = os.getcwd()
+        os.chdir('..')
+
+    @classmethod
+    def tearDownClass(self):
+        os.chdir(self.cwd)
+
     def setUp(self):
-        filename = '../resources/test.nc'
+        filename = 'resources/test.nc'
         self.netcdf = NetCDFFacade(filename)
 
     def tearDown(self):
@@ -121,10 +131,16 @@ class NetCDFFacadeTest(unittest.TestCase):
         self.assertEqual('lat_ref', ref_coordinate_variables[2])
         self.assertEqual('lon_ref', ref_coordinate_variables[3])
 
-    def test_has_variable(self):
-        self.assertTrue(self.netcdf.has_variable('time'))
-        self.assertTrue(self.netcdf.has_variable('chl_ref'))
-        self.assertFalse(self.netcdf.has_variable('kaesemauken'))
+    def test_get_ref_coordinate_variables_empty(self):
+        netcdf = NetCDFFacade('resources/test_without_records.nc')
+        self.assertEqual(0, len(netcdf.get_reference_variables()))
+        ref_coordinate_variables = netcdf.get_ref_coordinate_variables()
+        self.assertEqual(0, len(ref_coordinate_variables))
+
+    def test_has_model_dimension(self):
+        self.assertTrue(self.netcdf.has_model_dimension('time'))
+        self.assertTrue(self.netcdf.has_model_dimension('depth'))
+        self.assertFalse(self.netcdf.has_model_dimension('kaesemauken'))
 
     def test_change_variable_values(self):
         chl = self.netcdf.get_variable('chl')

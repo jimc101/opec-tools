@@ -3,40 +3,72 @@ from opec.NetCDFFacade import NetCDFFacade
 
 class Data(dict):
 
-    def __init__(self, input_file_name):
+    def __init__(self, model_file_name, ref_file_name=None):
         super().__init__()
-        self.__netcdf = NetCDFFacade(input_file_name)
+        if ref_file_name is not None:
+            self.__reference_file = NetCDFFacade(ref_file_name)
+        self.__model_file = NetCDFFacade(model_file_name)
         self.__current_storage = {}
 
     def model_vars(self):
-        return self.__netcdf.get_model_variables()
+        return self.__model_file.get_model_variables()
 
     def close(self):
-        self.__netcdf.close()
+        self.__model_file.close()
+        if self.is_ref_data_split():
+            self.__reference_file.close()
 
     def ref_vars(self):
-        return self.__netcdf.get_reference_variables()
+        ref_vars = self.__model_file.get_reference_variables()
+        if self.is_ref_data_split():
+            ref_vars.extend(self.__reference_file.get_reference_variables())
+        return ref_vars
 
-    def has_variable(self, variable_name):
-        return self.__netcdf.has_variable(variable_name)
+    def has_model_dimension(self, dimension_name):
+        return self.__model_file.has_model_dimension(dimension_name)
 
     def reference_coordinate_variables(self):
-        return self.__netcdf.get_ref_coordinate_variables()
+        variables = self.__model_file.get_ref_coordinate_variables()
+        if self.is_ref_data_split():
+            variables.extend(self.__reference_file.get_ref_coordinate_variables())
+        return variables
 
-    def dim_size(self, dim_name):
-        return self.__netcdf.get_dim_size(dim_name)
+    def model_dim_size(self, dim_name):
+        return self.dim_size(self.__model_file, dim_name)
 
-    def dimension_string(self, variable_name):
-        return self.__netcdf.get_dimension_string(variable_name)
+    def ref_dim_size(self, dim_name):
+        if self.is_ref_data_split():
+            return self.dim_size(self.__reference_file, dim_name)
+        return self.dim_size(self.__model_file, dim_name)
+
+    def dim_size(self, ncfile, dim_name):
+        return ncfile.get_dim_size(dim_name)
+
+    def __dimension_string(self, ncfile, variable_name):
+        return ncfile.get_dimension_string(variable_name)
+
+    def is_ref_data_split(self):
+        return hasattr(self, '_Data__reference_file')
 
     def reference_records_count(self):
         ref_vars = self.ref_vars()
         if not ref_vars:
             return 0
-        return self.dim_size(self.dimension_string(ref_vars[0]))
+        if self.is_ref_data_split():
+            ncfile = self.__reference_file
+        else:
+            ncfile = self.__model_file
+        return self.dim_size(ncfile, self.__dimension_string(ncfile, ref_vars[0]))
+
+    def read_model(self, variable_name, origin=None, shape=None):
+        return self.__read(self.__model_file, variable_name, origin, shape)
+
+    def read_reference(self, variable_name, origin=None, shape=None):
+        ncfile = self.__reference_file if self.is_ref_data_split() else self.__model_file
+        return self.__read(ncfile, variable_name, origin, shape)
 
     #todo - allow access to values that have been read, but not exactly the same shape as requested
-    def read(self, variable_name, origin=None, shape=None):
+    def __read(self, ncfile, variable_name, origin=None, shape=None):
         if self.__is_cached(variable_name):
             if self.__can_return_all(origin, shape, variable_name):
                 return self[variable_name]
@@ -48,10 +80,10 @@ class Data(dict):
                         return self[variable_name]
         must_fully_read = origin is None and shape is None
         if must_fully_read:
-            self[variable_name] = self.__netcdf.get_variable(variable_name)[:]
+            self[variable_name] = ncfile.get_variable(variable_name)[:]
             self.__current_storage[variable_name] = 'fully_read'
         else:
-            self[variable_name] = self.__netcdf.get_data(variable_name, origin, shape)
+            self[variable_name] = ncfile.get_data(variable_name, origin, shape)
             self.__current_storage[variable_name] = [np.array(origin), np.array(shape)]
         return self[variable_name]
 
