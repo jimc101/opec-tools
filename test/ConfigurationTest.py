@@ -31,13 +31,12 @@ class ConfigurationTest(unittest.TestCase):
         self.assertEqual('\t', c.separator)
         self.assertEqual(False, c.write_taylor_diagram)
         self.assertEqual(None, c.log_file)
-        self.assertEqual(True, c.write_log_file)
         self.assertEqual(True, c.write_csv)
         self.assertEqual(True, c.write_xhtml)
         self.assertEqual(False, c.separate_matchups)
 
     def test_initialisation_by_file(self):
-        c = Configuration(alpha=5, ddof=2, log_level='INFO', write_log_file='FALSE', properties_file_name='./resources/test.properties')
+        c = Configuration(alpha=5, ddof=2, log_level='INFO', properties_file_name='./resources/test.properties')
         self.assertEqual(5, c.alpha)
         self.assertEqual(0.5, c.beta)
         self.assertEqual(2, c.ddof)
@@ -52,7 +51,6 @@ class ConfigurationTest(unittest.TestCase):
         self.assertEqual('benchmark_', c.target_prefix)
         self.assertEqual(True, c.write_taylor_diagram)
         self.assertEqual(None, c.log_file)
-        self.assertEqual(False, c.write_log_file)
         self.assertEqual(False, c.write_csv)
         self.assertEqual(False, c.write_xhtml)
         self.assertEqual(True, c.separate_matchups)

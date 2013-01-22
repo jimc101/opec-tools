@@ -12,7 +12,7 @@ def add_section_header(properties_file, header_name):
 class Configuration(object):
 
     def __init__(self, alpha=None, beta=None, ddof=None, geo_delta=None, time_delta=None, depth_delta=None,
-                 log_level=None, write_log_file=None, log_file=None, zip=None, show_negative_corrcoeff=None,
+                 log_level=None, log_file=None, zip=None, show_negative_corrcoeff=None,
                  show_legend=None, target_dir=None, target_prefix=None, include_header=None, separator=None,
                  separate_matchups=None, properties_file_name=None, write_taylor_diagram=None, write_xhtml=None,
                  write_csv=None):
@@ -36,7 +36,6 @@ class Configuration(object):
         self.__set(time_delta, 'opec.matchup.time_delta', int)
         self.__set(depth_delta, 'opec.matchup.depth_delta', float)
         self.__set(log_level, 'opec.general.log_level', log_level_conv)
-        self.__set(write_log_file, 'opec.general.write_log_file', bool)
         self.__set(log_file, 'opec.general.log_file', log_file_conv)
         self.__set(zip, 'opec.output.zip', bool)
         self.__set(show_negative_corrcoeff, 'opec.output.plot.taylor.show_negative_corrcoeff', bool)
@@ -95,9 +94,6 @@ class Configuration(object):
     def __log_level(self):
         return self.__dict['opec.general.log_level']
 
-    def __write_log_file(self):
-        return self.__dict['opec.general.write_log_file']
-
     def __log_file(self):
         return self.__dict['opec.general.log_file']
 
@@ -142,7 +138,6 @@ class Configuration(object):
     depth_delta = property(__depth_delta)
     log_level = property(__log_level)
     log_file = property(__log_file)
-    write_log_file = property(__write_log_file)
     zip = property(__zip)
     show_negative_corrcoeff = property(__show_negative_corrcoeff)
     show_legend = property(__show_legend)

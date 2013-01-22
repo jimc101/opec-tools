@@ -42,21 +42,22 @@ def parse_arguments(arguments):
 def ref_stddev(statistics):
     return np.max(list(map(lambda x: x.get('ref_stddev'), statistics)))
 
-def create_zip(collected_target_files, config, file_handler, log_file, parsed_args):
-    zipped_files = []
+def create_zip(target_files, config, file_handler, parsed_args):
+    files_to_remove = []
     zipfile = ZipFile('%s\\%sbenchmarks.zip' % (parsed_args.o, config.target_prefix), 'w')
     logging.info('Creating zip file: %s' % zipfile.filename)
-    for file in collected_target_files:
+    for file in target_files:
         zipfile.write(file, os.path.basename(file))
-        zipped_files.append(file)
-    if config.write_log_file:
+        files_to_remove.append(file)
+    if config.log_file is not None:
         logging.getLogger().removeHandler(file_handler)
         file_handler.flush()
         file_handler.close()
-        zipfile.write(log_file, os.path.basename(log_file))
-        zipped_files.append(log_file)
+        log_file = '%s/%s' % (config.target_dir, config.log_file)
+        zipfile.write(log_file, os.path.basename(config.log_file))
+        files_to_remove.append(log_file)
     zipfile.close()
-    for file in zipped_files:
+    for file in files_to_remove:
         os.remove(file)
 
 def log_warning(msg, category, filename, lineno, file=None, line=None):
@@ -66,28 +67,25 @@ def log_warning(msg, category, filename, lineno, file=None, line=None):
 #noinspection PyUnboundLocalVariable
 def setup_logging(config):
     file_handler = None
-    log_file = None
     warnings.showwarning = log_warning
-    if config.write_log_file and config.log_level <= logging.CRITICAL:
-        log_file = config.log_file if config.log_file is not None else '%s/%sbenchmarking.log' % (config.target_dir, config.target_prefix)
-        file_handler = logging.FileHandler(log_file, 'w')
+    if config.log_file is not None and config.log_level <= logging.CRITICAL:
+        file_handler = logging.FileHandler('%s/%s' % (config.target_dir, config.log_file), 'w')
         file_handler.setFormatter(Utils.get_logging_formatter())
         logging.getLogger().addHandler(file_handler)
     logging.getLogger().setLevel(level=config.log_level)
     logging.info('Starting benchmark')
-    return file_handler, log_file
+    return file_handler
 
 def main():
     parsed_args = parse_arguments(sys.argv[1:])
     config = Configuration(properties_file_name=parsed_args.a, target_dir=parsed_args.o, target_prefix=parsed_args.p)
-    file_handler, log_file = setup_logging(config)
+    file_handler = setup_logging(config)
     if parsed_args.r is not None:
         data = Data(parsed_args.path, parsed_args.r)
     else:
         data = Data(parsed_args.path)
     me = MatchupEngine(data, config)
     collected_statistics = []
-    collected_target_files = []
     output = Output(config=config, source_file=parsed_args.path)
     matchups = me.find_all_matchups()
 
@@ -95,36 +93,43 @@ def main():
         stats = Processor.calculate_statistics(matchups=matchups, config=config, model_name=pair[1], ref_name=pair[0], data=data)
         collected_statistics.append(stats)
 
+    target_files = []
     if config.write_csv:
         for pair, stats in zip(parsed_args.v, collected_statistics):
             csv_target_file = '%s\\%s%s_statistics.csv' % (parsed_args.o, config.target_prefix, pair[0])
-            collected_target_files.append(csv_target_file)
+            target_files.append(csv_target_file)
             output.csv(stats, variable_name=pair[1], ref_variable_name=pair[0], matchups=matchups, target_file=csv_target_file)
             logging.info('CSV output written to \'%s\'' % csv_target_file)
+            if matchups and config.separate_matchups:
+                matchup_filename = '%s_matchups.csv' % os.path.splitext(csv_target_file)[0]
+                logging.info('Matchups written to \'%s\'' % matchup_filename)
+                target_files.append(matchup_filename)
 
     taylor_target_file = None
     if config.write_taylor_diagram:
         taylor_target_file = '%s\\%staylor.png' % (parsed_args.o, config.target_prefix)
         if output.taylor(collected_statistics, taylor_target_file):
             logging.info('Taylor diagram written to \'%s\'' % taylor_target_file)
-        collected_target_files.append(taylor_target_file)
+        target_files.append(taylor_target_file)
 
     if config.write_xhtml:
         xml_target_file = '%s\\%sreport.xml' % (parsed_args.o, config.target_prefix)
         xsl = 'resources/analysis-summary.xsl'
         css = 'resources/styleset.css'
+        xsl_target = '%s/%s' % (parsed_args.o, os.path.basename(xsl))
+        css_target = '%s/%s' % (parsed_args.o, os.path.basename(css))
         output.xhtml(collected_statistics, matchups, xml_target_file, taylor_target_file)
         logging.info('XHTML report written to \'%s\'' % xml_target_file)
         shutil.copy(xsl, parsed_args.o)
         logging.info('XHTML support file written to \'%s/%s\'' % (parsed_args.o, 'analysis-summary.xsl'))
         shutil.copy(css, parsed_args.o)
         logging.info('XHTML support file written to \'%s/%s\'' % (parsed_args.o, 'styleset.xsl'))
-        collected_target_files.append(xml_target_file)
-        collected_target_files.append(xsl)
-        collected_target_files.append(css)
+        target_files.append(xml_target_file)
+        target_files.append(xsl_target)
+        target_files.append(css_target)
 
     if config.zip:
-        create_zip(collected_target_files, config, file_handler, log_file, parsed_args)
+        create_zip(target_files, config, file_handler, parsed_args)
 
     logging.info('End of process')
 
