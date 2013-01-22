@@ -22,10 +22,13 @@ Prerequisites for building:
 - Python 3.2 interpreter
 - numpy 1.6.2
 - scipy 0.11.0
-- netCDF4-python 1.0.1
+- netCDF4-python 1.0.3dev
 - nose 1.2.1
 - mako 0.7.3
 - matplotlib 1.2.0
+
+This software has been developed and tested on basis of the Windows 64bit-versions of the packages above. The latest
+versions of these packages can be obtained from http://www.lfd.uci.edu/~gohlke/pythonlibs/
 
 Coding Conventions (loosely based on http://www.python.org/dev/peps/pep-0008/ and http://google-styleguide.googlecode.com/svn/trunk/pyguide.html):
 
