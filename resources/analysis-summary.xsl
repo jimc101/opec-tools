@@ -184,54 +184,62 @@
                         <td>Reference Lat</td>
                         <td>Reference Lon</td>
                         <xsl:for-each select="analysisSummary/matchups/variables/var">
-                            <td><xsl:value-of select="text()"/></td>
+                            <td>
+                                <xsl:value-of select="text()"/>
+                            </td>
                         </xsl:for-each>
                     </tr>
 
                     <xsl:for-each select="analysisSummary/matchups/matchup">
-                    <tr>
-                        <td>
-                            <xsl:value-of select="recordNumber"/>
-                        </td>
-                        <td class="value">
-                            <xsl:value-of select="time"/>
-                        </td>
-                        <td class="value">
-                            <xsl:value-of select="depth"/>
-                        </td>
-                        <td class="value">
-                            <xsl:value-of select="lat"/>
-                        </td>
-                        <td class="value">
-                            <xsl:value-of select="lon"/>
-                        </td>
-                        <td class="value">
-                            <xsl:value-of select="reference_time"/>
-                        </td>
-                        <td class="value">
-                            <xsl:value-of select="reference_depth"/>
-                        </td>
-                        <td class="value">
-                            <xsl:value-of select="reference_lat"/>
-                        </td>
-                        <td class="value">
-                            <xsl:value-of select="reference_lon"/>
-                        </td>
+                        <tr>
+                            <td>
+                                <xsl:value-of select="recordNumber"/>
+                            </td>
+                            <td class="value">
+                                <xsl:value-of select="time"/>
+                            </td>
+                            <td class="value">
+                                <xsl:value-of select="depth"/>
+                            </td>
+                            <td class="value">
+                                <xsl:value-of select="lat"/>
+                            </td>
+                            <td class="value">
+                                <xsl:value-of select="lon"/>
+                            </td>
+                            <td class="value">
+                                <xsl:value-of select="reference_time"/>
+                            </td>
+                            <td class="value">
+                                <xsl:value-of select="reference_depth"/>
+                            </td>
+                            <td class="value">
+                                <xsl:value-of select="reference_lat"/>
+                            </td>
+                            <td class="value">
+                                <xsl:value-of select="reference_lon"/>
+                            </td>
 
-                        <xsl:for-each select="property">
-                            <td><xsl:value-of select="value"/></td>
-                        </xsl:for-each>
+                            <xsl:for-each select="property">
+                                <td>
+                                    <xsl:value-of select="value"/>
+                                </td>
+                            </xsl:for-each>
 
-                    </tr>
+                        </tr>
                     </xsl:for-each>
 
                 </table>
 
-                <h3>Taylor Diagram</h3>
+                <xsl:if test="not(analysisSummary/taylor = 'None')">
+                    <h3>Taylor Diagram</h3>
 
-                <img>
-                    <xsl:attribute name="src"><xsl:value-of select="analysisSummary/taylor"/></xsl:attribute>
-                </img>
+                    <img>
+                        <xsl:attribute name="src">
+                            <xsl:value-of select="analysisSummary/taylor"/>
+                        </xsl:attribute>
+                    </img>
+                </xsl:if>
 
             </body>
         </html>

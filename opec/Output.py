@@ -199,6 +199,7 @@ class Output(object):
                 ref_pair[key.replace('ref_', '')] = stats[key]
             all_ref_stats.append((stats['ref_name'], ref_pair))
 
+        taylor_target_file = os.path.basename(taylor_target_file) if taylor_target_file is not None else None
         ctx = Context(buf,
             pairs=all_relative_stats,
             performed_at=datetime.now().strftime('%b %d, %Y at %H:%M:%S'),
@@ -214,7 +215,7 @@ class Output(object):
             all_ref_stats=all_ref_stats,
             matchups=matchups,
             write_taylor_diagram=self.config.write_taylor_diagram,
-            taylor_target_file=os.path.basename(taylor_target_file))
+            taylor_target_file=taylor_target_file)
         template.render_context(ctx)
         xml = buf.getvalue()
 
