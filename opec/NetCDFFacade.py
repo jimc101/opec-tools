@@ -4,7 +4,10 @@ from netCDF4 import Dataset
 class NetCDFFacade(object):
 
     def __init__(self, filename):
-        self.dataSet = Dataset(filename, 'r', format='NETCDF4_CLASSIC')
+        try:
+            self.dataSet = Dataset(filename, 'r', format='NETCDF4_CLASSIC')
+        except RuntimeError as re:
+            raise ValueError('%s: %s' % (re.args[0], filename))
 
     def get_dim_size(self, dimName):
         dimensions = self.dataSet.dimensions
