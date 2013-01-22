@@ -69,6 +69,8 @@ def setup_logging(config):
     file_handler = None
     warnings.showwarning = log_warning
     if config.log_file is not None and config.log_level <= logging.CRITICAL:
+        if not os.path.exists(config.target_dir):
+            os.makedirs(config.target_dir)
         file_handler = logging.FileHandler('%s/%s' % (config.target_dir, config.log_file), 'w')
         file_handler.setFormatter(Utils.get_logging_formatter())
         logging.getLogger().addHandler(file_handler)
