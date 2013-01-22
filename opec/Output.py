@@ -93,7 +93,7 @@ class Output(object):
             lines.append('# Number of matchups: %s' % len(matchups))
         lines.append('#')
         lines.append('# Matchup criteria:')
-        lines.append('#    Maximum geographic delta = {} \"degrees\"'.format(self.config.geo_delta))
+        lines.append('#    Maximum geographic delta = {} degrees'.format(self.config.geo_delta))
         lines.append('#    Maximum time delta = {} seconds'.format(self.config.time_delta))
         lines.append('#    Maximum depth delta = {} meters'.format(self.config.depth_delta))
         lines.append('#')

@@ -44,7 +44,7 @@ class OutputTest(TestCase):
         expected_result.append("# Number of matchups: 1")
         expected_result.append("#")
         expected_result.append("# Matchup criteria:")
-        expected_result.append("#    Maximum geographic delta = 12.0 \"degrees\"")
+        expected_result.append("#    Maximum geographic delta = 12.0 degrees")
         expected_result.append("#    Maximum time delta = 1234 seconds")
         expected_result.append("#    Maximum depth delta = 0.234 meters")
         expected_result.append("#")
