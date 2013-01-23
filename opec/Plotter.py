@@ -45,10 +45,10 @@ def create_target_diagram(statistics, config=None):
 
     return diagram
 
-def create_scatter_plot(reference_values, model_values, ref_name=None, model_name=None):
+def create_scatter_plot(reference_values, model_values, ref_name, model_name, unit=None):
     figure = pyplot.figure()
-    diagram = ScatterPlot(figure)
-    diagram.setup_axes(ref_name, model_name)
+    diagram = ScatterPlot(figure, ref_name, model_name, unit)
+    diagram.setup_axes()
     for (ref_value, model_value) in zip(reference_values, model_values):
         diagram.plot_sample(ref_value, model_value)
     return diagram
@@ -60,25 +60,27 @@ class Diagram(object):
 
 class ScatterPlot(Diagram):
 
-    def __init__(self, figure):
+    def __init__(self, figure, model_name, ref_name, unit=None):
         self.fig = figure
+        self.x = np.array([])
+        self.y = np.array([])
+        self.model_name = model_name
+        self.ref_name = ref_name
+        self.unit_string = '(%s)' % unit if unit is not None else ''
 
-    def setup_axes(self, model_name, ref_name):
-        ax = SubplotZero(self.fig, 111)
+    def setup_axes(self):
+        ax = SubplotZero(self.fig, 1, 1, 1)
         self.fig.add_subplot(ax)
-
-        ax.spines['left'].set_position('center')
-        ax.spines['right'].set_color('none')
-        ax.spines['bottom'].set_position('center')
-        ax.spines['top'].set_color('none')
-        ax.spines['left'].set_smart_bounds(True)
-        ax.spines['bottom'].set_smart_bounds(True)
-        ax.xaxis.set_ticks_position('bottom')
-        ax.yaxis.set_ticks_position('left')
-
+        ax.set_xlabel('%s %s' % (self.ref_name, self.unit_string))
+        ax.set_ylabel('%s %s' % (self.model_name, self.unit_string))
+        ax.grid()
         self.ax = ax
-
+        self.update_title()
         return ax
+
+    def update_title(self):
+        matchup_count = len(self.ax.lines)
+        self.ax.set_title('Scatter plot of %s and %s\nNumber of matchups: %s' % (self.model_name, self.ref_name, matchup_count))
 
     def needs_update(self, value, field_name, func):
         if not hasattr(self, field_name):
@@ -89,16 +91,25 @@ class ScatterPlot(Diagram):
         return False
 
     def plot_sample(self, ref_value, model_value):
-#        update_ranges = self.needs_update(ref_value, 'xmin', min)
-#        update_ranges |= self.needs_update(model_value, 'ymin', min)
-#        update_ranges |= self.needs_update(ref_value, 'xmax', max)
-#        update_ranges |= self.needs_update(model_value, 'ymax', max)
-#        if update_ranges:
-#            self.ax.axis([self.__getattribute__('xmin'), self.__getattribute__('xmax'), self.__getattribute__('ymin'), self.__getattribute__('ymax')])
-#            pylab.xlim(self.__getattribute__('min'), self.__getattribute__('max'))
-#            pylab.ylim(self.__getattribute__('min'), self.__getattribute__('max'))
+        update_ranges = self.needs_update(ref_value, 'xmin', min)
+        update_ranges |= self.needs_update(model_value, 'ymin', min)
+        update_ranges |= self.needs_update(ref_value, 'xmax', max)
+        update_ranges |= self.needs_update(model_value, 'ymax', max)
+        if update_ranges:
+            pyplot.axis([self.__getattribute__('xmin'), self.__getattribute__('xmax'), self.__getattribute__('ymin'), self.__getattribute__('ymax')])
 
-        self.ax.plot(ref_value, model_value, 'ko')
+        self.x = np.append(self.x, ref_value)
+        self.y = np.append(self.y, model_value)
+        m, b = pylab.polyfit(self.x, self.y, 1)
+
+        line, = pyplot.plot([self.xmin, self.xmax], [m * self.xmin + b, m * self.xmax + b], '-b', linewidth=0.4)
+        if hasattr(self, 'line'):
+            self.ax.lines.remove(self.line)
+        self.line = line
+
+        self.update_title()
+
+        pyplot.plot(ref_value, model_value, 'ro', markersize=4)
 
 class TargetDiagram(Diagram):
     """Target diagram: provides summary information about the pattern
