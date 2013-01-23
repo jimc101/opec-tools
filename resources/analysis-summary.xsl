@@ -231,7 +231,7 @@
 
                 </table>
 
-                <xsl:if test="not(analysisSummary/taylor = 'None')">
+                <xsl:if test="/analysisSummary/taylor">
                     <h3>Taylor Diagram</h3>
 
                     <img>
@@ -239,6 +239,19 @@
                             <xsl:value-of select="analysisSummary/taylor"/>
                         </xsl:attribute>
                     </img>
+                </xsl:if>
+
+                <xsl:if test="/analysisSummary/scatterPlots">
+                    <h3>Scatter Plot(s)</h3>
+
+                    <xsl:for-each select="analysisSummary/scatterPlots">
+                        <img class="scatter">
+                            <xsl:attribute name="src">
+                                <xsl:value-of select="scatterPlot"/>
+                            </xsl:attribute>
+                        </img>
+                        <br/>
+                    </xsl:for-each>
                 </xsl:if>
 
             </body>

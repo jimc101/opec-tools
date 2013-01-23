@@ -92,7 +92,7 @@ def main():
     matchups = me.find_all_matchups()
 
     for pair in parsed_args.v:
-        stats = Processor.calculate_statistics(matchups=matchups, config=config, model_name=pair[1], ref_name=pair[0], data=data)
+        stats = Processor.calculate_statistics(matchups=matchups, config=config, model_name=pair[1], ref_name=pair[0])
         collected_statistics.append(stats)
 
     target_files = []
@@ -112,7 +112,17 @@ def main():
         taylor_target_file = '%s\\%staylor.png' % (parsed_args.o, config.target_prefix)
         if output.taylor(collected_statistics, taylor_target_file):
             logging.info('Taylor diagram written to \'%s\'' % taylor_target_file)
+        else:
+            taylor_target_file = None
         target_files.append(taylor_target_file)
+
+    scatter_plot_files = []
+    if config.write_scatter_plots:
+        for pair in parsed_args.v:
+            scatter_target = '%s/scatter-%s-%s.png' % (parsed_args.o, pair[0], pair[1])
+            scatter_plot_files.append(scatter_target)
+            target_files.append(scatter_target)
+            output.scatter_plot(matchups, pair[0], pair[1], scatter_target, data.unit(pair[0]))
 
     if config.write_xhtml:
         xml_target_file = '%s\\%sreport.xml' % (parsed_args.o, config.target_prefix)
@@ -120,7 +130,7 @@ def main():
         css = 'resources/styleset.css'
         xsl_target = '%s/%s' % (parsed_args.o, os.path.basename(xsl))
         css_target = '%s/%s' % (parsed_args.o, os.path.basename(css))
-        output.xhtml(collected_statistics, matchups, xml_target_file, taylor_target_file)
+        output.xhtml(collected_statistics, matchups, xml_target_file, taylor_target_file, scatter_plot_files)
         logging.info('XHTML report written to \'%s\'' % xml_target_file)
         shutil.copy(xsl, parsed_args.o)
         logging.info('XHTML support file written to \'%s/%s\'' % (parsed_args.o, 'analysis-summary.xsl'))

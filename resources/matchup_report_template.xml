@@ -126,8 +126,16 @@
         % endfor
     </matchups>
 
-% if write_taylor_diagram:
+% if write_taylor_diagram and taylor_target_file is not None:
     <taylor>${taylor_target_file}</taylor>
+% endif
+
+% if scatter_plot_files:
+    % for scatter_plot in scatter_plot_files:
+        <scatterPlots>
+            <scatterPlot>${scatter_plot}</scatterPlot>
+        </scatterPlots>
+    % endfor
 % endif
 
 </analysisSummary>

@@ -92,3 +92,15 @@ class Data(dict):
 
     def __can_return_all(self, origin, shape, variable_name):
         return origin is None and shape is None and self.__current_storage[variable_name] == 'fully_read'
+
+    def unit(self, variable_name):
+        if unit(self.__model_file, variable_name):
+            return unit(self.__model_file, variable_name)
+        if self.is_ref_data_split() and unit(self.__reference_file, variable_name):
+            return unit(self.__reference_file, variable_name)
+        raise ValueError('Variable \'%s\' not found.' % variable_name)
+
+def unit(ncfile, variable_name):
+    if ncfile.get_variable(variable_name):
+        return ncfile.get_variable_attribute(variable_name, 'units')
+    return None

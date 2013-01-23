@@ -83,3 +83,9 @@ class DataTest(unittest.TestCase):
         self.assertTrue('chl_ref' in data.ref_vars())
         self.assertEqual(3, data.reference_records_count())
         self.assertEqual(4, len(data.reference_coordinate_variables()))
+
+    def test_unit(self):
+        self.assertEqual('milligram m-3', self.data.unit('chl'))
+        self.assertEqual('kelvin', self.data.unit('sst'))
+        self.assertEqual('degrees_east', self.data.unit('lon_ref'))
+        self.assertRaises(ValueError, lambda: self.data.unit('toad_count'))

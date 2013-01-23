@@ -15,7 +15,7 @@ class Configuration(object):
                  log_level=None, log_file=None, zip=None, show_negative_corrcoeff=None,
                  show_legend=None, target_dir=None, target_prefix=None, include_header=None, separator=None,
                  separate_matchups=None, properties_file_name=None, write_taylor_diagram=None, write_xhtml=None,
-                 write_csv=None):
+                 write_csv=None, write_scatter_plots=None):
         """
         Priority:
         1) what is passed as parameter
@@ -48,6 +48,7 @@ class Configuration(object):
         self.__set(write_taylor_diagram, 'opec.output.plot.write_taylor_diagram', bool)
         self.__set(write_xhtml, 'opec.output.xhtml.write_xhtml', bool)
         self.__set(write_csv, 'opec.output.csv.write_csv', bool)
+        self.__set(write_scatter_plots, 'opec.output.scatter.write_scatter_plots', bool)
 
     def __set(self, value, name, converter):
         if value is not None:
@@ -130,6 +131,9 @@ class Configuration(object):
     def __write_xhtml(self):
         return self.__dict['opec.output.xhtml.write_xhtml']
 
+    def __write_scatter_plots(self):
+        return self.__dict['opec.output.scatter.write_scatter_plots']
+
     alpha = property(__alpha)
     beta = property(__beta)
     ddof = property(__ddof)
@@ -149,6 +153,7 @@ class Configuration(object):
     write_taylor_diagram = property(__write_taylor_diagram)
     write_csv = property(__write_csv)
     write_xhtml = property(__write_xhtml)
+    write_scatter_plots = property(__write_scatter_plots)
 
 def get_default_config():
     return Configuration()

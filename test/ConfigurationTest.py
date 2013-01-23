@@ -34,6 +34,7 @@ class ConfigurationTest(unittest.TestCase):
         self.assertEqual(True, c.write_csv)
         self.assertEqual(True, c.write_xhtml)
         self.assertEqual(False, c.separate_matchups)
+        self.assertEqual(True, c.write_scatter_plots)
 
     def test_initialisation_by_file(self):
         c = Configuration(alpha=5, ddof=2, log_level='INFO', properties_file_name='./resources/test.properties')

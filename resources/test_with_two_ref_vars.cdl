@@ -93,12 +93,11 @@ variables:
                 chl_ref:coordinates = "time_ref lat_ref lon_ref depth_ref" ;
                 chl_ref:source = "my_chlorophyll_buoy" ;
         float sst_ref(record_num) ;
-                chl_ref:_FillValue = -1.f ;
-                chl_ref:missing_value = -1.f ;
-                chl_ref:units = "Kelvin" ;
-                chl_ref:long_name = "In-situ concentration of chlorophyll in sea water" ;
-                chl_ref:coordinates = "time_ref lat_ref lon_ref depth_ref" ;
-                chl_ref:source = "my_chlorophyll_buoy" ;
+                sst_ref:_FillValue = -1.f ;
+                sst_ref:missing_value = -1.f ;
+                sst_ref:units = "Kelvin" ;
+                sst_ref:long_name = "In-situ temperature of sea surface" ;
+                sst_ref:coordinates = "time_ref lat_ref lon_ref depth_ref" ;
 
 // global attributes:
                 :Conventions = "CF-1.6" ;

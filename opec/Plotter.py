@@ -60,7 +60,7 @@ class Diagram(object):
 
 class ScatterPlot(Diagram):
 
-    def __init__(self, figure, model_name, ref_name, unit=None):
+    def __init__(self, figure, ref_name, model_name, unit=None):
         self.fig = figure
         self.x = np.array([])
         self.y = np.array([])
@@ -80,29 +80,41 @@ class ScatterPlot(Diagram):
 
     def update_title(self):
         matchup_count = len(self.ax.lines)
-        self.ax.set_title('Scatter plot of %s and %s\nNumber of matchups: %s' % (self.model_name, self.ref_name, matchup_count))
+        self.ax.set_title('Scatter plot of %s and %s\nNumber of considered matchups: %s' % (self.model_name, self.ref_name, matchup_count))
 
     def needs_update(self, value, field_name, func):
         if not hasattr(self, field_name):
             self.__setattr__(field_name, value)
         if value == func(value, self.__getattribute__(field_name)):
-            self.__setattr__(field_name, value * 1.5)
+            self.__setattr__(field_name, value)
             return True
         return False
 
     def plot_sample(self, ref_value, model_value):
+        if np.ma.masked in [ref_value, model_value]:
+            return
         update_ranges = self.needs_update(ref_value, 'xmin', min)
         update_ranges |= self.needs_update(model_value, 'ymin', min)
         update_ranges |= self.needs_update(ref_value, 'xmax', max)
         update_ranges |= self.needs_update(model_value, 'ymax', max)
+        xmin, xmax = 0, 0
         if update_ranges:
-            pyplot.axis([self.__getattribute__('xmin'), self.__getattribute__('xmax'), self.__getattribute__('ymin'), self.__getattribute__('ymax')])
+            xmin = self.__getattribute__('xmin')
+            growing_factor = 1.2
+            xmin = xmin * growing_factor if xmin < 0 else xmin / growing_factor
+            ymin = self.__getattribute__('ymin')
+            ymin = ymin * growing_factor if ymin < 0 else ymin / growing_factor
+            xmax = self.__getattribute__('xmax')
+            xmax = xmax * growing_factor if xmax > 0 else xmax / growing_factor
+            ymax = self.__getattribute__('ymax')
+            ymax = ymax * growing_factor if ymax > 0 else ymax / growing_factor
+            pyplot.axis([xmin, xmax, ymin, ymax])
 
         self.x = np.append(self.x, ref_value)
         self.y = np.append(self.y, model_value)
         m, b = pylab.polyfit(self.x, self.y, 1)
 
-        line, = pyplot.plot([self.xmin, self.xmax], [m * self.xmin + b, m * self.xmax + b], '-b', linewidth=0.4)
+        line, = pyplot.plot([xmin, xmax], [m * xmin + b, m * xmax + b], '-b', linewidth=0.4)
         if hasattr(self, 'line'):
             self.ax.lines.remove(self.line)
         self.line = line

@@ -16,10 +16,10 @@ def load(filename):
 def calculate_statistics(model_name, ref_name, data, config=None):
     me = MatchupEngine(data, config)
     matchups = me.find_all_matchups()
-    return calculate_statistics_from_matchups(matchups, model_name, ref_name, data, config=None)
+    return calculate_statistics_from_matchups(matchups, model_name, ref_name, config=None)
 
-def calculate_statistics_from_matchups(matchups, model_name, ref_name, data, config=None):
-    return Processor.calculate_statistics(matchups, model_name, ref_name, config=config, data=data)
+def calculate_statistics_from_matchups(matchups, model_name, ref_name, config=None):
+    return Processor.calculate_statistics(matchups, model_name, ref_name, config=config)
 
 def calculate_statistics_from_values(model_values, ref_values, config=None):
     return Processor.calculate_statistics(model_values=model_values, reference_values=ref_values, config=config)
@@ -30,10 +30,10 @@ def get_matchups(data, config=None):
 
 def extract_values(model_name, ref_name, data):
     ma = get_matchups(data)
-    return extract_values_from_matchups(ma, model_name, ref_name, data)
+    return extract_values_from_matchups(ma, model_name, ref_name)
 
-def extract_values_from_matchups(matchups, model_name, ref_name, data):
-    return Processor.extract_values(matchups, data, ref_name, model_name)
+def extract_values_from_matchups(matchups, model_name, ref_name):
+    return Processor.extract_values(matchups, ref_name, model_name)
 
 def write_csv(statistics, model_name, ref_name, matchups, target_file, config=None):
     op = Output(config=config)

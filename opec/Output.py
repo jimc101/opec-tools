@@ -4,7 +4,7 @@ from mako.runtime import Context
 from mako.template import Template
 from datetime import datetime
 import os
-from opec import Plotter
+from opec import Plotter, Processor
 from opec.Configuration import get_default_config
 
 def rename(string):
@@ -23,6 +23,11 @@ def key(string, is_ref_var):
         return 'ref_' + string
     return string
 
+def clean_pathnames(scatter_plot_files):
+    relative_scatter_plot_filenames = []
+    for scatter_plot_file in scatter_plot_files:
+        relative_scatter_plot_filenames.append(os.path.basename(scatter_plot_file))
+    return relative_scatter_plot_filenames
 
 class Output(object):
     def __init__(self, **kwargs):
@@ -175,7 +180,7 @@ class Output(object):
             file.write("%s\n" % line)
         file.close()
 
-    def xhtml(self, statistics_list, matchups, target_file=None, taylor_target_file=None):
+    def xhtml(self, statistics_list, matchups, target_file=None, taylor_target_file=None, scatter_plot_files=None):
         template = Template(filename='resources/matchup_report_template.xml')
         buf = StringIO()
 
@@ -200,6 +205,7 @@ class Output(object):
             all_ref_stats.append((stats['ref_name'], ref_pair))
 
         taylor_target_file = os.path.basename(taylor_target_file) if taylor_target_file is not None else None
+        scatter_plot_files = clean_pathnames(scatter_plot_files)
         ctx = Context(buf,
             pairs=all_relative_stats,
             performed_at=datetime.now().strftime('%b %d, %Y at %H:%M:%S'),
@@ -215,7 +221,8 @@ class Output(object):
             all_ref_stats=all_ref_stats,
             matchups=matchups,
             write_taylor_diagram=self.config.write_taylor_diagram,
-            taylor_target_file=taylor_target_file)
+            taylor_target_file=taylor_target_file,
+            scatter_plot_files=scatter_plot_files)
         template.render_context(ctx)
         xml = buf.getvalue()
 
@@ -234,3 +241,12 @@ class Output(object):
             return False
         diagram.write(target_file)
         return True
+
+    def scatter_plot(self, matchups, ref_name, model_name, target_file, unit=None):
+        ref_values = []
+        model_values = []
+        for matchup in matchups:
+            ref_values.append(matchup.values[ref_name])
+            model_values.append(matchup.values[model_name])
+        diagram = Plotter.create_scatter_plot(ref_values, model_values, ref_name, model_name, unit)
+        diagram.write(target_file)

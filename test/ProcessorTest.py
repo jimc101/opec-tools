@@ -31,7 +31,7 @@ class ProcessorTest(TestCase):
 
     def test_compute_statistics_for_matchups(self):
         matchups = self.me.find_all_matchups()
-        stats = calculate_statistics(matchups, config=self.config, ref_name='chl_ref', model_name='chl', data=self.data)
+        stats = calculate_statistics(matchups, config=self.config, ref_name='chl_ref', model_name='chl')
         self.assertEqual('chl', stats['model_name'])
         self.assertEqual('chl_ref', stats['ref_name'])
         self.assertAlmostEqual(0.04570989, stats['rmse'], 5)
@@ -224,7 +224,11 @@ class ProcessorTest(TestCase):
             Matchup([0, 0, 0, 0], [1261440000, 0.001, 55.2, 5.3], ReferenceRecord(0, 55.21, 5.31, 1261440250, 0.0012)),
             Matchup([0, 0, 0, 1], [1261440000, 0.001, 55.2, 5.8], ReferenceRecord(1, 55.8, 5.72, 1261440300, 0.0013))
         ]
-        data = Data('resources/test_including_fill_values.nc')
-        ref, model = extract_values(matchups, data, 'chl_ref', 'chl')
+        matchups[0].add_variable_value('chl_ref', np.nan)
+        matchups[1].add_variable_value('chl_ref', 0.2)
+        matchups[0].add_variable_value('chl', 0.1111)
+        matchups[1].add_variable_value('chl', 0.2111)
+
+        ref, model = extract_values(matchups, 'chl_ref', 'chl')
         assert_almost_equal(ref, np.ma.array([np.nan, 0.2], mask=[True, False]))
         assert_almost_equal(model, np.ma.array([0.1111, 0.2111], mask=[False, False]))
