@@ -9,13 +9,16 @@ from opec.Configuration import get_default_config
 import matplotlib as mpl
 import matplotlib.ticker
 
-def create_taylor_diagram(statistics, max_stddev=None, config=None):
+def create_taylor_diagram(statistics, units=None, max_stddev=None, config=None):
     if config is None:
         config = get_default_config()
 
     ref_stddevs = list(map(lambda x: x.get('ref_stddev'), statistics))
     ref_names = list(map(lambda x: x.get('ref_name'), statistics))
-    ref = tuple(zip(ref_names, ref_stddevs))
+    if units is None:
+        units = np.array(len(ref_names))
+        units[:] = None
+    ref = tuple(zip(ref_names, ref_stddevs, units))
     max_stddev = max(ref_stddevs) * 1.5 if max_stddev is None else max_stddev
 
     for v in ref_stddevs:
@@ -234,18 +237,18 @@ class TaylorDiagram(Diagram):
         # Add reference points
         # [0] = x-value
         # stddev = y-value
-        for name, stddev in self.ref:
+        for name, stddev, unit in self.ref:
             dataset = self.ax.plot([0], stddev, '%so' % self.get_color())[0]
             if hasattr(self, 'sample_names'):
                 self.sample_points.append(dataset)
-                self.sample_names.append(name)
+                self.sample_names.append(create_sample_name(name, unit))
             else:
                 self.sample_points = [dataset]
-                self.sample_names = [name]
+                self.sample_names = [create_sample_name(name, unit)]
 
         # Add stddev contours
         t = np.linspace(0, x_max, num=50)
-        for name, ref_stddev in self.ref:
+        for name, ref_stddev, unit in self.ref:
             r = np.zeros_like(t) + ref_stddev # 50 times the stddev
             self.ax.plot(t, r, 'k--', label='_', linewidth=0.5)
 
@@ -253,7 +256,7 @@ class TaylorDiagram(Diagram):
         rs, ts = np.meshgrid(np.linspace(0, y_axis_range[1], num=50),
             np.linspace(0, x_max, num=50))
 
-        for name, ref_stddev in self.ref:
+        for name, ref_stddev, unit in self.ref:
             # Unfortunately, I don't understand the next line AT ALL,
             # it's copied from http://matplotlib.1069221.n5.nabble.com/Taylor-diagram-2nd-take-td28070.html
             # but it leads to the right results (contours of the centered pattern RMS), so I keep it
@@ -269,7 +272,7 @@ class TaylorDiagram(Diagram):
     def get_angle(self, corrcoeff):
         return np.arccos(corrcoeff)
 
-    def plot_sample(self, corrcoeff, model_stddev, model_name=None, *args, **kwargs):
+    def plot_sample(self, corrcoeff, model_stddev, model_name=None, unit=None, *args, **kwargs):
         """Add model sample to the Taylor diagram. args and kwargs are
         directly propagated to the plot command."""
 
@@ -280,7 +283,8 @@ class TaylorDiagram(Diagram):
         radius = model_stddev
         v = self.ax.plot(theta, radius, *args, **kwargs)
         self.sample_points.append(v[0])
-        self.sample_names.append(model_name if model_name is not None else 'Model value')
+        sample_name = create_sample_name(model_name, unit)
+        self.sample_names.append(sample_name)
         self.update_legend()
 
     def update_legend(self):
@@ -296,3 +300,13 @@ class CenteredFormatter(mpl.ticker.ScalarFormatter):
             return ''
         else:
             return mpl.ticker.ScalarFormatter.__call__(self, value, pos)
+
+def create_sample_name(model_name, unit):
+    sample_name = ''
+    if not None in (model_name, unit):
+        sample_name = '%s (%s)' % (model_name, unit)
+    elif model_name is None:
+        sample_name = 'Model value'
+    elif unit is None:
+        sample_name = model_name
+    return sample_name
