@@ -108,14 +108,17 @@ def main():
                 logging.info('Matchups written to \'%s\'' % matchup_filename)
                 target_files.append(matchup_filename)
 
-    taylor_target_file = None
-    if config.write_taylor_diagram:
+    taylor_target_files = []
+    if config.write_taylor_diagrams:
         taylor_target_file = '%s\\%staylor.png' % (parsed_args.o, config.target_prefix)
-        if output.taylor(collected_statistics, taylor_target_file):
-            logging.info('Taylor diagram written to \'%s\'' % taylor_target_file)
+        written_taylor_diagrams = output.taylor(collected_statistics, taylor_target_file)
+        if written_taylor_diagrams:
+            for written_taylor_diagram in written_taylor_diagrams:
+                logging.info('Taylor diagram written to \'%s\'' % written_taylor_diagram)
+                target_files.append(written_taylor_diagram)
+                taylor_target_files.append(written_taylor_diagram)
         else:
             taylor_target_file = None
-        target_files.append(taylor_target_file)
 
     scatter_plot_files = []
     if config.write_scatter_plots:
@@ -131,7 +134,7 @@ def main():
         css = 'resources/styleset.css'
         xsl_target = '%s/%s' % (parsed_args.o, os.path.basename(xsl))
         css_target = '%s/%s' % (parsed_args.o, os.path.basename(css))
-        output.xhtml(collected_statistics, matchups, xml_target_file, taylor_target_file, scatter_plot_files)
+        output.xhtml(collected_statistics, matchups, xml_target_file, taylor_target_files, scatter_plot_files)
         logging.info('XHTML report written to \'%s\'' % xml_target_file)
         shutil.copy(xsl, parsed_args.o)
         logging.info('XHTML support file written to \'%s/%s\'' % (parsed_args.o, 'analysis-summary.xsl'))

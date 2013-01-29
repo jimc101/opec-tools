@@ -9,31 +9,69 @@ from opec.Configuration import get_default_config
 import matplotlib as mpl
 import matplotlib.ticker
 
-def create_taylor_diagram(statistics, config=None):
+def create_taylor_diagrams(statistics, config=None):
     if config is None:
         config = get_default_config()
 
-    ref_stddevs = list(map(lambda x: x.get('ref_stddev'), statistics))
-    ref_names = list(map(lambda x: x.get('ref_name'), statistics))
-    units = list(map(lambda x: x.get('unit'), statistics))
-    ref = tuple(zip(ref_names, ref_stddevs, units))
-    max_stddev = max(ref_stddevs) * 1.5
+    unit_specs = {}
+    for stx in statistics:
+        if config.split_on_unit:
+            current_unit = stx['unit']
+            if current_unit not in unit_specs:
+                unit_specs[current_unit] = []
+            unit_specs[current_unit].append(stx)
+        else:
+            if not 'dummy_unit' in unit_specs:
+                unit_specs['dummy_unit'] = []
+            unit_specs['dummy_unit'].append(stx)
 
-    for v in ref_stddevs:
-        if v == 0.0 or np.isnan(v):
-            logging.warning('Unable to create Taylor diagram from statistics.')
-            logging.debug('Statistics: %s' % statistics)
-            return None
+    name_specs = {}
+    for unit in unit_specs.keys():
+        if config.split_on_name:
+            for current_stx in unit_specs[unit]:
+                current_name = current_stx['model_name']
+                if not current_name in name_specs.keys():
+                    name_specs[current_name] = {}
+                if not unit in name_specs[current_name].keys():
+                    name_specs[current_name][unit] = []
+                name_specs[current_name][unit].append(current_stx)
+        else:
+            for current_stx in unit_specs[unit]:
+                if not 'dummy_name' in name_specs.keys():
+                    name_specs['dummy_name'] = {}
+                if not unit in name_specs['dummy_name'].keys():
+                    name_specs['dummy_name'][unit] = []
+                name_specs['dummy_name'][unit].append(current_stx)
 
-    figure = pyplot.figure()
-    diagram = TaylorDiagram(figure, ref, config.show_negative_corrcoeff, config.show_legend, max_stddev)
+    diagrams = []
 
-    diagram.setup_axes()
-    for stats in statistics:
-        model_name = stats['model_name'] if 'model_name' in stats else None
-        diagram.plot_sample(stats['corrcoeff'], stats['stddev'], model_name, stats['unit'])
+    for name in name_specs.keys():
+        for unit in name_specs[name].keys():
+            current_statistics = name_specs[name][unit]
 
-    return diagram
+            ref_stddevs = list(map(lambda x: x.get('ref_stddev'), current_statistics))
+            ref_names = list(map(lambda x: x.get('ref_name'), current_statistics))
+            units = list(map(lambda x: x.get('unit'), current_statistics))
+            ref = tuple(zip(ref_names, ref_stddevs, units))
+            max_stddev = max(ref_stddevs) * 1.5
+
+            for v in ref_stddevs:
+                if v == 0.0 or np.isnan(v):
+                    logging.warning('Unable to create Taylor diagram from statistics.')
+                    logging.debug('Statistics: %s' % current_statistics)
+                    return None
+
+            figure = pyplot.figure()
+            diagram = TaylorDiagram(figure, ref, config.show_negative_corrcoeff, config.show_legend, max_stddev)
+
+            diagram.setup_axes()
+            for stats in current_statistics:
+                model_name = stats['model_name'] if 'model_name' in stats else None
+                diagram.plot_sample(stats['corrcoeff'], stats['stddev'], model_name, stats['unit'])
+
+            diagrams.append(diagram)
+
+    return diagrams
 
 def create_target_diagram(statistics, config=None):
     figure = pyplot.figure()
@@ -57,7 +95,7 @@ def create_scatter_plot(reference_values, model_values, ref_name, model_name, un
 class Diagram(object):
 
     def write(self, target_file):
-        pyplot.savefig(target_file)
+        self.fig.savefig(target_file)
 
 class ScatterPlot(Diagram):
 

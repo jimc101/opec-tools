@@ -231,21 +231,23 @@
 
                 </table>
 
-                <xsl:if test="/analysisSummary/taylor">
-                    <h3>Taylor Diagram</h3>
+                <xsl:if test="/analysisSummary/taylorDiagrams">
+                    <h3>Taylor Diagrams</h3>
 
-                    <img>
-                        <xsl:attribute name="src">
-                            <xsl:value-of select="analysisSummary/taylor"/>
-                        </xsl:attribute>
-                    </img>
+                    <xsl:for-each select="/analysisSummary/taylorDiagrams">
+                        <img class="smaller">
+                            <xsl:attribute name="src">
+                                <xsl:value-of select="taylorDiagram"/>
+                            </xsl:attribute>
+                        </img>
+                    </xsl:for-each>
                 </xsl:if>
 
                 <xsl:if test="/analysisSummary/scatterPlots">
                     <h3>Scatter Plot(s)</h3>
 
                     <xsl:for-each select="analysisSummary/scatterPlots">
-                        <img class="scatter">
+                        <img class="smaller">
                             <xsl:attribute name="src">
                                 <xsl:value-of select="scatterPlot"/>
                             </xsl:attribute>

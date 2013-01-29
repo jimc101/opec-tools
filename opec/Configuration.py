@@ -4,6 +4,8 @@ import os
 
 # needed because configparser.ConfigParser requires at least one section header in a properties file
 # See http://stackoverflow.com/a/8555776 for source
+import re
+
 def add_section_header(properties_file, header_name):
     yield '[{}]\n'.format(header_name)
     for line in properties_file:
@@ -14,8 +16,8 @@ class Configuration(object):
     def __init__(self, alpha=None, beta=None, ddof=None, geo_delta=None, time_delta=None, depth_delta=None,
                  log_level=None, log_file=None, zip=None, show_negative_corrcoeff=None,
                  show_legend=None, target_dir=None, target_prefix=None, include_header=None, separator=None,
-                 separate_matchups=None, properties_file_name=None, write_taylor_diagram=None, write_xhtml=None,
-                 write_csv=None, write_scatter_plots=None):
+                 separate_matchups=None, properties_file_name=None, write_taylor_diagrams=None, write_xhtml=None,
+                 write_csv=None, write_scatter_plots=None, split_diagrams=None):
         """
         Priority:
         1) what is passed as parameter
@@ -45,19 +47,23 @@ class Configuration(object):
         self.__set(separator, 'opec.output.csv.separator', separator_conv)
         self.__set(include_header, 'opec.output.csv.include_header', bool)
         self.__set(separate_matchups, 'opec.output.csv.separate_matchups', bool)
-        self.__set(write_taylor_diagram, 'opec.output.plot.write_taylor_diagram', bool)
+        self.__set(write_taylor_diagrams, 'opec.output.plot.write_taylor_diagrams', bool)
         self.__set(write_xhtml, 'opec.output.xhtml.write_xhtml', bool)
         self.__set(write_csv, 'opec.output.csv.write_csv', bool)
         self.__set(write_scatter_plots, 'opec.output.scatter.write_scatter_plots', bool)
+        self.__set(split_diagrams, 'opec.output.plot.split_diagrams', split_diagrams_conv('u'), 'opec.output.plot.split_on_unit')
+        self.__set(split_diagrams, 'opec.output.plot.split_diagrams', split_diagrams_conv('n'), 'opec.output.plot.split_on_name')
 
-    def __set(self, value, name, converter):
+    def __set(self, value, name, converter, target_name=None):
         if value is not None:
              actual_value = value
         elif self.__config is not None and name in self.__config['dummy_section']:
             actual_value = self.__config['dummy_section'][name]
         else:
             actual_value = self.__default_config['dummy_section'][name]
-        self.__dict[name] = converter(actual_value)
+        if target_name is None:
+            target_name = name
+        self.__dict[target_name] = converter(actual_value)
 
     def __read_properties(self, properties_file_name):
         if properties_file_name is not None:
@@ -122,8 +128,8 @@ class Configuration(object):
     def __separate_matchups(self):
         return self.__dict['opec.output.csv.separate_matchups']
 
-    def __write_taylor_diagram(self):
-        return self.__dict['opec.output.plot.write_taylor_diagram']
+    def __write_taylor_diagrams(self):
+        return self.__dict['opec.output.plot.write_taylor_diagrams']
 
     def __write_csv(self):
         return self.__dict['opec.output.csv.write_csv']
@@ -133,6 +139,12 @@ class Configuration(object):
 
     def __write_scatter_plots(self):
         return self.__dict['opec.output.scatter.write_scatter_plots']
+
+    def __split_on_unit(self):
+        return self.__dict['opec.output.plot.split_on_unit']
+
+    def __split_on_name(self):
+        return self.__dict['opec.output.plot.split_on_name']
 
     alpha = property(__alpha)
     beta = property(__beta)
@@ -150,10 +162,12 @@ class Configuration(object):
     include_header = property(__include_header)
     separator = property(__separator)
     separate_matchups = property(__separate_matchups)
-    write_taylor_diagram = property(__write_taylor_diagram)
+    write_taylor_diagrams = property(__write_taylor_diagrams)
     write_csv = property(__write_csv)
     write_xhtml = property(__write_xhtml)
     write_scatter_plots = property(__write_scatter_plots)
+    split_on_unit = property(__split_on_unit)
+    split_on_name = property(__split_on_name)
 
 def get_default_config():
     return Configuration()
@@ -185,3 +199,12 @@ def separator_conv(value):
 
 def log_file_conv(value):
     return None if value.strip() == 'None' else value
+
+def split_diagrams_conv(key):
+    def shall_split_for_value(value):
+        if len(value) > 0 and (not re.match('[un]', value) or len(value) > 3):
+            raise ValueError('Illegal diagram split rule \'%s\', must comprise characters u and n at most.' % value)
+        if key in value:
+            return True
+        return False
+    return shall_split_for_value

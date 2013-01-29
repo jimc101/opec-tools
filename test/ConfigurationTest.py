@@ -15,7 +15,7 @@ class ConfigurationTest(unittest.TestCase):
         os.chdir(self.cwd)
 
     def test_initialisation(self):
-        c = Configuration(alpha=5, ddof=2, show_legend=False, write_taylor_diagram=False, separate_matchups=False)
+        c = Configuration(alpha=5, ddof=2, show_legend=False, write_taylor_diagrams=False, separate_matchups=False)
         self.assertEqual(5, c.alpha)
         self.assertEqual(1, c.beta)
         self.assertEqual(2, c.ddof)
@@ -29,7 +29,7 @@ class ConfigurationTest(unittest.TestCase):
         self.assertEqual(os.getcwd(), c.target_dir)
         self.assertEqual('benchmark_', c.target_prefix)
         self.assertEqual('\t', c.separator)
-        self.assertEqual(False, c.write_taylor_diagram)
+        self.assertEqual(False, c.write_taylor_diagrams)
         self.assertEqual(None, c.log_file)
         self.assertEqual(True, c.write_csv)
         self.assertEqual(True, c.write_xhtml)
@@ -50,7 +50,7 @@ class ConfigurationTest(unittest.TestCase):
         self.assertEqual(False, c.show_negative_corrcoeff)             # does not appear in test.properties, so it is taken from default file
         self.assertEqual(os.getcwd(), c.target_dir)
         self.assertEqual('benchmark_', c.target_prefix)
-        self.assertEqual(True, c.write_taylor_diagram)
+        self.assertEqual(True, c.write_taylor_diagrams)
         self.assertEqual(None, c.log_file)
         self.assertEqual(False, c.write_csv)
         self.assertEqual(False, c.write_xhtml)
@@ -66,3 +66,21 @@ class ConfigurationTest(unittest.TestCase):
     def test_log_file(self):
         c = Configuration(log_file='somewhere_to_log_into')
         self.assertEqual('somewhere_to_log_into', c.log_file)
+
+    def test_split_up_criteria(self):
+        c = Configuration(split_diagrams='nu')
+        self.assertTrue(c.split_on_unit)
+        self.assertTrue(c.split_on_name)
+
+        c = Configuration(split_diagrams='')
+        self.assertFalse(c.split_on_unit)
+        self.assertFalse(c.split_on_name)
+
+        c = Configuration()
+        self.assertTrue(c.split_on_unit)
+        self.assertFalse(c.split_on_name)
+
+        self.assertRaises(ValueError, lambda: Configuration(split_diagrams='cowabunga!'))
+        self.assertRaises(ValueError, lambda: Configuration(split_diagrams='cow'))
+        self.assertRaises(ValueError, lambda: Configuration(split_diagrams='p'))
+        self.assertRaises(ValueError, lambda: Configuration(split_diagrams='ssuv'))

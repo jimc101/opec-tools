@@ -2,7 +2,8 @@
 *.pyc
 *.h5
 test_output.csv
-resources/target_test.png
-resources/taylor_test.png
+resources/target_test*
+resources/taylor_test*.png
+resources/scatter_test*.png
 resources/matchup_report.xml
 resources/matchup_report.xsl
