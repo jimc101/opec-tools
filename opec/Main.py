@@ -92,7 +92,8 @@ def main():
     matchups = me.find_all_matchups()
 
     for pair in parsed_args.v:
-        stats = Processor.calculate_statistics(matchups=matchups, config=config, model_name=pair[1], ref_name=pair[0])
+        unit = data.unit(pair[0])
+        stats = Processor.calculate_statistics(matchups=matchups, config=config, model_name=pair[1], ref_name=pair[0], unit=unit)
         collected_statistics.append(stats)
 
     target_files = []

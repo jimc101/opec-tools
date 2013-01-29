@@ -83,7 +83,7 @@ def harmonise(reference_values, model_values):
     model_values.mask = reference_values.mask | model_values.mask
     return reference_values, model_values
 
-def calculate_statistics(matchups=None, model_name=None, ref_name=None, reference_values=None, model_values=None, config=None):
+def calculate_statistics(matchups=None, model_name=None, ref_name=None, reference_values=None, model_values=None, unit=None, config=None):
     """Calculate the statistics for either the given matchups or the given reference and model arrays.
     If matchups are given, the reference and model arrays are NOT considered and vice versa.
     If matchups are given, the data, model_name, and ref_name arguments are mandatory. Otherwise, it is recommended to
@@ -111,6 +111,7 @@ def calculate_statistics(matchups=None, model_name=None, ref_name=None, referenc
     stats = dict()
     stats['model_name'] = model_name
     stats['ref_name'] = ref_name
+    stats['unit'] = unit
     stats['rmse'] = rmse(reference_values, model_values)
     stats['unbiased_rmse'] = unbiased_rmse(reference_values, model_values)
     stats['pbias'] = percentage_model_bias(reference_values, model_values)

@@ -94,11 +94,15 @@ class Data(dict):
         return origin is None and shape is None and self.__current_storage[variable_name] == 'fully_read'
 
     def unit(self, variable_name):
+        is_not_in_ref_file = not self.is_ref_data_split() or self.is_ref_data_split() and self.__reference_file.get_variable(variable_name) is None
+        is_not_in_model_file = self.__model_file.get_variable(variable_name) is None
+        if is_not_in_model_file and is_not_in_ref_file:
+            raise ValueError('Variable \'%s\' not found.' % variable_name)
         if unit(self.__model_file, variable_name):
             return unit(self.__model_file, variable_name)
         if self.is_ref_data_split() and unit(self.__reference_file, variable_name):
             return unit(self.__reference_file, variable_name)
-        raise ValueError('Variable \'%s\' not found.' % variable_name)
+        return None
 
 def unit(ncfile, variable_name):
     if ncfile.get_variable(variable_name):

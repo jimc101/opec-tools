@@ -92,6 +92,7 @@ variables:
                 chl_ref:long_name = "In-situ concentration of chlorophyll in sea water" ;
                 chl_ref:coordinates = "time_ref lat_ref lon_ref depth_ref" ;
                 chl_ref:source = "my_chlorophyll_buoy" ;
+        float var_without_unit(time) ;
 
 // global attributes:
                 :Conventions = "CF-1.6" ;
@@ -141,4 +142,6 @@ lat_ref = 55.21, 55.8, 56.12 ;
 lon_ref = 5.31, 5.72, 12.35 ;
 
 chl_ref = 0.1, 0.2, 0.3 ;
+
+var_without_unit = 0.0, 0.0 ;
 }  

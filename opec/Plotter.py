@@ -9,17 +9,15 @@ from opec.Configuration import get_default_config
 import matplotlib as mpl
 import matplotlib.ticker
 
-def create_taylor_diagram(statistics, units=None, max_stddev=None, config=None):
+def create_taylor_diagram(statistics, config=None):
     if config is None:
         config = get_default_config()
 
     ref_stddevs = list(map(lambda x: x.get('ref_stddev'), statistics))
     ref_names = list(map(lambda x: x.get('ref_name'), statistics))
-    if units is None:
-        units = np.array(len(ref_names))
-        units[:] = None
+    units = list(map(lambda x: x.get('unit'), statistics))
     ref = tuple(zip(ref_names, ref_stddevs, units))
-    max_stddev = max(ref_stddevs) * 1.5 if max_stddev is None else max_stddev
+    max_stddev = max(ref_stddevs) * 1.5
 
     for v in ref_stddevs:
         if v == 0.0 or np.isnan(v):
@@ -33,7 +31,7 @@ def create_taylor_diagram(statistics, units=None, max_stddev=None, config=None):
     diagram.setup_axes()
     for stats in statistics:
         model_name = stats['model_name'] if 'model_name' in stats else None
-        diagram.plot_sample(stats['corrcoeff'], stats['stddev'], model_name)
+        diagram.plot_sample(stats['corrcoeff'], stats['stddev'], model_name, stats['unit'])
 
     return diagram
 
@@ -302,11 +300,10 @@ class CenteredFormatter(mpl.ticker.ScalarFormatter):
             return mpl.ticker.ScalarFormatter.__call__(self, value, pos)
 
 def create_sample_name(model_name, unit):
-    sample_name = ''
-    if not None in (model_name, unit):
-        sample_name = '%s (%s)' % (model_name, unit)
-    elif model_name is None:
-        sample_name = 'Model value'
-    elif unit is None:
+    if model_name is not None:
         sample_name = model_name
+    else:
+        sample_name = 'Model value'
+    if unit is not None:
+        sample_name = sample_name + ' (%s)' % unit
     return sample_name

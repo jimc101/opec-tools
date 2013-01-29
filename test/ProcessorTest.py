@@ -31,9 +31,10 @@ class ProcessorTest(TestCase):
 
     def test_compute_statistics_for_matchups(self):
         matchups = self.me.find_all_matchups()
-        stats = calculate_statistics(matchups, config=self.config, ref_name='chl_ref', model_name='chl')
+        stats = calculate_statistics(matchups, config=self.config, ref_name='chl_ref', model_name='chl', unit='megazork')
         self.assertEqual('chl', stats['model_name'])
         self.assertEqual('chl_ref', stats['ref_name'])
+        self.assertEqual('megazork', stats['unit'])
         self.assertAlmostEqual(0.04570989, stats['rmse'], 5)
         self.assertAlmostEqual(0.04181358, stats['unbiased_rmse'], 5)
         self.assertAlmostEqual(9.2333366, stats['pbias'], 5)

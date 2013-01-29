@@ -4,7 +4,7 @@ from mako.runtime import Context
 from mako.template import Template
 from datetime import datetime
 import os
-from opec import Plotter, Processor
+from opec import Plotter
 from opec.Configuration import get_default_config
 
 def rename(string):

@@ -30,7 +30,9 @@ class NetCDFFacade(object):
 
     def get_variable_attribute(self, variableName, attributeName):
         variable = self.get_variable(variableName)
-        return variable.__getattribute__(attributeName)
+        if hasattr(variable, attributeName):
+            return variable.__getattribute__(attributeName)
+        return None
 
     def get_dimension_string(self, variableName):
         variable = self.get_variable(variableName)

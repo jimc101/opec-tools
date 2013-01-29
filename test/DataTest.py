@@ -88,4 +88,5 @@ class DataTest(unittest.TestCase):
         self.assertEqual('milligram m-3', self.data.unit('chl'))
         self.assertEqual('kelvin', self.data.unit('sst'))
         self.assertEqual('degrees_east', self.data.unit('lon_ref'))
+        self.assertIsNone(self.data.unit('var_without_unit'))
         self.assertRaises(ValueError, lambda: self.data.unit('toad_count'))
