@@ -191,18 +191,18 @@ class Output(object):
         for stats in statistics_list:
             pair_statistics = {}
             for key in ('rmse', 'unbiased_rmse', 'bias', 'pbias', 'corrcoeff', 'reliability_index', 'model_efficiency'):
-                pair_statistics[key] = stats[key]
+                pair_statistics[key] = format_statistic(stats, key)
             pair = (stats['model_name'], stats['ref_name'], pair_statistics)
             all_relative_stats.append(pair)
 
             model_pair = {}
             for key in ('min', 'max', 'mean', 'stddev', 'median', 'p90', 'p95'):
-                model_pair[key] = stats[key]
+                model_pair[key] = format_statistic(stats, key)
             all_model_stats.append((stats['model_name'], model_pair))
 
             ref_pair = {}
             for key in ('ref_min', 'ref_max', 'ref_mean', 'ref_stddev', 'ref_median', 'ref_p90', 'ref_p95'):
-                ref_pair[key.replace('ref_', '')] = stats[key]
+                ref_pair[key.replace('ref_', '')] = format_statistic(stats, key)
             all_ref_stats.append((stats['ref_name'], ref_pair))
 
         scatter_plot_files = get_basenames(scatter_plot_files)
