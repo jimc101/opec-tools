@@ -17,26 +17,45 @@ class VariableMappingsParseAction(argparse.Action):
 
     def __call__(self, parser, namespace, values, option_string=None):
         result = []
-        pairs = values[0].lstrip().split(',')
-        for pair in pairs:
+        for pair in values:
             vars = pair.split(':')
             new_pair = [vars[0], vars[1]]
             result.append(new_pair)
         setattr(namespace, self.dest, result)
 
+
+class Formatter(argparse.RawDescriptionHelpFormatter):
+
+    def _format_usage(self, usage, actions, groups, prefix):
+        # clumsy way, but there's no native argparse support for what I do here
+        # (what I do is: move <path> argument in usage description to beginning, where it belongs)
+        old_format = super(argparse.RawDescriptionHelpFormatter, self)._format_usage(usage, actions, groups, prefix)
+        old_format = old_format.replace('<path>', '')
+        index = old_format.index('[-c')
+        old_format = old_format[:index] + '| <path> ' + old_format[index:]
+        return old_format
+
+    def _format_action(self, action):
+        # some cleanup of the help message
+        parts = super(argparse.RawDescriptionHelpFormatter, self)._format_action(action)
+        return parts.replace(' ,', ',').replace('  [ ...]', '')
+
 class MyArgumentParser(ArgumentParser):
+
+    def __init__(self):
+        super(MyArgumentParser, self).__init__(formatter_class=Formatter)
 
     def error(self, message):
         raise ValueError(self.format_usage())
 
 def parse_arguments(arguments):
-    parser = MyArgumentParser(description='Process some integers.')
-    parser.add_argument('-a', help='Path to the algorithm specification file', metavar='Algorithm specification file')
-    parser.add_argument('-o', help='Path to the target directory', metavar='Target directory')
-    parser.add_argument('-p', help='Target prefix', metavar='Target prefix')
-    parser.add_argument('-v', help='A list of variable mappings', metavar='Variable mapping', nargs='+', action=VariableMappingsParseAction)
-    parser.add_argument('-r', help='An optional file containing the reference data', metavar='Reference data file')
+    parser = MyArgumentParser()
     parser.add_argument('path', help='Path to the model output file', metavar='<path>')
+    parser.add_argument('-c', '--config', help='Path to the configuration file', metavar='')
+    parser.add_argument('-o', '--output_dir', help='Path to the target directory', metavar='')
+    parser.add_argument('-p', '--prefix', help='Target prefix', metavar='')
+    parser.add_argument('-v', '--variable_mappings', help='A list of variable mappings <var>:<ref_var>', metavar='', nargs='+', action=VariableMappingsParseAction)
+    parser.add_argument('-r', '--reference_file', help='An optional file containing the reference data', metavar='')
     return parser.parse_args(arguments)
 
 def ref_stddev(statistics):
@@ -80,10 +99,10 @@ def setup_logging(config):
 
 def main():
     parsed_args = parse_arguments(sys.argv[1:])
-    config = Configuration(properties_file_name=parsed_args.a, target_dir=parsed_args.o, target_prefix=parsed_args.p)
+    config = Configuration(properties_file_name=parsed_args.config, target_dir=parsed_args.output_dir, target_prefix=parsed_args.prefix)
     file_handler = setup_logging(config)
-    if parsed_args.r is not None:
-        data = Data(parsed_args.path, parsed_args.r)
+    if parsed_args.reference_file is not None:
+        data = Data(parsed_args.path, parsed_args.reference_file)
     else:
         data = Data(parsed_args.path)
     me = MatchupEngine(data, config)
@@ -91,17 +110,17 @@ def main():
     output = Output(config=config, source_file=parsed_args.path)
     matchups = me.find_all_matchups()
 
-    for pair in parsed_args.v:
-        unit = data.unit(pair[0])
-        stats = Processor.calculate_statistics(matchups=matchups, config=config, model_name=pair[1], ref_name=pair[0], unit=unit)
+    for (model_name, ref_name) in parsed_args.variable_mappings:
+        unit = data.unit(model_name)
+        stats = Processor.calculate_statistics(matchups=matchups, config=config, model_name=model_name, ref_name=ref_name, unit=unit)
         collected_statistics.append(stats)
 
     target_files = []
     if config.write_csv:
-        for pair, stats in zip(parsed_args.v, collected_statistics):
-            csv_target_file = '%s\\%s%s_statistics.csv' % (parsed_args.o, config.target_prefix, pair[0])
+        for (model_name, ref_name), stats in zip(parsed_args.variable_mappings, collected_statistics):
+            csv_target_file = '%s\\%s%s_statistics.csv' % (parsed_args.output_dir, config.target_prefix, model_name)
             target_files.append(csv_target_file)
-            output.csv(stats, variable_name=pair[1], ref_variable_name=pair[0], matchups=matchups, target_file=csv_target_file)
+            output.csv(stats, variable_name=model_name, ref_variable_name=ref_name, matchups=matchups, target_file=csv_target_file)
             logging.info('CSV output written to \'%s\'' % csv_target_file)
             if matchups and config.separate_matchups:
                 matchup_filename = '%s_matchups.csv' % os.path.splitext(csv_target_file)[0]
@@ -110,36 +129,34 @@ def main():
 
     taylor_target_files = []
     if config.write_taylor_diagrams:
-        taylor_target_file = '%s\\%staylor.png' % (parsed_args.o, config.target_prefix)
+        taylor_target_file = '%s\\%staylor.png' % (parsed_args.output_dir, config.target_prefix)
         written_taylor_diagrams = output.taylor(collected_statistics, taylor_target_file)
         if written_taylor_diagrams:
             for written_taylor_diagram in written_taylor_diagrams:
                 logging.info('Taylor diagram written to \'%s\'' % written_taylor_diagram)
                 target_files.append(written_taylor_diagram)
                 taylor_target_files.append(written_taylor_diagram)
-        else:
-            taylor_target_file = None
 
     scatter_plot_files = []
     if config.write_scatter_plots:
-        for pair in parsed_args.v:
-            scatter_target = '%s/scatter-%s-%s.png' % (parsed_args.o, pair[0], pair[1])
+        for (model_name, ref_name) in parsed_args.variable_mappings:
+            scatter_target = '%s/scatter-%s-%s.png' % (parsed_args.output_dir, model_name, ref_name)
             scatter_plot_files.append(scatter_target)
             target_files.append(scatter_target)
-            output.scatter_plot(matchups, pair[0], pair[1], scatter_target, data.unit(pair[0]))
+            output.scatter_plot(matchups, ref_name, model_name, scatter_target, data.unit(model_name))
 
     if config.write_xhtml:
-        xml_target_file = '%s\\%sreport.xml' % (parsed_args.o, config.target_prefix)
+        xml_target_file = '%s\\%sreport.xml' % (parsed_args.output_dir, config.target_prefix)
         xsl = 'resources/analysis-summary.xsl'
         css = 'resources/styleset.css'
-        xsl_target = '%s/%s' % (parsed_args.o, os.path.basename(xsl))
-        css_target = '%s/%s' % (parsed_args.o, os.path.basename(css))
+        xsl_target = '%s/%s' % (parsed_args.output_dir, os.path.basename(xsl))
+        css_target = '%s/%s' % (parsed_args.output_dir, os.path.basename(css))
         output.xhtml(collected_statistics, matchups, xml_target_file, taylor_target_files, scatter_plot_files)
         logging.info('XHTML report written to \'%s\'' % xml_target_file)
-        shutil.copy(xsl, parsed_args.o)
-        logging.info('XHTML support file written to \'%s/%s\'' % (parsed_args.o, 'analysis-summary.xsl'))
-        shutil.copy(css, parsed_args.o)
-        logging.info('XHTML support file written to \'%s/%s\'' % (parsed_args.o, 'styleset.xsl'))
+        shutil.copy(xsl, parsed_args.output_dir)
+        logging.info('XHTML support file written to \'%s/%s\'' % (parsed_args.output_dir, 'analysis-summary.xsl'))
+        shutil.copy(css, parsed_args.output_dir)
+        logging.info('XHTML support file written to \'%s/%s\'' % (parsed_args.output_dir, 'styleset.xsl'))
         target_files.append(xml_target_file)
         target_files.append(xsl_target)
         target_files.append(css_target)
