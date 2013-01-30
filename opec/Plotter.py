@@ -9,45 +9,51 @@ from opec.Configuration import get_default_config
 import matplotlib as mpl
 import matplotlib.ticker
 
+def add_statistics_by_unit(unit, stx, statistics_dict):
+    if not unit in statistics_dict:
+        statistics_dict[unit] = []
+    statistics_dict[unit].append(stx)
+
+
+def add_statistics_by_name_and_unit(current_name, current_unit, statistics, statistics_dict):
+    if not current_name in statistics_dict.keys():
+        statistics_dict[current_name] = {}
+    if not current_unit in statistics_dict[current_name].keys():
+        statistics_dict[current_name][current_unit] = []
+    statistics_dict[current_name][current_unit].append(statistics)
+
+
+def sort_statistics_by_name_and_unit(config, statistics):
+    statistics_by_unit = {}
+    for stx in statistics:
+        if config.split_on_unit:
+            unit_name = stx['unit']
+        else:
+            unit_name = 'dummy_unit'
+        add_statistics_by_unit(unit_name, stx, statistics_by_unit)
+
+    statistics_by_name_and_unit = {}
+    for current_unit in statistics_by_unit.keys():
+        if config.split_on_name:
+            for current_stx in statistics_by_unit[current_unit]:
+                current_name = current_stx['model_name']
+                add_statistics_by_name_and_unit(current_name, current_unit, current_stx, statistics_by_name_and_unit)
+        else:
+            for current_stx in statistics_by_unit[current_unit]:
+                add_statistics_by_name_and_unit('dummy_name', current_unit, current_stx, statistics_by_name_and_unit)
+    return statistics_by_name_and_unit
+
+
 def create_taylor_diagrams(statistics, config=None):
     if config is None:
         config = get_default_config()
 
-    unit_specs = {}
-    for stx in statistics:
-        if config.split_on_unit:
-            current_unit = stx['unit']
-            if current_unit not in unit_specs:
-                unit_specs[current_unit] = []
-            unit_specs[current_unit].append(stx)
-        else:
-            if not 'dummy_unit' in unit_specs:
-                unit_specs['dummy_unit'] = []
-            unit_specs['dummy_unit'].append(stx)
-
-    name_specs = {}
-    for unit in unit_specs.keys():
-        if config.split_on_name:
-            for current_stx in unit_specs[unit]:
-                current_name = current_stx['model_name']
-                if not current_name in name_specs.keys():
-                    name_specs[current_name] = {}
-                if not unit in name_specs[current_name].keys():
-                    name_specs[current_name][unit] = []
-                name_specs[current_name][unit].append(current_stx)
-        else:
-            for current_stx in unit_specs[unit]:
-                if not 'dummy_name' in name_specs.keys():
-                    name_specs['dummy_name'] = {}
-                if not unit in name_specs['dummy_name'].keys():
-                    name_specs['dummy_name'][unit] = []
-                name_specs['dummy_name'][unit].append(current_stx)
-
+    statistics_by_name_and_unit = sort_statistics_by_name_and_unit(config, statistics)
     diagrams = []
 
-    for name in name_specs.keys():
-        for unit in name_specs[name].keys():
-            current_statistics = name_specs[name][unit]
+    for name in statistics_by_name_and_unit.keys():
+        for current_unit in statistics_by_name_and_unit[name].keys():
+            current_statistics = statistics_by_name_and_unit[name][current_unit]
 
             ref_stddevs = list(map(lambda x: x.get('ref_stddev'), current_statistics))
             ref_names = list(map(lambda x: x.get('ref_name'), current_statistics))
