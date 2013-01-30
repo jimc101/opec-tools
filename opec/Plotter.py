@@ -9,41 +9,6 @@ from opec.Configuration import get_default_config
 import matplotlib as mpl
 import matplotlib.ticker
 
-def add_statistics_by_unit(unit, stx, statistics_dict):
-    if not unit in statistics_dict:
-        statistics_dict[unit] = []
-    statistics_dict[unit].append(stx)
-
-
-def add_statistics_by_name_and_unit(current_name, current_unit, statistics, statistics_dict):
-    if not current_name in statistics_dict.keys():
-        statistics_dict[current_name] = {}
-    if not current_unit in statistics_dict[current_name].keys():
-        statistics_dict[current_name][current_unit] = []
-    statistics_dict[current_name][current_unit].append(statistics)
-
-
-def sort_statistics_by_name_and_unit(config, statistics):
-    statistics_by_unit = {}
-    for stx in statistics:
-        if config.split_on_unit:
-            unit_name = stx['unit']
-        else:
-            unit_name = 'dummy_unit'
-        add_statistics_by_unit(unit_name, stx, statistics_by_unit)
-
-    statistics_by_name_and_unit = {}
-    for current_unit in statistics_by_unit.keys():
-        if config.split_on_name:
-            for current_stx in statistics_by_unit[current_unit]:
-                current_name = current_stx['model_name']
-                add_statistics_by_name_and_unit(current_name, current_unit, current_stx, statistics_by_name_and_unit)
-        else:
-            for current_stx in statistics_by_unit[current_unit]:
-                add_statistics_by_name_and_unit('dummy_name', current_unit, current_stx, statistics_by_name_and_unit)
-    return statistics_by_name_and_unit
-
-
 def create_taylor_diagrams(statistics, config=None):
     if config is None:
         config = get_default_config()
@@ -351,3 +316,38 @@ def create_sample_name(model_name, unit):
     if unit is not None:
         sample_name = sample_name + ' (%s)' % unit
     return sample_name
+
+
+def add_statistics_by_unit(unit, stx, statistics_dict):
+    if not unit in statistics_dict:
+        statistics_dict[unit] = []
+    statistics_dict[unit].append(stx)
+
+
+def add_statistics_by_name_and_unit(current_name, current_unit, statistics, statistics_dict):
+    if not current_name in statistics_dict.keys():
+        statistics_dict[current_name] = {}
+    if not current_unit in statistics_dict[current_name].keys():
+        statistics_dict[current_name][current_unit] = []
+    statistics_dict[current_name][current_unit].append(statistics)
+
+
+def sort_statistics_by_name_and_unit(config, statistics):
+    statistics_by_unit = {}
+    for stx in statistics:
+        if config.split_on_unit:
+            unit_name = stx['unit']
+        else:
+            unit_name = 'dummy_unit'
+        add_statistics_by_unit(unit_name, stx, statistics_by_unit)
+
+    statistics_by_name_and_unit = {}
+    for current_unit in statistics_by_unit.keys():
+        if config.split_on_name:
+            for current_stx in statistics_by_unit[current_unit]:
+                current_name = current_stx['model_name']
+                add_statistics_by_name_and_unit(current_name, current_unit, current_stx, statistics_by_name_and_unit)
+        else:
+            for current_stx in statistics_by_unit[current_unit]:
+                add_statistics_by_name_and_unit('dummy_name', current_unit, current_stx, statistics_by_name_and_unit)
+    return statistics_by_name_and_unit
