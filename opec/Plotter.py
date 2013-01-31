@@ -46,7 +46,8 @@ def create_taylor_diagrams(statistics, config=None):
 
 def create_target_diagram(statistics, config=None):
     figure = pyplot.figure()
-    diagram = TargetDiagram(figure, config.target_diagram_bounds)
+    target_diagram_bounds = config.target_diagram_bounds if config is not None else None
+    diagram = TargetDiagram(figure, target_diagram_bounds)
 
     diagram.setup_axes()
     for stats in statistics:
