@@ -50,7 +50,7 @@ def create_target_diagram(statistics, config=None):
 
     diagram.setup_axes()
     for stats in statistics:
-        diagram.plot_sample(stats['bias'], stats['unbiased_rmse'])
+        diagram.plot_sample(stats['bias'], stats['unbiased_rmse'], create_sample_name(stats['model_name'], stats['unit']))
 
     return diagram
 
@@ -112,6 +112,15 @@ class Diagram(object):
 
     def write(self, target_file):
         self.fig.savefig(target_file)
+
+    def update_legend(self):
+        if self.show_legend:
+            self.fig.legend(self.sample_points, self.sample_names, numpoints=1, prop=dict(size='small'), loc='upper right')
+
+    def get_color(self):
+        if not hasattr(self, 'colors') or not self.colors:
+            self.colors = ['r', 'g', 'b', 'm', 'y', 'c']
+        return self.colors.pop(0)
 
 class ScatterPlot(Diagram):
 
@@ -178,6 +187,7 @@ class TargetDiagram(Diagram):
     def __init__(self, figure, target_rectangle=None):
         self.fig = figure
         self.target_rectangle = target_rectangle
+        self.show_legend = True
 
     def setup_axes(self):
         ax = self.fig.add_subplot(1, 1, 1)
@@ -196,10 +206,18 @@ class TargetDiagram(Diagram):
 
         self.ax = ax
 
-    def plot_sample(self, bias, unbiased_rmse):
+    def plot_sample(self, bias, unbiased_rmse, name):
         if self.must_update_ranges(unbiased_rmse, bias):
             self.update_ranges(self.target_rectangle)
-        self.ax.plot(unbiased_rmse, bias, 'r+')
+
+        data_value = self.ax.plot(unbiased_rmse, bias, '%s+' % self.get_color())
+        if hasattr(self, 'sample_names'):
+            self.sample_points.append(data_value[0])
+            self.sample_names.append(name)
+        else:
+            self.sample_points = [data_value[0]]
+            self.sample_names = [name]
+        self.update_legend()
 
 class TaylorDiagram(Diagram):
     """Taylor diagram: plot model standard deviation and correlation
@@ -216,11 +234,6 @@ class TaylorDiagram(Diagram):
         self.show_legend = show_legend
         self.max_stddev = max_stddev
         self.ref = ref
-
-    def get_color(self):
-        if not hasattr(self, 'colors') or not self.colors:
-            self.colors = ['r', 'g', 'b', 'm', 'y', 'c']
-        return self.colors.pop(0)
 
     def setup_axes(self):
         """Set up Taylor diagram axes, i.e. single quadrant polar
@@ -336,10 +349,6 @@ class TaylorDiagram(Diagram):
         sample_name = create_sample_name(model_name, unit)
         self.sample_names.append(sample_name)
         self.update_legend()
-
-    def update_legend(self):
-        if self.show_legend:
-            self.fig.legend(self.sample_points, self.sample_names, numpoints=1, prop=dict(size='small'), loc='upper right')
 
 class CenteredFormatter(mpl.ticker.ScalarFormatter):
     """Acts exactly like the default Scalar Formatter, but yields an empty

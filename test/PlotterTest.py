@@ -69,15 +69,15 @@ class PlotterTest(unittest.TestCase):
     def test_target_diagram(self):
         values =           np.array([0, 15, 2, 3, 15, 8, 5, 3, 9, 11, 12, 1, 7, 7, 6])
         reference_values = np.array([2, 14, 1, 4, 12, 3, 7, 5, 7, 12, 13, 3, 5, 6, 8])
-        stats = Processor.calculate_statistics(model_values=values, reference_values=reference_values)
+        stats = Processor.calculate_statistics(model_values=values, reference_values=reference_values, model_name='Linda', unit='g')
 
         values1 =           np.array([2, 14, 8, 6, 10, 9, 6, 7, 2, 15, 10, 0, 2, 2, 8])
         reference_values1 = np.array([5, 11, 6, 4, 11, 8, 7, 9, 2, 5, 11, -2, 1, 3, 9])
-        stats1 = Processor.calculate_statistics(model_values=values1, reference_values=reference_values1, model_name='Kate')
+        stats1 = Processor.calculate_statistics(model_values=values1, reference_values=reference_values1, model_name='Kate', unit='mg')
 
         values2 =           np.array([-2, -14, -8, -6, -10, -9, -6, 7, 2, 15, 10, 0, 2, 2, 8])
         reference_values2 = np.array([-1, -10, -5, -5, -11, -8, -7, 5, 3, 13, 10, 2, 2, -1, 7])
-        stats2 = Processor.calculate_statistics(model_values=values2, reference_values=reference_values2)
+        stats2 = Processor.calculate_statistics(model_values=values2, reference_values=reference_values2, model_name='Naomi', unit='kg')
 
      #   print('ref_stddev: %s' % stats['ref_stddev'])
      #   print('stddev: %s' % stats['stddev'])
