@@ -17,7 +17,8 @@ class Configuration(object):
                  log_level=None, log_file=None, zip=None, show_negative_corrcoeff=None,
                  show_legend=None, target_dir=None, target_prefix=None, include_header=None, separator=None,
                  separate_matchups=None, properties_file_name=None, write_taylor_diagrams=None, write_xhtml=None,
-                 write_csv=None, write_scatter_plots=None, split_diagrams=None):
+                 write_csv=None, write_scatter_plots=None, split_diagrams=None, write_target_diagram=None,
+                 target_diagram_bounds=None):
         """
         Priority:
         1) what is passed as parameter
@@ -53,6 +54,8 @@ class Configuration(object):
         self.__set(write_scatter_plots, 'opec.output.scatter.write_scatter_plots', bool)
         self.__set(split_diagrams, 'opec.output.plot.split_diagrams', split_diagrams_conv('u'), 'opec.output.plot.split_on_unit')
         self.__set(split_diagrams, 'opec.output.plot.split_diagrams', split_diagrams_conv('n'), 'opec.output.plot.split_on_name')
+        self.__set(write_target_diagram, 'opec.output.plot.write_target_diagram', bool)
+        self.__set(target_diagram_bounds, 'opec.output.plot.target_diagram_bounds', bounds_conv)
 
     def __set(self, value, name, converter, target_name=None):
         if value is not None:
@@ -146,6 +149,12 @@ class Configuration(object):
     def __split_on_name(self):
         return self.__dict['opec.output.plot.split_on_name']
 
+    def __write_target_diagram(self):
+        return self.__dict['opec.output.plot.write_target_diagram']
+
+    def __target_diagram_bounds(self):
+        return self.__dict['opec.output.plot.target_diagram_bounds']
+
     alpha = property(__alpha)
     beta = property(__beta)
     ddof = property(__ddof)
@@ -168,6 +177,8 @@ class Configuration(object):
     write_scatter_plots = property(__write_scatter_plots)
     split_on_unit = property(__split_on_unit)
     split_on_name = property(__split_on_name)
+    write_target_diagram = property(__write_target_diagram)
+    target_diagram_bounds = property(__target_diagram_bounds)
 
 def get_default_config():
     return Configuration()
@@ -208,3 +219,17 @@ def split_diagrams_conv(key):
             return True
         return False
     return shall_split_for_value
+
+def bounds_conv(value):
+    if type(value) == list:
+        return value
+    if value == 'None':
+        return None
+    result = []
+    for item in value.split(','):
+        item = item.lstrip().rstrip().replace('[', '').replace(']', '')
+        if item == 'None':
+            result.append(None)
+        else:
+            result.append(float(item))
+    return result

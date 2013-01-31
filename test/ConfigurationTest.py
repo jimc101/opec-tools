@@ -84,3 +84,21 @@ class ConfigurationTest(unittest.TestCase):
         self.assertRaises(ValueError, lambda: Configuration(split_diagrams='cow'))
         self.assertRaises(ValueError, lambda: Configuration(split_diagrams='p'))
         self.assertRaises(ValueError, lambda: Configuration(split_diagrams='ssuv'))
+
+    def test_max_bounds_for_target_diagram(self):
+        c = Configuration()
+        self.assertIsNone(c.target_diagram_bounds)
+
+        c = Configuration(target_diagram_bounds=[-2.0, 5.0, -3.0, None])
+        self.assertEqual(-2.0, c.target_diagram_bounds[0])
+        self.assertEqual(5.0, c.target_diagram_bounds[1])
+        self.assertEqual(-3.0, c.target_diagram_bounds[2])
+        self.assertIsNone(c.target_diagram_bounds[3])
+
+
+    def test_write_target_diagram(self):
+        c = Configuration()
+        self.assertTrue(c.write_target_diagram)
+
+        c = Configuration(write_target_diagram=False)
+        self.assertFalse(c.write_target_diagram)

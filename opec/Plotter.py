@@ -46,12 +46,11 @@ def create_taylor_diagrams(statistics, config=None):
 
 def create_target_diagram(statistics, config=None):
     figure = pyplot.figure()
-    diagram = TargetDiagram(figure)
+    diagram = TargetDiagram(figure, config.target_diagram_bounds)
 
     diagram.setup_axes()
     for stats in statistics:
-#        diagram.plot_sample(stats['bias'], stats['unbiased_rmse'], stats['rmse'])
-        pass
+        diagram.plot_sample(stats['bias'], stats['unbiased_rmse'])
 
     return diagram
 
@@ -64,6 +63,52 @@ def create_scatter_plot(reference_values, model_values, ref_name, model_name, un
     return diagram
 
 class Diagram(object):
+
+    def extract_bounds(self, target_rectangle):
+        if target_rectangle is not None:
+            min_x = target_rectangle[0]
+            max_x = target_rectangle[1]
+            min_y = target_rectangle[2]
+            max_y = target_rectangle[3]
+        else:
+            min_x = None
+            max_x = None
+            min_y = None
+            max_y = None
+        return max_x, max_y, min_x, min_y
+
+    def update_ranges(self, target_rectangle=None):
+        max_x, max_y, min_x, min_y = self.extract_bounds(target_rectangle)
+        xmin = self.__getattribute__('xmin')
+        growing_factor = 1.2
+        xmin = xmin * growing_factor if xmin < 0 else xmin / growing_factor
+        ymin = self.__getattribute__('ymin')
+        ymin = ymin * growing_factor if ymin < 0 else ymin / growing_factor
+        xmax = self.__getattribute__('xmax')
+        xmax = xmax * growing_factor if xmax > 0 else xmax / growing_factor
+        ymax = self.__getattribute__('ymax')
+        ymax = ymax * growing_factor if ymax > 0 else ymax / growing_factor
+        xmin = min_x if min_x is not None else xmin
+        ymin = min_y if min_y is not None else ymin
+        xmax = max_x if max_x is not None else xmax
+        ymax = max_y if max_y is not None else ymax
+        pyplot.axis([xmin, xmax, ymin, ymax])
+        return xmax, xmin
+
+    def must_update_ranges(self, x, y):
+        must_update_ranges = self.needs_update(x, 'xmin', min)
+        must_update_ranges |= self.needs_update(y, 'ymin', min)
+        must_update_ranges |= self.needs_update(x, 'xmax', max)
+        must_update_ranges |= self.needs_update(y, 'ymax', max)
+        return must_update_ranges
+
+    def needs_update(self, value, field_name, func):
+        if not hasattr(self, field_name):
+            self.__setattr__(field_name, value)
+        if value == func(value, self.__getattribute__(field_name)):
+            self.__setattr__(field_name, value)
+            return True
+        return False
 
     def write(self, target_file):
         self.fig.savefig(target_file)
@@ -86,39 +131,17 @@ class ScatterPlot(Diagram):
         ax.grid()
         self.ax = ax
         self.update_title()
-        return ax
 
     def update_title(self):
         matchup_count = len(self.ax.lines)
         self.ax.set_title('Scatter plot of %s and %s\nNumber of considered matchups: %s' % (self.model_name, self.ref_name, matchup_count))
 
-    def needs_update(self, value, field_name, func):
-        if not hasattr(self, field_name):
-            self.__setattr__(field_name, value)
-        if value == func(value, self.__getattribute__(field_name)):
-            self.__setattr__(field_name, value)
-            return True
-        return False
-
     def plot_sample(self, ref_value, model_value):
         if np.ma.masked in [ref_value, model_value]:
             return
-        update_ranges = self.needs_update(ref_value, 'xmin', min)
-        update_ranges |= self.needs_update(model_value, 'ymin', min)
-        update_ranges |= self.needs_update(ref_value, 'xmax', max)
-        update_ranges |= self.needs_update(model_value, 'ymax', max)
         xmin, xmax = 0, 0
-        if update_ranges:
-            xmin = self.__getattribute__('xmin')
-            growing_factor = 1.2
-            xmin = xmin * growing_factor if xmin < 0 else xmin / growing_factor
-            ymin = self.__getattribute__('ymin')
-            ymin = ymin * growing_factor if ymin < 0 else ymin / growing_factor
-            xmax = self.__getattribute__('xmax')
-            xmax = xmax * growing_factor if xmax > 0 else xmax / growing_factor
-            ymax = self.__getattribute__('ymax')
-            ymax = ymax * growing_factor if ymax > 0 else ymax / growing_factor
-            pyplot.axis([xmin, xmax, ymin, ymax])
+        if self.must_update_ranges(ref_value, model_value):
+            xmax, xmin = self.update_ranges()
 
         self.x = np.append(self.x, ref_value)
         self.y = np.append(self.y, model_value)
@@ -133,29 +156,50 @@ class ScatterPlot(Diagram):
 
         pyplot.plot(ref_value, model_value, 'ro', markersize=4)
 
+#noinspection PyUnusedLocal
+def hide_zero(value, pos):
+    if value == 0:
+        return ''
+    else:
+        return value
+
+#noinspection PyUnusedLocal
+def move_zero(value, pos):
+    if value == 0:
+        return '       0.0'
+    else:
+        return value
+
 class TargetDiagram(Diagram):
     """Target diagram: provides summary information about the pattern
     statistics as well as the bias thus yielding a broader overview of
     their respective contributions to the total RMSE (see Jolliff et al 2009 for details)."""
 
-    def __init__(self, figure):
+    def __init__(self, figure, target_rectangle=None):
         self.fig = figure
+        self.target_rectangle = target_rectangle
 
     def setup_axes(self):
-        ax = SubplotZero(self.fig, 111)
-        self.fig.add_subplot(ax)
+        ax = self.fig.add_subplot(1, 1, 1)
 
-        for direction in ["xzero", "yzero"]:
-            ax.axis[direction].set_axisline_style("-|>")
-            ax.axis[direction].set_visible(True)
+        ax.spines['left'].set_position('zero')
+        ax.spines['right'].set_color('none')
+        ax.spines['bottom'].set_position('zero')
+        ax.spines['top'].set_color('none')
+        ax.xaxis.set_ticks_position('bottom')
+        ax.yaxis.set_ticks_position('left')
 
-        for direction in ["left", "right", "bottom", "top"]:
-            ax.axis[direction].set_visible(False)
+        ax.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(hide_zero))
+        ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(move_zero))
 
-        pylab.xlim(-1.0, 1.0)
-        pylab.ylim(-1.0, 1.0)
+        ax.set_autoscale_on(False)
 
-        return ax
+        self.ax = ax
+
+    def plot_sample(self, bias, unbiased_rmse):
+        if self.must_update_ranges(unbiased_rmse, bias):
+            self.update_ranges(self.target_rectangle)
+        self.ax.plot(unbiased_rmse, bias, 'r+')
 
 class TaylorDiagram(Diagram):
     """Taylor diagram: plot model standard deviation and correlation
@@ -274,7 +318,6 @@ class TaylorDiagram(Diagram):
 
             pyplot.clabel(rmse_contour, inline=1, fmt='%1.2f', fontsize=8)
 
-        return self.ax
 
     def get_angle(self, corrcoeff):
         return np.arccos(corrcoeff)
