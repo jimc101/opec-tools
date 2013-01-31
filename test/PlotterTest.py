@@ -89,8 +89,7 @@ class PlotterTest(unittest.TestCase):
      #   print('unbiased rmse: %s' % stats2['unbiased_rmse'])
      #   print('corrcoeff: %s' % stats2['corrcoeff'])
 
-        config = Configuration(target_diagram_bounds=[-0.8, None, -0.8, 0.3])
-        diagram = plotter.create_target_diagram((stats, stats1, stats2), config)
+        diagram = plotter.create_target_diagram((stats, stats1, stats2))
         diagram.write('resources/target_test.png')
         # pypl.show()
 

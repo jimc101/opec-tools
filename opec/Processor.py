@@ -32,6 +32,13 @@ def rmse(reference_values, values):
     squared_errors = (values - reference_values) ** 2
     return np.sqrt(np.mean(squared_errors))
 
+def normalised_rmse(reference_values, values, ddof):
+    """
+    according to "Diagrams for coupled hydrodynamic-ecosystem model skill assessment", Joliff et. al. 2009
+    """
+    normalised_stddev = np.std(values, ddof=ddof) / np.std(reference_values, ddof=ddof)
+    return np.sqrt(1 + normalised_stddev**2 - 2 * normalised_stddev * correlation(reference_values, values))
+
 def bias(reference_values, values):
     """
     according to http://en.wikipedia.org/wiki/Bias_of_an_estimator
@@ -114,6 +121,7 @@ def calculate_statistics(matchups=None, model_name=None, ref_name=None, referenc
     stats['unit'] = unit
     stats['rmse'] = rmse(reference_values, model_values)
     stats['unbiased_rmse'] = unbiased_rmse(reference_values, model_values)
+    stats['normalised_rmse'] = normalised_rmse(reference_values, model_values, config.ddof)
     stats['pbias'] = percentage_model_bias(reference_values, model_values)
     stats['bias'] = bias(reference_values, model_values)
     stats['corrcoeff'] = correlation(reference_values, model_values)

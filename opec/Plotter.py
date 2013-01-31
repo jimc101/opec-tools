@@ -1,5 +1,6 @@
 import logging
 from matplotlib import pyplot, pylab
+from matplotlib.patches import Ellipse
 from matplotlib.projections.polar import PolarTransform
 from mpl_toolkits.axisartist import SubplotZero
 import numpy as np
@@ -46,12 +47,17 @@ def create_taylor_diagrams(statistics, config=None):
 
 def create_target_diagram(statistics, config=None):
     figure = pyplot.figure()
-    target_diagram_bounds = config.target_diagram_bounds if config is not None else None
-    diagram = TargetDiagram(figure, target_diagram_bounds)
+    if config is None:
+        config = get_default_config()
+    diagram = TargetDiagram(figure, config.normalise_target_diagram, config.target_diagram_bounds)
 
     diagram.setup_axes()
     for stats in statistics:
-        diagram.plot_sample(stats['bias'], stats['unbiased_rmse'], create_sample_name(stats['model_name'], stats['unit']))
+        diagram.plot_sample(stats['bias'], stats['unbiased_rmse'], stats['normalised_rmse'], stats['rmse'],
+            stats['ref_stddev'], create_sample_name(stats['model_name'], stats['unit']))
+
+    if config.normalise_target_diagram:
+        diagram.plot_correcoeff_marker_line()
 
     return diagram
 
@@ -185,10 +191,11 @@ class TargetDiagram(Diagram):
     statistics as well as the bias thus yielding a broader overview of
     their respective contributions to the total RMSE (see Jolliff et al 2009 for details)."""
 
-    def __init__(self, figure, target_rectangle=None):
+    def __init__(self, figure, normalise, target_rectangle=None):
         self.fig = figure
         self.target_rectangle = target_rectangle
         self.show_legend = True
+        self.normalise = normalise
 
     def setup_axes(self):
         ax = self.fig.add_subplot(1, 1, 1)
@@ -200,18 +207,30 @@ class TargetDiagram(Diagram):
         ax.xaxis.set_ticks_position('bottom')
         ax.yaxis.set_ticks_position('left')
 
+        minor_tick_locator = matplotlib.ticker.MaxNLocator(nbins=90, prune='both', symmetric=True,
+            steps=[1.0, 1.25, 1.5, 1.75, 2.0])
+        ax.xaxis.set_minor_locator(minor_tick_locator)
+        ax.yaxis.set_minor_locator(minor_tick_locator)
+
         ax.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(hide_zero))
         ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(move_zero))
 
-        ax.set_autoscale_on(False)
-
+        if self.normalise:
+            ax.set_aspect('equal')
+            pyplot.axis([-1.3, 1.3, -1.3, 1.3])
+            marker_line = Ellipse((0,0), 2, 2, edgecolor='k', linewidth=0.8, fill=False)
+            ax.add_artist(marker_line)
         self.ax = ax
 
-    def plot_sample(self, bias, unbiased_rmse, name):
-        if self.must_update_ranges(unbiased_rmse, bias):
+
+    def plot_sample(self, bias, unbiased_rmse, normalised_rmse, rmse, ref_stddev, name):
+        if not self.normalise and self.must_update_ranges(unbiased_rmse, bias):
             self.update_ranges(self.target_rectangle)
 
-        data_value = self.ax.plot(unbiased_rmse, bias, '%s+' % self.get_color())
+        x = normalised_rmse if self.normalise else unbiased_rmse
+        y = bias / ref_stddev if self.normalise else bias
+
+        data_value = self.ax.plot(x, y, '%sh' % self.get_color(), markersize=6)
         if hasattr(self, 'sample_names'):
             self.sample_points.append(data_value[0])
             self.sample_names.append(name)
@@ -219,6 +238,14 @@ class TargetDiagram(Diagram):
             self.sample_points = [data_value[0]]
             self.sample_names = [name]
         self.update_legend()
+
+        if not hasattr(self, 'minimum_unbiased_rmse') or self.minimum_unbiased_rmse > rmse:
+            self.minimum_unbiased_rmse = unbiased_rmse
+            self.marker_radius = np.sqrt((bias / ref_stddev) ** 2 + normalised_rmse ** 2)
+
+    def plot_correcoeff_marker_line(self):
+        marker_line = Ellipse((0,0), 2 * self.marker_radius, 2 * self.marker_radius, edgecolor='k', linewidth=0.8, linestyle='dashed', fill=False)
+        self.ax.add_artist(marker_line)
 
 class TaylorDiagram(Diagram):
     """Taylor diagram: plot model standard deviation and correlation

@@ -18,7 +18,7 @@ class Configuration(object):
                  show_legend=None, target_dir=None, target_prefix=None, include_header=None, separator=None,
                  separate_matchups=None, properties_file_name=None, write_taylor_diagrams=None, write_xhtml=None,
                  write_csv=None, write_scatter_plots=None, split_diagrams=None, write_target_diagram=None,
-                 target_diagram_bounds=None):
+                 target_diagram_bounds=None, normalise_target_diagram=None):
         """
         Priority:
         1) what is passed as parameter
@@ -56,6 +56,7 @@ class Configuration(object):
         self.__set(split_diagrams, 'opec.output.plot.split_diagrams', split_diagrams_conv('n'), 'opec.output.plot.split_on_name')
         self.__set(write_target_diagram, 'opec.output.plot.write_target_diagram', bool)
         self.__set(target_diagram_bounds, 'opec.output.plot.target_diagram_bounds', bounds_conv)
+        self.__set(normalise_target_diagram, 'opec.output.plot.normalise_target_diagram', bool)
 
     def __set(self, value, name, converter, target_name=None):
         if value is not None:
@@ -155,6 +156,9 @@ class Configuration(object):
     def __target_diagram_bounds(self):
         return self.__dict['opec.output.plot.target_diagram_bounds']
 
+    def __normalise_target_diagram(self):
+        return self.__dict['opec.output.plot.normalise_target_diagram']
+
     alpha = property(__alpha)
     beta = property(__beta)
     ddof = property(__ddof)
@@ -179,6 +183,7 @@ class Configuration(object):
     split_on_name = property(__split_on_name)
     write_target_diagram = property(__write_target_diagram)
     target_diagram_bounds = property(__target_diagram_bounds)
+    normalise_target_diagram = property(__normalise_target_diagram)
 
 def get_default_config():
     return Configuration()

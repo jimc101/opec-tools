@@ -102,3 +102,10 @@ class ConfigurationTest(unittest.TestCase):
 
         c = Configuration(write_target_diagram=False)
         self.assertFalse(c.write_target_diagram)
+
+    def test_normalise_target_diagram(self):
+        c = Configuration()
+        self.assertTrue(c.normalise_target_diagram)
+
+        c = Configuration(normalise_target_diagram=False)
+        self.assertFalse(c.normalise_target_diagram)
