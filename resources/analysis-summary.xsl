@@ -243,6 +243,15 @@
                     </xsl:for-each>
                 </xsl:if>
 
+                <xsl:if test="/analysisSummary/targetDiagram">
+                    <h3>Target Diagram</h3>
+                    <img class="smaller">
+                        <xsl:attribute name="src">
+                            <xsl:value-of select="/analysisSummary/targetDiagram"/>
+                        </xsl:attribute>
+                    </img>
+                </xsl:if>
+
                 <xsl:if test="/analysisSummary/scatterPlots">
                     <h3>Scatter Plot(s)</h3>
 

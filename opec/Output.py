@@ -181,7 +181,7 @@ class Output(object):
             file.write("%s\n" % line)
         file.close()
 
-    def xhtml(self, statistics_list, matchups, target_file=None, taylor_target_files=None, scatter_plot_files=None):
+    def xhtml(self, statistics_list, matchups, target_file=None, taylor_target_files=None, target_diagram_file=None, scatter_plot_files=None):
         template = Template(filename='resources/matchup_report_template.xml')
         buf = StringIO()
 
@@ -207,6 +207,7 @@ class Output(object):
 
         scatter_plot_files = get_basenames(scatter_plot_files)
         taylor_target_files = get_basenames(taylor_target_files)
+        target_diagram_file= os.path.basename(target_diagram_file)
         ctx = Context(buf,
             pairs=all_relative_stats,
             performed_at=datetime.now().strftime('%b %d, %Y at %H:%M:%S'),
@@ -223,6 +224,8 @@ class Output(object):
             matchups=matchups,
             write_taylor_diagrams=self.config.write_taylor_diagrams,
             taylor_target_files=taylor_target_files,
+            write_target_diagram=self.config.write_target_diagram,
+            target_diagram_file=target_diagram_file,
             scatter_plot_files=scatter_plot_files)
         template.render_context(ctx)
         xml = buf.getvalue()
@@ -254,3 +257,7 @@ class Output(object):
             model_values.append(matchup.values[model_name])
         diagram = Plotter.create_scatter_plot(ref_values, model_values, ref_name, model_name, unit)
         diagram.write(target_file)
+
+    def target_diagram(self, statistics, target_file):
+        target_diagram = Plotter.create_target_diagram(statistics, self.config)
+        target_diagram.write(target_file)

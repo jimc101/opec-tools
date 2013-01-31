@@ -145,13 +145,20 @@ def main():
             target_files.append(scatter_target)
             output.scatter_plot(matchups, ref_name, model_name, scatter_target, data.unit(model_name))
 
+    target_diagram_file = None
+    if config.write_target_diagram:
+        target_diagram_file = '%s\\%starget.png' % (parsed_args.output_dir, config.target_prefix)
+        output.target_diagram(collected_statistics, target_diagram_file)
+        logging.info('Target diagram written to \'%s\'' % target_diagram_file)
+        target_files.append(target_diagram_file)
+
     if config.write_xhtml:
         xml_target_file = '%s\\%sreport.xml' % (parsed_args.output_dir, config.target_prefix)
         xsl = 'resources/analysis-summary.xsl'
         css = 'resources/styleset.css'
         xsl_target = '%s/%s' % (parsed_args.output_dir, os.path.basename(xsl))
         css_target = '%s/%s' % (parsed_args.output_dir, os.path.basename(css))
-        output.xhtml(collected_statistics, matchups, xml_target_file, taylor_target_files, scatter_plot_files)
+        output.xhtml(collected_statistics, matchups, xml_target_file, taylor_target_files, target_diagram_file, scatter_plot_files)
         logging.info('XHTML report written to \'%s\'' % xml_target_file)
         shutil.copy(xsl, parsed_args.output_dir)
         logging.info('XHTML support file written to \'%s/%s\'' % (parsed_args.output_dir, 'analysis-summary.xsl'))
