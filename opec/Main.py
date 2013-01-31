@@ -63,7 +63,7 @@ def ref_stddev(statistics):
 
 def create_zip(target_files, config, file_handler, parsed_args):
     files_to_remove = []
-    zipfile = ZipFile('%s\\%sbenchmarks.zip' % (parsed_args.o, config.target_prefix), 'w')
+    zipfile = ZipFile('%s\\%sbenchmarks.zip' % (parsed_args.output_dir, config.target_prefix), 'w')
     logging.info('Creating zip file: %s' % zipfile.filename)
     for file in target_files:
         zipfile.write(file, os.path.basename(file))
