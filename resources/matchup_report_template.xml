@@ -134,7 +134,7 @@
     % endfor
 % endif
 
-% if write_target_diagram and target_diagram_file is not None:
+% if write_target_diagram:
     <targetDiagram>${target_diagram_file}</targetDiagram>
 % endif
 

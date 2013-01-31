@@ -207,7 +207,7 @@ class Output(object):
 
         scatter_plot_files = get_basenames(scatter_plot_files)
         taylor_target_files = get_basenames(taylor_target_files)
-        target_diagram_file= os.path.basename(target_diagram_file)
+        target_diagram_file = os.path.basename(target_diagram_file) if target_diagram_file is not None else None
         ctx = Context(buf,
             pairs=all_relative_stats,
             performed_at=datetime.now().strftime('%b %d, %Y at %H:%M:%S'),
