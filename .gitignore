@@ -7,3 +7,5 @@ resources/taylor_test*.png
 resources/scatter_test*.png
 resources/matchup_report.xml
 resources/matchup_report.xsl
+dist
+MANIFEST
