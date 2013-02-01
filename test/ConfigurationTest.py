@@ -109,3 +109,10 @@ class ConfigurationTest(unittest.TestCase):
 
         c = Configuration(normalise_target_diagram=False)
         self.assertFalse(c.normalise_target_diagram)
+
+    def test_utilise_stddev_difference(self):
+        c = Configuration()
+        self.assertTrue(c.utilise_stddev_difference)
+
+        c = Configuration(utilise_stddev_difference=False)
+        self.assertFalse(c.utilise_stddev_difference)

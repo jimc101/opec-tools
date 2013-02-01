@@ -67,8 +67,8 @@ class PlotterTest(unittest.TestCase):
         # pypl.show()
 
     def test_target_diagram(self):
-        values =           np.array([0, 15, 2, 3, 15, 8, 5, 3, 9, 11, 12, 1, 7, 7, 6])
-        reference_values = np.array([2, 14, 1, 4, 12, 3, 7, 5, 7, 12, 13, 3, 5, 6, 8])
+        values =           np.array([3, 3, 2, 3, 6, 8, 5, 3, 4, 6, 4, 1, 7, 7, 6])
+        reference_values = np.array([2, 5, 1, 5, 5, 9, 4, 5, 3, 8, 3, 3, 6, 9, 5])
         stats = Processor.calculate_statistics(model_values=values, reference_values=reference_values, model_name='Linda', unit='g')
 
         values1 =           np.array([2, 14, 8, 6, 10, 9, 6, 7, 2, 15, 10, 0, 2, 2, 8])

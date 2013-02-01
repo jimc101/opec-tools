@@ -1,4 +1,5 @@
 import logging
+from math import copysign
 from matplotlib import pyplot, pylab
 from matplotlib.patches import Ellipse
 from matplotlib.projections.polar import PolarTransform
@@ -49,12 +50,12 @@ def create_target_diagram(statistics, config=None):
     figure = pyplot.figure()
     if config is None:
         config = get_default_config()
-    diagram = TargetDiagram(figure, config.normalise_target_diagram, config.show_legends, config.target_diagram_bounds)
+    diagram = TargetDiagram(figure, config.normalise_target_diagram, config.show_legends, config.utilise_stddev_difference, config.target_diagram_bounds)
 
     diagram.setup_axes()
     for stats in statistics:
         diagram.plot_sample(stats['bias'], stats['unbiased_rmse'], stats['normalised_rmse'], stats['rmse'],
-            stats['ref_stddev'], create_sample_name(stats['model_name'], stats['unit']))
+            stats['ref_stddev'], stats['stddev'], create_sample_name(stats['model_name'], stats['unit']))
 
     if config.normalise_target_diagram:
         diagram.plot_correcoeff_marker_line()
@@ -191,11 +192,12 @@ class TargetDiagram(Diagram):
     statistics as well as the bias thus yielding a broader overview of
     their respective contributions to the total RMSE (see Jolliff et al 2009 for details)."""
 
-    def __init__(self, figure, normalise, show_legend=None, target_rectangle=None):
+    def __init__(self, figure, normalise, show_legend, utilise_stddev_difference, target_rectangle=None):
         self.fig = figure
         self.target_rectangle = target_rectangle
         self.show_legend = show_legend
         self.normalise = normalise
+        self.utilise_stddev_difference = utilise_stddev_difference
 
     def setup_axes(self):
         ax = self.fig.add_subplot(1, 1, 1)
@@ -223,12 +225,15 @@ class TargetDiagram(Diagram):
         self.ax = ax
 
 
-    def plot_sample(self, bias, unbiased_rmse, normalised_rmse, rmse, ref_stddev, name):
+    def plot_sample(self, bias, unbiased_rmse, normalised_rmse, rmse, ref_stddev, model_stddev, name):
         if not self.normalise and self.must_update_ranges(unbiased_rmse, bias):
             self.update_ranges(self.target_rectangle)
 
         x = normalised_rmse if self.normalise else unbiased_rmse
         y = bias / ref_stddev if self.normalise else bias
+
+        if self.utilise_stddev_difference:
+            x = copysign(x, model_stddev - ref_stddev)
 
         data_value = self.ax.plot(x, y, '%sh' % self.get_color(), markersize=6)
         if hasattr(self, 'sample_names'):
