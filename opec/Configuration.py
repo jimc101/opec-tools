@@ -15,7 +15,7 @@ class Configuration(object):
 
     def __init__(self, alpha=None, beta=None, ddof=None, geo_delta=None, time_delta=None, depth_delta=None,
                  log_level=None, log_file=None, zip=None, show_negative_corrcoeff=None,
-                 show_legend=None, target_dir=None, target_prefix=None, include_header=None, separator=None,
+                 show_legends=None, target_dir=None, target_prefix=None, include_header=None, separator=None,
                  separate_matchups=None, properties_file_name=None, write_taylor_diagrams=None, write_xhtml=None,
                  write_csv=None, write_scatter_plots=None, split_diagrams=None, write_target_diagram=None,
                  target_diagram_bounds=None, normalise_target_diagram=None):
@@ -42,21 +42,21 @@ class Configuration(object):
         self.__set(log_file, 'opec.general.log_file', log_file_conv)
         self.__set(zip, 'opec.output.zip', bool)
         self.__set(show_negative_corrcoeff, 'opec.output.plot.taylor.show_negative_corrcoeff', bool)
-        self.__set(show_legend, 'opec.output.plot.taylor.show_legend', bool)
+        self.__set(show_legends, 'opec.output.plot.show_legends', bool)
         self.__set(target_dir, 'target_dir', str)
         self.__set(target_prefix, 'opec.output.target_prefix', str)
         self.__set(separator, 'opec.output.csv.separator', separator_conv)
         self.__set(include_header, 'opec.output.csv.include_header', bool)
         self.__set(separate_matchups, 'opec.output.csv.separate_matchups', bool)
-        self.__set(write_taylor_diagrams, 'opec.output.plot.write_taylor_diagrams', bool)
+        self.__set(write_taylor_diagrams, 'opec.output.plot.taylor.write_taylor_diagrams', bool)
         self.__set(write_xhtml, 'opec.output.xhtml.write_xhtml', bool)
         self.__set(write_csv, 'opec.output.csv.write_csv', bool)
-        self.__set(write_scatter_plots, 'opec.output.scatter.write_scatter_plots', bool)
-        self.__set(split_diagrams, 'opec.output.plot.split_diagrams', split_diagrams_conv('u'), 'opec.output.plot.split_on_unit')
-        self.__set(split_diagrams, 'opec.output.plot.split_diagrams', split_diagrams_conv('n'), 'opec.output.plot.split_on_name')
-        self.__set(write_target_diagram, 'opec.output.plot.write_target_diagram', bool)
-        self.__set(target_diagram_bounds, 'opec.output.plot.target_diagram_bounds', bounds_conv)
-        self.__set(normalise_target_diagram, 'opec.output.plot.normalise_target_diagram', bool)
+        self.__set(write_scatter_plots, 'opec.output.plot.scatter.write_scatter_plots', bool)
+        self.__set(split_diagrams, 'opec.output.plot.taylor.split_diagrams', split_diagrams_conv('u'), 'opec.output.plot.split_on_unit')
+        self.__set(split_diagrams, 'opec.output.plot.taylor.split_diagrams', split_diagrams_conv('n'), 'opec.output.plot.split_on_name')
+        self.__set(write_target_diagram, 'opec.output.plot.target.write_target_diagram', bool)
+        self.__set(target_diagram_bounds, 'opec.output.plot.target.diagram_bounds', bounds_conv)
+        self.__set(normalise_target_diagram, 'opec.output.plot.target.normalise_target_diagram', bool)
 
     def __set(self, value, name, converter, target_name=None):
         if value is not None:
@@ -114,8 +114,8 @@ class Configuration(object):
     def __show_negative_corrcoeff(self):
         return self.__dict['opec.output.plot.taylor.show_negative_corrcoeff']
 
-    def __show_legend(self):
-        return self.__dict['opec.output.plot.taylor.show_legend']
+    def __show_legends(self):
+        return self.__dict['opec.output.plot.show_legends']
 
     def __target_dir(self):
         return self.__dict['target_dir']
@@ -133,7 +133,7 @@ class Configuration(object):
         return self.__dict['opec.output.csv.separate_matchups']
 
     def __write_taylor_diagrams(self):
-        return self.__dict['opec.output.plot.write_taylor_diagrams']
+        return self.__dict['opec.output.plot.taylor.write_taylor_diagrams']
 
     def __write_csv(self):
         return self.__dict['opec.output.csv.write_csv']
@@ -142,7 +142,7 @@ class Configuration(object):
         return self.__dict['opec.output.xhtml.write_xhtml']
 
     def __write_scatter_plots(self):
-        return self.__dict['opec.output.scatter.write_scatter_plots']
+        return self.__dict['opec.output.plot.scatter.write_scatter_plots']
 
     def __split_on_unit(self):
         return self.__dict['opec.output.plot.split_on_unit']
@@ -151,13 +151,13 @@ class Configuration(object):
         return self.__dict['opec.output.plot.split_on_name']
 
     def __write_target_diagram(self):
-        return self.__dict['opec.output.plot.write_target_diagram']
+        return self.__dict['opec.output.plot.target.write_target_diagram']
 
     def __target_diagram_bounds(self):
-        return self.__dict['opec.output.plot.target_diagram_bounds']
+        return self.__dict['opec.output.plot.target.diagram_bounds']
 
     def __normalise_target_diagram(self):
-        return self.__dict['opec.output.plot.normalise_target_diagram']
+        return self.__dict['opec.output.plot.target.normalise_target_diagram']
 
     alpha = property(__alpha)
     beta = property(__beta)
@@ -169,7 +169,7 @@ class Configuration(object):
     log_file = property(__log_file)
     zip = property(__zip)
     show_negative_corrcoeff = property(__show_negative_corrcoeff)
-    show_legend = property(__show_legend)
+    show_legends = property(__show_legends)
     target_dir = property(__target_dir)
     target_prefix = property(__target_prefix)
     include_header = property(__include_header)

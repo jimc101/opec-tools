@@ -15,7 +15,7 @@ class ConfigurationTest(unittest.TestCase):
         os.chdir(self.cwd)
 
     def test_initialisation(self):
-        c = Configuration(alpha=5, ddof=2, show_legend=False, write_taylor_diagrams=False, separate_matchups=False)
+        c = Configuration(alpha=5, ddof=2, show_legends=False, write_taylor_diagrams=False, separate_matchups=False)
         self.assertEqual(5, c.alpha)
         self.assertEqual(1, c.beta)
         self.assertEqual(2, c.ddof)
@@ -25,7 +25,7 @@ class ConfigurationTest(unittest.TestCase):
         self.assertEqual(logging.INFO, c.log_level)
         self.assertEqual(False, c.zip)
         self.assertEqual(False, c.show_negative_corrcoeff)
-        self.assertEqual(False, c.show_legend)
+        self.assertEqual(False, c.show_legends)
         self.assertEqual(os.getcwd(), c.target_dir)
         self.assertEqual('benchmark_', c.target_prefix)
         self.assertEqual('\t', c.separator)
@@ -46,7 +46,7 @@ class ConfigurationTest(unittest.TestCase):
         self.assertEqual(200, c.time_delta)
         self.assertEqual(logging.INFO, c.log_level)    # does not appear in test.properties, so it is taken from default file
         self.assertEqual(False, c.zip)             # does not appear in test.properties, so it is taken from default file
-        self.assertEqual(True, c.show_legend)
+        self.assertEqual(True, c.show_legends)
         self.assertEqual(False, c.show_negative_corrcoeff)             # does not appear in test.properties, so it is taken from default file
         self.assertEqual(os.getcwd(), c.target_dir)
         self.assertEqual('benchmark_', c.target_prefix)

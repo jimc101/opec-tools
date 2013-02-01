@@ -34,7 +34,7 @@ def create_taylor_diagrams(statistics, config=None):
                     return None
 
             figure = pyplot.figure()
-            diagram = TaylorDiagram(figure, ref, config.show_negative_corrcoeff, config.show_legend, max_stddev)
+            diagram = TaylorDiagram(figure, ref, config.show_negative_corrcoeff, config.show_legends, max_stddev)
 
             diagram.setup_axes()
             for stats in current_statistics:
@@ -49,7 +49,7 @@ def create_target_diagram(statistics, config=None):
     figure = pyplot.figure()
     if config is None:
         config = get_default_config()
-    diagram = TargetDiagram(figure, config.normalise_target_diagram, config.target_diagram_bounds)
+    diagram = TargetDiagram(figure, config.normalise_target_diagram, config.show_legends, config.target_diagram_bounds)
 
     diagram.setup_axes()
     for stats in statistics:
@@ -191,10 +191,10 @@ class TargetDiagram(Diagram):
     statistics as well as the bias thus yielding a broader overview of
     their respective contributions to the total RMSE (see Jolliff et al 2009 for details)."""
 
-    def __init__(self, figure, normalise, target_rectangle=None):
+    def __init__(self, figure, normalise, show_legend=None, target_rectangle=None):
         self.fig = figure
         self.target_rectangle = target_rectangle
-        self.show_legend = True
+        self.show_legend = show_legend
         self.normalise = normalise
 
     def setup_axes(self):

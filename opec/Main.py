@@ -29,11 +29,11 @@ class Formatter(argparse.RawDescriptionHelpFormatter):
     def _format_usage(self, usage, actions, groups, prefix):
         # clumsy way, but there's no native argparse support for what I do here
         # (what I do is: move <path> argument in usage description to beginning, where it belongs)
-        old_format = super(argparse.RawDescriptionHelpFormatter, self)._format_usage(usage, actions, groups, prefix)
-        old_format = old_format.replace('<path>', '')
-        index = old_format.index('[-c')
-        old_format = old_format[:index] + '| <path> ' + old_format[index:]
-        return old_format
+        format = super(argparse.RawDescriptionHelpFormatter, self)._format_usage(usage, actions, groups, prefix)
+        format = format.replace('<path>', '')
+        index = format.index('[-c')
+        format = format[:index] + '| <path> ' + format[index:]
+        return format
 
     def _format_action(self, action):
         # some cleanup of the help message
