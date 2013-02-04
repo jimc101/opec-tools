@@ -181,7 +181,7 @@ class Output(object):
             file.write("%s\n" % line)
         file.close()
 
-    def xhtml(self, statistics_list, matchups, target_file=None, taylor_target_files=None, target_diagram_file=None, scatter_plot_files=None):
+    def xhtml(self, statistics_list, matchups, target_file, taylor_target_files=None, target_diagram_file=None, scatter_plot_files=None):
         template = Template(filename='resources/matchup_report_template.xml')
         buf = StringIO()
 
@@ -230,34 +230,37 @@ class Output(object):
         template.render_context(ctx)
         xml = buf.getvalue()
 
-        if target_file is not None:
-            directory = os.path.dirname(target_file)
-            if not os.path.exists(directory):
-                os.makedirs(directory)
-            file = open(target_file, 'w')
-            file.write(xml)
-            file.close()
-        return xml
+        directory = os.path.dirname(target_file)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        file = open(target_file, 'w')
+        file.write(xml)
+        file.close()
 
-    def taylor(self, statistics, target_file):
+    def taylor(self, statistics, target_file=None):
         diagrams = Plotter.create_taylor_diagrams(statistics, config=self.config)
         result = []
-        for i, diagram in enumerate(diagrams):
-            last_index_of_dot = target_file.rfind('.')
-            new_target_file = target_file[:last_index_of_dot] + '_' + str(i) + target_file[last_index_of_dot:]
-            diagram.write(new_target_file)
-            result.append(new_target_file)
-        return result
+        if target_file is not None:
+            for i, diagram in enumerate(diagrams):
+                last_index_of_dot = target_file.rfind('.')
+                new_target_file = target_file[:last_index_of_dot] + '_' + str(i) + target_file[last_index_of_dot:]
+                diagram.write(new_target_file)
+                result.append(new_target_file)
+        return result, diagrams
 
-    def scatter_plot(self, matchups, ref_name, model_name, target_file, unit=None):
+    def scatter_plot(self, matchups, ref_name, model_name, target_file=None, unit=None):
         ref_values = []
         model_values = []
         for matchup in matchups:
             ref_values.append(matchup.values[ref_name])
             model_values.append(matchup.values[model_name])
         diagram = Plotter.create_scatter_plot(ref_values, model_values, ref_name, model_name, unit)
-        diagram.write(target_file)
+        if target_file is not None:
+            diagram.write(target_file)
+        return diagram
 
-    def target_diagram(self, statistics, target_file):
+    def target_diagram(self, statistics, target_file=None):
         target_diagram = Plotter.create_target_diagram(statistics, self.config)
-        target_diagram.write(target_file)
+        if target_file is not None:
+            target_diagram.write(target_file)
+        return target_diagram

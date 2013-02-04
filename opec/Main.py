@@ -5,7 +5,7 @@ import shutil
 import sys
 import warnings
 from zipfile import ZipFile
-from opec import Processor, Utils
+from opec import Processor, get_logging_formatter
 from opec.Configuration import Configuration
 from opec.MatchupEngine import MatchupEngine
 from opec.Data import Data
@@ -91,7 +91,7 @@ def setup_logging(config):
         if not os.path.exists(config.target_dir):
             os.makedirs(config.target_dir)
         file_handler = logging.FileHandler('%s/%s' % (config.target_dir, config.log_file), 'w')
-        file_handler.setFormatter(Utils.get_logging_formatter())
+        file_handler.setFormatter(get_logging_formatter())
         logging.getLogger().addHandler(file_handler)
     logging.getLogger().setLevel(level=config.log_level)
     logging.info('Starting benchmark')
@@ -130,7 +130,7 @@ def main():
     taylor_target_files = []
     if config.write_taylor_diagrams:
         taylor_target_file = '%s\\%staylor.png' % (parsed_args.output_dir, config.target_prefix)
-        written_taylor_diagrams = output.taylor(collected_statistics, taylor_target_file)
+        written_taylor_diagrams, d = output.taylor(collected_statistics, taylor_target_file)
         if written_taylor_diagrams:
             for written_taylor_diagram in written_taylor_diagrams:
                 logging.info('Taylor diagram written to \'%s\'' % written_taylor_diagram)

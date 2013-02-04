@@ -121,6 +121,9 @@ class Diagram(object):
     def write(self, target_file):
         self.fig.savefig(target_file)
 
+    def show(self):
+        pyplot.show(self.fig)
+
     def update_legend(self):
         if self.show_legend:
             self.fig.legend(self.sample_points, self.sample_names, numpoints=1, prop=dict(size='small'), loc='upper right')
