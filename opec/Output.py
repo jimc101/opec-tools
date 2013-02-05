@@ -182,7 +182,8 @@ class Output(object):
         file.close()
 
     def xhtml(self, statistics_list, matchups, target_file, taylor_target_files=None, target_diagram_file=None, scatter_plot_files=None):
-        template = Template(filename='resources/matchup_report_template.xml')
+        filename = os.path.dirname(os.path.realpath(__file__)) + '/../resources/matchup_report_template.xml'
+        template = Template(filename=filename)
         buf = StringIO()
 
         all_relative_stats = []

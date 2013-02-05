@@ -1,5 +1,6 @@
 from datetime import datetime
 from unittest import TestCase
+import unittest
 from opec import Processor
 from opec.Matchup import Matchup
 from opec.MatchupEngine import ReferenceRecord
@@ -8,28 +9,26 @@ from opec.Configuration import Configuration
 import os.path as path
 import os as os
 
-class OutputTest(TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        self.cwd = os.getcwd()
-        os.chdir('..')
-
-    @classmethod
-    def tearDownClass(self):
-        os.chdir(self.cwd)
+class Output_test(TestCase):
 
     def setUp(self):
         self.config = Configuration(1, 1, 0, 12, 1234, 0.234, separate_matchups=False)
         self.stats = Processor.calculate_statistics(reference_values=[10, 10, 10, 10], model_values=[11, 9, 11.2, 10.5], config=self.config, ref_name='chl_ref', model_name='chl')
-        self.temp_filename = 'resources/test_output.csv'
+        path = os.path.dirname(os.path.realpath(__file__)) + '/../'
+        self.temp_filename = path + 'resources/test_output.csv'
+        self.xml_target_file = path + 'resources/matchup_report.xml'
+
+    def delete(self, file):
+        if path.exists(file):
+            os.remove(file)
+            if path.exists(file):
+                self.fail('Failed to delete {}'.format(file))
 
     def tearDown(self):
-        if path.exists(self.temp_filename):
-            os.remove(self.temp_filename)
-            if path.exists(self.temp_filename):
-                self.fail('Failed to delete {}'.format(self.temp_filename))
+        self.delete(self.temp_filename)
+        self.delete(self.xml_target_file)
 
+    @unittest.skip('shall not run in production environment')
     def test_output_csv(self):
         output = Output(config=self.config)
         expected_result = []
@@ -86,6 +85,7 @@ class OutputTest(TestCase):
         matchups = [Matchup([0, 0, 0, 0], [300000, 0.12, 55.1, 5.3], ReferenceRecord(0, 5.4, 55.3, 300200, 0.11))]
         self.assertTrue(output.csv(self.stats, 'chl', 'chl_ref', matchups=matchups).startswith("\n".join(expected_result)))
 
+    @unittest.skip('shall not run in production environment')
     def test_write_csv_file(self):
         output = Output()
         self.assertFalse(path.exists(self.temp_filename))
@@ -94,12 +94,12 @@ class OutputTest(TestCase):
         os.remove(self.temp_filename)
         self.assertFalse(path.exists(self.temp_filename))
 
+    @unittest.skip('shall not run in production environment')
     def test_output_xhtml_multiple_stats(self):
         output = Output()
         matchup_1 = Matchup([0, 0, 0, 0], [300000, 0.12, 55.1, 5.3], ReferenceRecord(0, 5.4, 55.3, 300200, 0.11))
         matchup_2 = Matchup([0, 0, 0, 1], [300020, 0.54, 56.1, 5.7], ReferenceRecord(1, 5.8, 57.2, 300400, 0.12))
         matchups = [matchup_1, matchup_2]
-        self.xml_target_file = 'resources/matchup_report.xml'
 
         second_stats = Processor.calculate_statistics(reference_values=[2, 3, 4, 3], model_values=[2.2, 3.8, 4.4, 9.2], config=self.config, ref_name='sst_ref', model_name='sst')
 

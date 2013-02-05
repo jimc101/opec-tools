@@ -2,11 +2,10 @@ import unittest
 #import matplotlib.pyplot as pypl
 import numpy as np
 from opec import Processor
-from opec.Configuration import Configuration
 import opec.Plotter as plotter
 import os
 
-class PlotterTest(unittest.TestCase):
+class Plotter_test(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
@@ -17,6 +16,7 @@ class PlotterTest(unittest.TestCase):
     def tearDownClass(self):
         os.chdir(self.cwd)
 
+    @unittest.skip('shall not run in production environment')
     def test_taylor_diagram(self):
         values = np.array([0, 15, 2, 3, 15, 8, 5, 3, 9, 11, 12, 1, 7, 7, 6])
         reference_values = np.array([9, 10, 1, 2, 11, 3, 7, 5, 4, 12, 7, 8, 5, 1, 14])
@@ -45,6 +45,7 @@ class PlotterTest(unittest.TestCase):
         diagram.write('resources/taylor_test.png')
         # pypl.show()
 
+    @unittest.skip('shall not run in production environment')
     def test_taylor_diagrams(self):
         values = np.array([0, 15, 2, 3, 15, 8, 5, 3, 9, 11, 12, 1, 7, 7, 6])
         reference_values = np.array([9, 10, 1, 2, 11, 3, 7, 5, 4, 12, 7, 8, 5, 1, 14])
@@ -66,6 +67,7 @@ class PlotterTest(unittest.TestCase):
 
         # pypl.show()
 
+    @unittest.skip('shall not run in production environment')
     def test_target_diagram(self):
         values =           np.array([3, 3, 2, 3, 6, 8, 5, 3, 4, 6, 4, 1, 7, 7, 6])
         reference_values = np.array([2, 5, 1, 5, 5, 9, 4, 5, 3, 8, 3, 3, 6, 9, 5])
@@ -93,6 +95,7 @@ class PlotterTest(unittest.TestCase):
         diagram.write('resources/target_test.png')
         # pypl.show()
 
+    @unittest.skip('shall not run in production environment')
     def test_scatter_plot(self):
         values = np.array([0, -15, 2, 3, 15, 8, 5, 3, 9, 11, 12, 1, 7, 7, 6])
         reference_values = np.array([-9, 10, 1, 2, 11, 3, 7, 5, 4, 12, 7, 8, 5, 1, 14])

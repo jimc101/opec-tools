@@ -7,19 +7,11 @@ from opec.MatchupEngine import MatchupEngine
 from opec.Data import Data
 import os
 
-class MatchupEngineTest(TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        self.cwd = os.getcwd()
-        os.chdir('..')
-
-    @classmethod
-    def tearDownClass(self):
-        os.chdir(self.cwd)
+class MatchupEngine_test(TestCase):
 
     def setUp(self):
-        self.data = Data('resources/test.nc')
+        self.path = os.path.dirname(os.path.realpath(__file__)) + '/../'
+        self.data = Data(self.path + 'resources/test.nc')
         logging.basicConfig(level=logging.DEBUG)
 
     def tearDown(self):
@@ -85,7 +77,7 @@ class MatchupEngineTest(TestCase):
         self.assertAlmostEqual(0.0020015, matchup.reference_record.depth)
 
     def test_find_matchups_single_no_depth(self):
-        data = Data('resources/test_without_depth.nc')
+        data = Data(self.path + 'resources/test_without_depth.nc')
         config = Configuration(geo_delta=0.1, time_delta=10)
         me = MatchupEngine(data, config)
 
@@ -110,7 +102,7 @@ class MatchupEngineTest(TestCase):
         self.assertAlmostEqual(12.35, reference_records[2].lon, 4)
 
     def test_find_reference_records_no_depth(self):
-        self.data = Data('resources/test_without_depth.nc')
+        self.data = Data(self.path + 'resources/test_without_depth.nc')
         self.me = MatchupEngine(self.data)
         reference_records = self.me.find_reference_records()
         self.assertEqual(3, len(reference_records))

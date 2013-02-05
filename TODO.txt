@@ -1,4 +1,0 @@
-- replace getters by direct field access (which can in turn be backed by a function)
-- implement classes Matchup + MatchupCreator
-- add logging facility
-- extend interface of DataStorage by methods that manipulate data

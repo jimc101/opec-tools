@@ -4,13 +4,14 @@ from opec.Data import Data
 from opec.MatchupEngine import MatchupEngine
 from opec.Output import Output
 
-def load(filename):
+def load(filename, ref_filename=None):
     """
     Returns an abstraction view on the data from the given input file.
     @param filename: the source file.
-    @return: an object of type 'Data'.
+    @param ref_filename: the file containing the reference data; if None, the reference data is assumed to be in the source file.
+    @return: a 'Data' object.
     """
-    return Data(filename)
+    return Data(filename, ref_filename)
 
 def create_config(filename):
     """

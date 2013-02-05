@@ -17,9 +17,11 @@ class VariableMappingsParseAction(argparse.Action):
 
     def __call__(self, parser, namespace, values, option_string=None):
         result = []
-        for pair in values:
+        list = values[0].replace('[', '').replace(']', '')
+        pairs = list.split(',')
+        for pair in pairs:
             vars = pair.split(':')
-            new_pair = [vars[0], vars[1]]
+            new_pair = [vars[0].lstrip().rstrip(), vars[1].lstrip().rstrip()]
             result.append(new_pair)
         setattr(namespace, self.dest, result)
 
@@ -63,7 +65,7 @@ def ref_stddev(statistics):
 
 def create_zip(target_files, config, file_handler, parsed_args):
     files_to_remove = []
-    zipfile = ZipFile('%s\\%sbenchmarks.zip' % (parsed_args.output_dir, config.target_prefix), 'w')
+    zipfile = ZipFile('%s/%sbenchmarks.zip' % (parsed_args.output_dir, config.target_prefix), 'w')
     logging.info('Creating zip file: %s' % zipfile.filename)
     for file in target_files:
         zipfile.write(file, os.path.basename(file))
@@ -118,7 +120,7 @@ def main():
     target_files = []
     if config.write_csv:
         for (model_name, ref_name), stats in zip(parsed_args.variable_mappings, collected_statistics):
-            csv_target_file = '%s\\%s%s_statistics.csv' % (parsed_args.output_dir, config.target_prefix, model_name)
+            csv_target_file = '%s/%s%s_statistics.csv' % (parsed_args.output_dir, config.target_prefix, model_name)
             target_files.append(csv_target_file)
             output.csv(stats, variable_name=model_name, ref_variable_name=ref_name, matchups=matchups, target_file=csv_target_file)
             logging.info('CSV output written to \'%s\'' % csv_target_file)
@@ -129,7 +131,7 @@ def main():
 
     taylor_target_files = []
     if config.write_taylor_diagrams:
-        taylor_target_file = '%s\\%staylor.png' % (parsed_args.output_dir, config.target_prefix)
+        taylor_target_file = '%s/%staylor.png' % (parsed_args.output_dir, config.target_prefix)
         written_taylor_diagrams, d = output.taylor(collected_statistics, taylor_target_file)
         if written_taylor_diagrams:
             for written_taylor_diagram in written_taylor_diagrams:
@@ -147,15 +149,16 @@ def main():
 
     target_diagram_file = None
     if config.write_target_diagram:
-        target_diagram_file = '%s\\%starget.png' % (parsed_args.output_dir, config.target_prefix)
+        target_diagram_file = '%s/%starget.png' % (parsed_args.output_dir, config.target_prefix)
         output.target_diagram(collected_statistics, target_diagram_file)
         logging.info('Target diagram written to \'%s\'' % target_diagram_file)
         target_files.append(target_diagram_file)
 
     if config.write_xhtml:
-        xml_target_file = '%s\\%sreport.xml' % (parsed_args.output_dir, config.target_prefix)
-        xsl = 'resources/analysis-summary.xsl'
-        css = 'resources/styleset.css'
+        xml_target_file = '%s/%sreport.xml' % (parsed_args.output_dir, config.target_prefix)
+        path = str(os.path.dirname(os.path.realpath(__file__))) + '/../resources/'
+        xsl = path + 'analysis-summary.xsl'
+        css = path + 'styleset.css'
         xsl_target = '%s/%s' % (parsed_args.output_dir, os.path.basename(xsl))
         css_target = '%s/%s' % (parsed_args.output_dir, os.path.basename(css))
         output.xhtml(collected_statistics, matchups, xml_target_file, taylor_target_files, target_diagram_file, scatter_plot_files)

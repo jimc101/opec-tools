@@ -5,20 +5,12 @@ from numpy.testing.utils import assert_array_equal
 from numpy import nan
 from opec.NetCDFFacade import NetCDFFacade
 
-class NetCDFFacadeTest(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        self.cwd = os.getcwd()
-        os.chdir('..')
-
-    @classmethod
-    def tearDownClass(self):
-        os.chdir(self.cwd)
+class NetCDFFacade_test(unittest.TestCase):
 
     def setUp(self):
+        self.path = os.path.dirname(os.path.realpath(__file__)) + '/../'
         filename = 'resources/test.nc'
-        self.netcdf = NetCDFFacade(filename)
+        self.netcdf = NetCDFFacade(self.path + filename)
 
     def tearDown(self):
         self.netcdf.close()
@@ -132,7 +124,7 @@ class NetCDFFacadeTest(unittest.TestCase):
         self.assertEqual('lon_ref', ref_coordinate_variables[3])
 
     def test_get_ref_coordinate_variables_empty(self):
-        netcdf = NetCDFFacade('resources/test_without_records.nc')
+        netcdf = NetCDFFacade(self.path + 'resources/test_without_records.nc')
         self.assertEqual(0, len(netcdf.get_reference_variables()))
         ref_coordinate_variables = netcdf.get_ref_coordinate_variables()
         self.assertEqual(0, len(ref_coordinate_variables))

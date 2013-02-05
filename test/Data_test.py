@@ -1,24 +1,17 @@
 import logging
 import unittest
 import numpy as np
-import os
 from numpy.testing import assert_array_equal
 from opec.Data import Data
+import pkg_resources
+import os
 
-class DataTest(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        self.cwd = os.getcwd()
-        os.chdir('..')
-
-    @classmethod
-    def tearDownClass(self):
-        os.chdir(self.cwd)
+class Data_test(unittest.TestCase):
 
     def setUp(self):
         logging.basicConfig(level=logging.DEBUG)
-        self.data = Data('resources/test.nc')
+        self.test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/test.nc"
+        self.data = Data(self.test_file)
 
     def tearDown(self):
         logging.basicConfig(level=logging.WARNING)
@@ -33,7 +26,8 @@ class DataTest(unittest.TestCase):
 
     def test_reference_records_count(self):
         self.assertEqual(3, self.data.reference_records_count())
-        self.data = Data('resources/test_without_records.nc')
+        test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/test_without_records.nc"
+        self.data = Data(test_file)
         self.assertEqual(0, self.data.reference_records_count())
 
     def tearDown(self):
@@ -75,7 +69,9 @@ class DataTest(unittest.TestCase):
         self.assertAlmostEqual(0.5, chl_data[0][0][0][0])
 
     def test_data_works_with_split_files(self):
-        data = Data('resources/test_without_records.nc', 'resources/test_only_reference.nc')
+        test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/test_without_records.nc"
+        test_ref_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/test_only_reference.nc"
+        data = Data(test_file, test_ref_file)
         self.assertEqual(2, len(data.model_vars()))
         self.assertTrue('chl' in data.model_vars())
         self.assertTrue('sst' in data.model_vars())

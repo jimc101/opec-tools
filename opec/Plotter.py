@@ -124,6 +124,9 @@ class Diagram(object):
     def show(self):
         pyplot.show(self.fig)
 
+    def get_figure(self):
+        return self.fig
+
     def update_legend(self):
         if self.show_legend:
             self.fig.legend(self.sample_points, self.sample_names, numpoints=1, prop=dict(size='small'), loc='upper right')

@@ -3,16 +3,7 @@ import os
 import unittest
 from opec.Configuration import Configuration
 
-class ConfigurationTest(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        self.cwd = os.getcwd()
-        os.chdir('..')
-
-    @classmethod
-    def tearDownClass(self):
-        os.chdir(self.cwd)
+class Configuration_test(unittest.TestCase):
 
     def test_initialisation(self):
         c = Configuration(alpha=5, ddof=2, show_legends=False, write_taylor_diagrams=False, separate_matchups=False)
@@ -37,7 +28,8 @@ class ConfigurationTest(unittest.TestCase):
         self.assertEqual(True, c.write_scatter_plots)
 
     def test_initialisation_by_file(self):
-        c = Configuration(alpha=5, ddof=2, log_level='INFO', properties_file_name='./resources/test.properties')
+        test_config = os.path.dirname(os.path.realpath(__file__)) + "/../resources/test.properties"
+        c = Configuration(alpha=5, ddof=2, log_level='INFO', properties_file_name=test_config)
         self.assertEqual(5, c.alpha)
         self.assertEqual(0.5, c.beta)
         self.assertEqual(2, c.ddof)

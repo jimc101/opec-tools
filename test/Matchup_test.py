@@ -2,7 +2,7 @@ from unittest import TestCase
 from opec.Matchup import Matchup
 from opec.MatchupEngine import ReferenceRecord
 
-class MatchupTest(TestCase):
+class Matchup_test(TestCase):
 
     def test_string(self):
         cell_position = [0, 0, 0, 0]

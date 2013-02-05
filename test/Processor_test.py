@@ -10,19 +10,11 @@ from opec.Data import Data
 import os
 from opec.MatchupEngine import ReferenceRecord
 
-class ProcessorTest(TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        self.cwd = os.getcwd()
-        os.chdir('..')
-
-    @classmethod
-    def tearDownClass(self):
-        os.chdir(self.cwd)
+class Processor_test(TestCase):
 
     def setUp(self):
-        self.data = Data('resources/test.nc')
+        path = os.path.dirname(os.path.realpath(__file__)) + '/../'
+        self.data = Data(path + 'resources/test.nc')
         self.config = Configuration(geo_delta=10, time_delta=86400, depth_delta=12, ddof=0, alpha=1, beta=1)
         self.me = MatchupEngine(self.data, self.config)
 
