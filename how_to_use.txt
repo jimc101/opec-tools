@@ -1,3 +1,17 @@
+# Copyright (C) 2013 Brockmann Consult GmbH (info@brockmann-consult.de)
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 3 of the License, or (at your option)
+# any later version.
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, see http://www.gnu.org/licenses/gpl.html
+
 This document describes how to install and use the OPEC Benchmarking Tool
 -------------------------------------------------------------------------
 
@@ -26,23 +40,34 @@ versions of these packages can be obtained from http://www.lfd.uci.edu/~gohlke/p
 The software has been tested both on a Windows 64bit machine and a Linux-64bit machine.
 
 After the environment is set up correctly, install the benchmarking tool using easy_install:
+
 >>> easy_install opec-0.1-py3.2.egg
 
 Afterwards, it is recommended to run all unit-level tests in order to verify the installation:
+
 >>> nosetests --quiet /usr/local/lib/python3.2/site-packages/opec-0.1-py3.2.egg/test/*
+
 This needs the nose package (http://pypi.python.org/pypi/nose/) to be installed.
 
 RUN IN BATCH MODE
 
 Execute
+
 >>> python -m opec.Main --help
+
 in order to receive instructions on how to run the benchmarking tool in batch mode. Example execution featuring all
 possible parameters:
+
 >>> python -m opec.Main my_model_data.nc --config my_config.properties --output_dir /home/opec/output --prefix test_run_ --variable_mappings [chl:chl_ref,sst:sst_ref] --reference_file my_reference_data.nc
 
 RUN IN INTERACTIVE MODE
 
-Open a python console (IPython recommended), and type
->>> import opec.Benchmarking as benchmarking (note that there are multiple ways to achieve this, but this way is recommended)
-The Benchmarking module contains all functions needed for working with the tool. Use IPythons's code completion and
-help functions in order to view the possibilities you have.
+Open a python console (we strongly recommend IPython), and type
+
+>>> import opec.Benchmarking as benchmarking
+
+Note that there are multiple ways to achieve this, but this way is recommended. The Benchmarking module contains all
+functions needed for working with the tool. Use IPythons's code completion and help functions in order to view the
+possibilities you have. See file 'interactive_demo.txt' for a sample interactive session with the tool.
+Of course you can also use the other Python modules the benchmarking tool contains, such as Data, MatchupEngine, and
+Plotter, but since these are considered internal they are not as well documented as the dedicated Benchmarking module.

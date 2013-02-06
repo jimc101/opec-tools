@@ -1,0 +1,93 @@
+# import dedicated interactive shell
+import opec.Benchmarking as benchmarking
+
+# print a lot of useful information about the possible functions (only possible in IPython)
+help(benchmarking)
+
+# load the source data file
+data = benchmarking.load('resources/test.nc')
+
+# show the reference variables
+data.ref_vars()
+
+# show the model variables
+data.model_vars()
+
+# calculate the statistics for some model variable with some reference variable
+stats = benchmarking.calculate_statistics('chl', 'chl_ref', data)
+
+# inspect statistics
+stats['rmse']
+stats['unbiased_rmse']
+stats['p90']
+stats['ref_p90']
+
+# get all matchups in the data file
+m = benchmarking.get_matchups(data)
+
+# show number of matchups
+len(m)
+
+# inspect matchups
+print(m[0])
+print(m[1])
+print(m[2])
+
+# define valid matchups considered valid
+valid_matchups = [m[0], m[1]]
+
+# calculate the statistics only from matchups considered valid
+stats2 = benchmarking.calculate_statistics_from_matchups(valid_matchups, 'chl', 'chl_ref', data)
+
+# inspect statistics
+stats2['rmse']
+stats2['unbiased_rmse']
+stats2['p90']
+stats2['ref_p90']
+
+# get data arrays from matchups
+reference_data, model_data = benchmarking.extract_values_from_matchups(valid_matchups, 'chl', 'chl_ref', data)
+
+# inspect reference data
+reference_data
+
+# inspect model data
+model_data
+
+# manipulate model data
+model_data[0] = 0.5
+
+stats3 = benchmarking.calculate_statistics_from_values(model_data, reference_data)
+
+# inspect statistics
+stats3['rmse']
+stats3['unbiased_rmse']
+stats3['p90']
+stats3['ref_p90']
+
+# write the benchmarking results to CSV, target diagram, and taylor diagram(s)
+benchmarking.write_csv(stats3, 'chl', 'chl_ref', valid_matchups, './chl_stats.csv')
+taylor_files = benchmarking.taylor_diagrams(stats3, './chl_stats_taylor.png')
+target_file = benchmarking.target_diagram(stats3, './chl_stats_target.png')
+
+# write a scatter plot of the matchups
+scatter_file = benchmarking.scatter_plot(valid_matchups, 'chl', 'chl_ref', 'mg/m^3', './chl_scatter.png')
+
+# write an XHTML-report from stats3
+benchmarking.write_xhtml_report([stats3], valid_matchups, './chl_report.xml', taylor_files, target_file, [scatter_file])
+
+# Following: examples using custom configurations
+
+from opec.Configuration import Configuration
+
+config = Configuration(geo_delta=20, time_delta=86400, depth_delta=2.0, alpha=0.4, beta=0.4)
+
+m = benchmarking.get_matchups(data, config)
+
+stats4 = benchmarking.calculate_statistics_from_matchups(m, 'chl', 'chl_ref', data, config)
+stats4['rmse']
+stats4['unbiased_rmse']
+stats4['p90']
+
+benchmarking.write_csv(stats4, 'chl', 'chl_ref', m, './chl_stats_2.csv', config)
+benchmarking.taylor_diagrams(stats4, './chl_stats.png', config)
