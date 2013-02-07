@@ -22,7 +22,7 @@ from opec.Configuration import Configuration
 from opec.MatchupEngine import MatchupEngine
 from opec.Data import Data
 import os
-from opec.MatchupEngine import ReferenceRecord
+from opec.ReferenceRecordsFinder import ReferenceRecord
 
 class Processor_test(TestCase):
 

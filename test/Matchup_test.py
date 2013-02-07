@@ -14,7 +14,7 @@
 
 from unittest import TestCase
 from opec.Matchup import Matchup
-from opec.MatchupEngine import ReferenceRecord
+from opec.ReferenceRecordsFinder import ReferenceRecord
 
 class Matchup_test(TestCase):
 

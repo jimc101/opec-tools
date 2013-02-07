@@ -64,7 +64,7 @@ class Data(dict):
     def is_ref_data_split(self):
         return hasattr(self, '_Data__reference_file')
 
-    def reference_records_count(self):
+    def reference_records_count(self, dimension_profile):
         ref_vars = self.ref_vars()
         if not ref_vars:
             return 0
@@ -72,7 +72,27 @@ class Data(dict):
             ncfile = self.__reference_file
         else:
             ncfile = self.__model_file
-        return self.dim_size(ncfile, self.__dimension_string(ncfile, ref_vars[0]))
+
+        dim_size = 0
+        for var in ref_vars:
+            dimensions = self.__dimension_string(ncfile, var).split(' ')
+            dimension_set = {x for x in dimensions}
+            if dimension_profile == dimension_set:
+                temp = 1
+                for dim in dimension_profile:
+                    temp *= self.dim_size(ncfile, dim)
+                dim_size += temp
+        return dim_size
+
+    def get_reference_dimensions(self, variable_name=None):
+        if self.is_ref_data_split():
+            ncfile = self.__reference_file
+        else:
+            ncfile = self.__model_file
+        return ncfile.get_dimensions(variable_name)
+
+    def get_model_dimensions(self, variable_name=None):
+        return self.__model_file.get_dimensions(variable_name)
 
     def read_model(self, variable_name, origin=None, shape=None):
         return self.__read(self.__model_file, variable_name, origin, shape)
@@ -81,31 +101,88 @@ class Data(dict):
         ncfile = self.__reference_file if self.is_ref_data_split() else self.__model_file
         return self.__read(ncfile, variable_name, origin, shape)
 
-    #todo - allow access to values that have been read, but not exactly the same shape as requested
+    # reads the whole variable when asked first into memory
+    # returns only slices when asked afterwards
+    # todo: implement strategy that clears variables when memory is going over a threshold
+    # something like LIFO should be appropriate
     def __read(self, ncfile, variable_name, origin=None, shape=None):
+        if not self.__is_cached(variable_name):
+            self[variable_name] = ncfile.get_variable(variable_name)[:]
+            self.__current_storage[variable_name] = 'fully_read'
+        if self.__can_return_all(origin, shape, variable_name):
+            return self[variable_name]
+
+        # gruesome code, but works; I tried to perform the indexing with genuine numpy methods, but failed.
+
+        if len(origin) == 4:
+            array = self[variable_name][
+                    origin[0]:origin[0] + shape[0],
+                    origin[1]:origin[1] + shape[1],
+                    origin[2]:origin[2] + shape[2],
+                    origin[3]:origin[3] + shape[3]]
+        elif len(origin) == 3:
+            array = self[variable_name][
+                    origin[0]:origin[0] + shape[0],
+                    origin[1]:origin[1] + shape[1],
+                    origin[2]:origin[2] + shape[2]]
+
+        elif len(origin) == 2:
+            array = self[variable_name][
+                    origin[0]:origin[0] + shape[0],
+                    origin[1]:origin[1] + shape[1]]
+
+        elif len(origin) == 1:
+            array = self[variable_name][
+                    origin[0]:origin[0] + shape[0]]
+
+        else:
+            raise ValueError('Invalid origin: \'%s\'' % origin)
+
+        return array.flatten()
+
+
+    #todo - allow access to values that have been read, but not exactly the same shape as requested
+    def __read2(self, ncfile, variable_name, origin=None, shape=None):
         if self.__is_cached(variable_name):
             if self.__can_return_all(origin, shape, variable_name):
                 return self[variable_name]
-            if origin is not None and shape is not None:
-                if self.__current_storage[variable_name] != 'fully_read':
-                    current_slice = self.__current_storage[variable_name]
-                    # if origin and shape exactly match origin and shape of what has been read before, return that
-                    if np.array_equal(origin, current_slice[0]) and np.array_equal(shape, current_slice[1]):
-                        return self[variable_name]
-        must_fully_read = origin is None and shape is None
-        if must_fully_read:
+        else:
             self[variable_name] = ncfile.get_variable(variable_name)[:]
             self.__current_storage[variable_name] = 'fully_read'
-        else:
-            self[variable_name] = ncfile.get_data(variable_name, origin, shape)
-            self.__current_storage[variable_name] = [np.array(origin), np.array(shape)]
-        return self[variable_name]
+            index_array = []
+            for dim_index in range(0, len(origin)):
+                current_index = range(origin[dim_index], origin[dim_index] + shape[dim_index])
+                index_array.append(current_index)
+            array = self[variable_name][index_array]
+#            if len(array.shape) < len(variable._getdims()):
+#                new_shape = []
+#                for d in range(len(origin) - len(array.shape)):
+#                    new_shape.append(1)
+#                for i in array.shape:
+#                    new_shape.append(i)
+#                array = array.reshape(new_shape)
+            return array
 
     def __is_cached(self, variable_name):
         return variable_name in self.__current_storage.keys()
 
     def __can_return_all(self, origin, shape, variable_name):
         return origin is None and shape is None and self.__current_storage[variable_name] == 'fully_read'
+
+    def __find_model_variable_name(self, possible_names, standard_name):
+        for name in possible_names:
+            if self.__model_file.get_variable(name) is not None:
+                return name
+        for var in self.__model_file.get_coordinate_variables():
+            if self.__model_file.attribute(var.name, 'standard_name') == standard_name:
+                return var.name
+        raise ValueError('Unable to find \'%s\'-variable.' % standard_name)
+
+    def find_model_latitude_variable_name(self):
+        return self.__find_model_variable_name(['lat', 'latitude'], 'latitude')
+
+    def find_model_longitude_variable_name(self):
+        return self.__find_model_variable_name(['lon', 'longitude'], 'longitude')
 
     def unit(self, variable_name):
         is_not_in_ref_file = not self.is_ref_data_split() or self.is_ref_data_split() and self.__reference_file.get_variable(variable_name) is None

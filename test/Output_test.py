@@ -17,11 +17,11 @@ from unittest import TestCase
 import unittest
 from opec import Processor
 from opec.Matchup import Matchup
-from opec.MatchupEngine import ReferenceRecord
 from opec.Output import Output
 from opec.Configuration import Configuration
 import os.path as path
 import os as os
+from opec.ReferenceRecordsFinder import ReferenceRecord
 
 class Output_test(TestCase):
 
