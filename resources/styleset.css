@@ -96,3 +96,9 @@ a {
     text-decoration: none;
 }
 
+a.hide {
+    color: #000066;
+    font-size: 0.6em;
+    text-transform: none;
+}
+

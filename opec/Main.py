@@ -125,6 +125,9 @@ def main():
     collected_statistics = []
     output = Output(config=config, source_file=parsed_args.path)
     matchups = me.find_all_matchups()
+    if not matchups:
+        logging.warning('No matchups found. System will exit.')
+        exit(0)
 
     for (model_name, ref_name) in parsed_args.variable_mappings:
         unit = data.unit(model_name)
@@ -160,6 +163,7 @@ def main():
             scatter_plot_files.append(scatter_target)
             target_files.append(scatter_target)
             output.scatter_plot(matchups, ref_name, model_name, scatter_target, data.unit(model_name))
+            logging.info('Scatter plot written to \'%s\'' % scatter_target)
 
     target_diagram_file = None
     if config.write_target_diagram:

@@ -32,14 +32,29 @@ with this program; if not, see http://www.gnu.org/licenses/gpl.html-->
             <head>
                 <title>Match-up Analysis</title>
                 <link rel="stylesheet" type="text/css" href="styleset.css"/>
+                <script language="JavaScript" type="text/javascript">
+                    function doMenu(item) {
+                    obj = document.getElementById(item);
+                    col = document.getElementById("id_" + item);
+                    if (obj.style.display == "none") {
+                    obj.style.display = "block";
+                    col.innerHTML = "[hide]";
+                    } else {
+                    obj.style.display = "none";
+                    col.innerHTML = "[show]";
+                    }
+                    }
+                </script>
             </head>
             <body>
 
                 <h2>Match-up Analysis Report</h2>
 
-                <h3>Processing Information</h3>
+                <h3>Processing Information
+                    <a href="JavaScript:doMenu('processing_info');" id="id_processing_info" class="hide">[hide]</a>
+                </h3>
 
-                <table>
+                <table style="display:block" id="processing_info">
                     <tr>
                         <td class="name">Performed at:</td>
                         <td class="value">
@@ -72,9 +87,11 @@ with this program; if not, see http://www.gnu.org/licenses/gpl.html-->
                     </tr>
                 </table>
 
-                <h3>Analysis Configuration</h3>
+                <h3>Analysis Configuration
+                    <a href="JavaScript:doMenu('config');" id="id_config" class="hide">[hide]</a>
+                </h3>
 
-                <table>
+                <table style="display:block" id="config">
                     <tr class="table_header">
                         <td>
                             Parameter
@@ -106,9 +123,21 @@ with this program; if not, see http://www.gnu.org/licenses/gpl.html-->
                         <xsl:value-of select="model_name"/>
                         with
                         <xsl:value-of select="ref_name"/>
+                        <a class="hide">
+                            <xsl:attribute name="href">JavaScript:doMenu('<xsl:value-of select="model_name"/>_
+                                <xsl:value-of select="ref_name"/>');
+                            </xsl:attribute>
+                            <xsl:attribute name="id">id_<xsl:value-of select="model_name"/>_
+                                <xsl:value-of select="ref_name"/>
+                            </xsl:attribute>
+                            [hide]
+                        </a>
                     </h3>
 
-                    <table>
+                    <table style="display:block">
+                        <xsl:attribute name="id"><xsl:value-of select="model_name"/>_
+                            <xsl:value-of select="ref_name"/>
+                        </xsl:attribute>
                         <tr class="table_header">
                             <td>
                                 Statistical Term
@@ -133,9 +162,20 @@ with this program; if not, see http://www.gnu.org/licenses/gpl.html-->
                 <xsl:for-each select="analysisSummary/statistics/statistic[@type='model']">
                     <h3>Statistics for
                         <xsl:value-of select="model_name"/>
+                        <a class="hide">
+                            <xsl:attribute name="href">JavaScript:doMenu('<xsl:value-of select="model_name"/>');
+                            </xsl:attribute>
+                            <xsl:attribute name="id">id_
+                                <xsl:value-of select="model_name"/>
+                            </xsl:attribute>
+                            [hide]
+                        </a>
                     </h3>
 
-                    <table>
+                    <table display="block">
+                        <xsl:attribute name="id">
+                            <xsl:value-of select="model_name"/>
+                        </xsl:attribute>
                         <tr class="table_header">
                             <td>
                                 Statistical Term
@@ -160,9 +200,20 @@ with this program; if not, see http://www.gnu.org/licenses/gpl.html-->
                 <xsl:for-each select="analysisSummary/statistics/statistic[@type='reference']">
                     <h3>Statistics for
                         <xsl:value-of select="ref_name"/>
+                        <a class="hide">
+                            <xsl:attribute name="href">JavaScript:doMenu('<xsl:value-of select="ref_name"/>');
+                            </xsl:attribute>
+                            <xsl:attribute name="id">id_
+                                <xsl:value-of select="ref_name"/>
+                            </xsl:attribute>
+                            [hide]
+                        </a>
                     </h3>
 
-                    <table>
+                    <table display="block">
+                        <xsl:attribute name="id">
+                            <xsl:value-of select="ref_name"/>
+                        </xsl:attribute>
                         <tr class="table_header">
                             <td>
                                 Statistical Term
@@ -184,9 +235,11 @@ with this program; if not, see http://www.gnu.org/licenses/gpl.html-->
                     </table>
                 </xsl:for-each>
 
-                <h3>Matchups</h3>
+                <h3>Matchups
+                    <a class="hide" href="JavaScript:doMenu('matchups');" id="id_matchups">[hide]</a>
+                </h3>
 
-                <table class="matchup">
+                <table class="matchup" id="matchups" display="block">
                     <tr class="table_header">
                         <td>Matchup #</td>
                         <td>Time</td>
@@ -246,37 +299,50 @@ with this program; if not, see http://www.gnu.org/licenses/gpl.html-->
                 </table>
 
                 <xsl:if test="/analysisSummary/taylorDiagrams">
-                    <h3>Taylor Diagrams</h3>
+                    <h3>Taylor Diagrams
+                        <a class="hide" href="JavaScript:doMenu('taylor');" id="id_taylor">[hide]</a>
+                    </h3>
 
-                    <xsl:for-each select="/analysisSummary/taylorDiagrams">
-                        <img class="smaller">
-                            <xsl:attribute name="src">
-                                <xsl:value-of select="taylorDiagram"/>
-                            </xsl:attribute>
-                        </img>
-                    </xsl:for-each>
+                    <div display="block" id="taylor">
+                        <xsl:for-each select="/analysisSummary/taylorDiagrams">
+                            <img class="smaller">
+                                <xsl:attribute name="src">
+                                    <xsl:value-of select="taylorDiagram"/>
+                                </xsl:attribute>
+                            </img>
+                        </xsl:for-each>
+                    </div>
                 </xsl:if>
 
                 <xsl:if test="/analysisSummary/targetDiagram">
-                    <h3>Target Diagram</h3>
-                    <img class="smaller">
-                        <xsl:attribute name="src">
-                            <xsl:value-of select="/analysisSummary/targetDiagram"/>
-                        </xsl:attribute>
-                    </img>
+                    <h3>Target Diagram
+                        <a class="hide" href="JavaScript:doMenu('target');" id="id_target">[hide]</a>
+                    </h3>
+
+                    <div display="block" id="target">
+                        <img class="smaller">
+                            <xsl:attribute name="src">
+                                <xsl:value-of select="/analysisSummary/targetDiagram"/>
+                            </xsl:attribute>
+                        </img>
+                    </div>
                 </xsl:if>
 
                 <xsl:if test="/analysisSummary/scatterPlots">
-                    <h3>Scatter Plot(s)</h3>
+                    <h3>Scatter Plot(s)
+                        <a class="hide" href="JavaScript:doMenu('scatter');" id="id_scatter">[hide]</a>
+                    </h3>
 
-                    <xsl:for-each select="analysisSummary/scatterPlots">
-                        <img class="smaller">
-                            <xsl:attribute name="src">
-                                <xsl:value-of select="scatterPlot"/>
-                            </xsl:attribute>
-                        </img>
-                        <br/>
-                    </xsl:for-each>
+                    <div display="block" id="scatter">
+                        <xsl:for-each select="analysisSummary/scatterPlots">
+                            <img class="smaller">
+                                <xsl:attribute name="src">
+                                    <xsl:value-of select="scatterPlot"/>
+                                </xsl:attribute>
+                            </img>
+                            <br/>
+                        </xsl:for-each>
+                    </div>
                 </xsl:if>
 
             </body>
