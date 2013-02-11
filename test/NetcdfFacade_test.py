@@ -95,7 +95,7 @@ class NetCDFFacade_test(unittest.TestCase):
         assert_array_equal(['chl_ref'], self.netcdf.get_reference_variables())
 
     def test_get_gridded_reference_variables(self):
-        filename = 'resources/ogs_test.nc'
+        filename = 'resources/ogs_test_smaller.nc'
         netcdf = NetCDFFacade(self.path + filename)
         self.assertEqual(1, len(netcdf.get_reference_variables()))
         self.assertEqual('Ref_chl', netcdf.get_reference_variables()[0])

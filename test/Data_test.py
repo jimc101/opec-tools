@@ -42,19 +42,19 @@ class Data_test(unittest.TestCase):
         self.assertEqual(3, self.data.reference_records_count({'record_num'}))
 
     def test_gridded_reference_records_count(self):
-        test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/ogs_test.nc"
+        test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/ogs_test_smaller.nc"
         self.data = Data(test_file)
-        self.assertEqual(128 * 336, self.data.reference_records_count({'latitude', 'longitude'}))
+        self.assertEqual(41 * 80, self.data.reference_records_count({'latitude', 'longitude'}))
 
     def test_find_model_latitude_variable_name(self):
         self.assertEqual('lat', self.data.find_model_latitude_variable_name())
-        test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/ogs_test.nc"
+        test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/ogs_test_smaller.nc"
         self.data = Data(test_file)
         self.assertEqual('latitude', self.data.find_model_latitude_variable_name())
 
     def test_find_model_longitude_variable_name(self):
         self.assertEqual('lon', self.data.find_model_longitude_variable_name())
-        test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/ogs_test.nc"
+        test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/ogs_test_smaller.nc"
         self.data = Data(test_file)
         self.assertEqual('longitude', self.data.find_model_longitude_variable_name())
 
@@ -115,7 +115,31 @@ class Data_test(unittest.TestCase):
         self.assertRaises(ValueError, lambda: self.data.unit('toad_count'))
 
     def test_gridded_reference_data(self):
-        test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/ogs_test.nc"
+        test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/ogs_test_smaller.nc"
         data = Data(test_file)
         self.assertEqual(1, len(data.ref_vars()))
         self.assertEqual('Ref_chl', data.ref_vars()[0])
+
+    def test_caching(self):
+        test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/ogs_test_smaller.nc"
+        data = Data(test_file, None, 0.05)
+        data.read_model('chl')
+        self.assertTrue('chl' in data)
+        data.read_model('dox')
+        self.assertTrue('dox' in data)
+        self.assertFalse('chl' in data)
+
+        data = Data(test_file, None, 2)
+        data.read_model('chl')
+        self.assertTrue('chl' in data)
+        data.read_model('dox')
+        self.assertTrue('dox' in data)
+        self.assertTrue('chl' in data)
+
+    def test_compute_variable_size(self):
+        test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/ogs_test_smaller.nc"
+        data = Data(test_file)
+        self.assertAlmostEqual(0.0250244140625, data.compute_variable_size('chl'))
+        self.assertAlmostEqual(0.0250244140625, data.compute_variable_size('dox'))
+        self.assertAlmostEqual(0.00030517578125, data.compute_variable_size('longitude'))
+        self.assertAlmostEqual(0.003192901611328125, data.compute_variable_size('Ref_dox'))

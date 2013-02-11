@@ -31,11 +31,11 @@ class VariableMappingsParseAction(argparse.Action):
 
     def __call__(self, parser, namespace, values, option_string=None):
         result = []
-        list = values[0].replace('[', '').replace(']', '')
-        pairs = list.split(',')
+        pair_string = values[0].replace('[', '').replace(']', '')
+        pairs = pair_string.split(',')
         for pair in pairs:
-            vars = pair.split(':')
-            new_pair = [vars[0].lstrip().rstrip(), vars[1].lstrip().rstrip()]
+            variables = pair.split(':')
+            new_pair = [variables[0].lstrip().rstrip(), variables[1].lstrip().rstrip()]
             result.append(new_pair)
         setattr(namespace, self.dest, result)
 
@@ -118,9 +118,9 @@ def main():
     config = Configuration(properties_file_name=parsed_args.config, target_dir=parsed_args.output_dir, target_prefix=parsed_args.prefix)
     file_handler = setup_logging(config)
     if parsed_args.reference_file is not None:
-        data = Data(parsed_args.path, parsed_args.reference_file)
+        data = Data(parsed_args.path, parsed_args.reference_file, config.max_cache_size)
     else:
-        data = Data(parsed_args.path)
+        data = Data(parsed_args.path, max_cache_size=config.max_cache_size)
     me = MatchupEngine(data, config)
     collected_statistics = []
     output = Output(config=config, source_file=parsed_args.path)

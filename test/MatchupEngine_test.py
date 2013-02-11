@@ -138,8 +138,8 @@ class MatchupEngine_test(TestCase):
 
     @unittest.skip('shall not run in production environment')
     def test_find_matchups_with_gridded_reference_variable(self):
-        self.data = Data(self.path + 'resources/ogs_test.nc')
+        self.data = Data(self.path + 'resources/ogs_test_smaller.nc')
         me = MatchupEngine(self.data, Configuration(geo_delta=10))
         matchups = me.find_all_matchups()
         self.assertIsNotNone(matchups)
-        self.assertTrue(len(matchups) > 10)
+        self.assertEqual(6560, len(matchups))

@@ -109,6 +109,7 @@ class Configuration_test(unittest.TestCase):
         c = Configuration(write_target_diagram=False)
         self.assertFalse(c.write_target_diagram)
 
+
     def test_normalise_target_diagram(self):
         c = Configuration()
         self.assertTrue(c.normalise_target_diagram)
@@ -116,9 +117,18 @@ class Configuration_test(unittest.TestCase):
         c = Configuration(normalise_target_diagram=False)
         self.assertFalse(c.normalise_target_diagram)
 
+
     def test_utilise_stddev_difference(self):
         c = Configuration()
         self.assertTrue(c.utilise_stddev_difference)
 
         c = Configuration(utilise_stddev_difference=False)
         self.assertFalse(c.utilise_stddev_difference)
+
+
+    def test_max_cache_size(self):
+        c = Configuration()
+        self.assertEqual(1024, c.max_cache_size)
+
+        c = Configuration(max_cache_size=15)
+        self.assertEqual(15, c.max_cache_size)

@@ -32,7 +32,8 @@ class Configuration(object):
                  show_legends=None, target_dir=None, target_prefix=None, include_header=None, separator=None,
                  separate_matchups=None, properties_file_name=None, write_taylor_diagrams=None, write_xhtml=None,
                  write_csv=None, write_scatter_plots=None, split_diagrams=None, write_target_diagram=None,
-                 target_diagram_bounds=None, normalise_target_diagram=None, utilise_stddev_difference=None):
+                 target_diagram_bounds=None, normalise_target_diagram=None, utilise_stddev_difference=None,
+                 max_cache_size=None):
         """
         Priority:
         1) what is passed as parameter
@@ -54,24 +55,25 @@ class Configuration(object):
         self.__set(depth_delta, 'opec.matchup.depth_delta', float)
         self.__set(log_level, 'opec.general.log_level', log_level_conv)
         self.__set(log_file, 'opec.general.log_file', log_file_conv)
-        self.__set(zip, 'opec.output.zip', bool)
-        self.__set(show_negative_corrcoeff, 'opec.output.plot.taylor.show_negative_corrcoeff', bool)
-        self.__set(show_legends, 'opec.output.plot.show_legends', bool)
+        self.__set(zip, 'opec.output.zip', bool_conv)
+        self.__set(show_negative_corrcoeff, 'opec.output.plot.taylor.show_negative_corrcoeff', bool_conv)
+        self.__set(show_legends, 'opec.output.plot.show_legends', bool_conv)
         self.__set(target_dir, 'target_dir', str)
         self.__set(target_prefix, 'opec.output.target_prefix', str)
         self.__set(separator, 'opec.output.csv.separator', separator_conv)
-        self.__set(include_header, 'opec.output.csv.include_header', bool)
-        self.__set(separate_matchups, 'opec.output.csv.separate_matchups', bool)
-        self.__set(write_taylor_diagrams, 'opec.output.plot.taylor.write_taylor_diagrams', bool)
-        self.__set(write_xhtml, 'opec.output.xhtml.write_xhtml', bool)
-        self.__set(write_csv, 'opec.output.csv.write_csv', bool)
-        self.__set(write_scatter_plots, 'opec.output.plot.scatter.write_scatter_plots', bool)
+        self.__set(include_header, 'opec.output.csv.include_header', bool_conv)
+        self.__set(separate_matchups, 'opec.output.csv.separate_matchups', bool_conv)
+        self.__set(write_taylor_diagrams, 'opec.output.plot.taylor.write_taylor_diagrams', bool_conv)
+        self.__set(write_xhtml, 'opec.output.xhtml.write_xhtml', bool_conv)
+        self.__set(write_csv, 'opec.output.csv.write_csv', bool_conv)
+        self.__set(write_scatter_plots, 'opec.output.plot.scatter.write_scatter_plots', bool_conv)
         self.__set(split_diagrams, 'opec.output.plot.taylor.split_diagrams', split_diagrams_conv('u'), 'opec.output.plot.split_on_unit')
         self.__set(split_diagrams, 'opec.output.plot.taylor.split_diagrams', split_diagrams_conv('n'), 'opec.output.plot.split_on_name')
-        self.__set(write_target_diagram, 'opec.output.plot.target.write_target_diagram', bool)
+        self.__set(write_target_diagram, 'opec.output.plot.target.write_target_diagram', bool_conv)
         self.__set(target_diagram_bounds, 'opec.output.plot.target.diagram_bounds', bounds_conv)
-        self.__set(normalise_target_diagram, 'opec.output.plot.target.normalise_target_diagram', bool)
-        self.__set(utilise_stddev_difference, 'opec.output.plot.target.utilise_stddev_difference', bool)
+        self.__set(normalise_target_diagram, 'opec.output.plot.target.normalise_target_diagram', bool_conv)
+        self.__set(utilise_stddev_difference, 'opec.output.plot.target.utilise_stddev_difference', bool_conv)
+        self.__set(max_cache_size, 'opec.general.max_cache_size', int)
 
     def __set(self, value, name, converter, target_name=None):
         if value is not None:
@@ -177,6 +179,9 @@ class Configuration(object):
     def __utilise_stddev_difference(self):
         return self.__dict['opec.output.plot.target.utilise_stddev_difference']
 
+    def __max_cache_size(self):
+        return self.__dict['opec.general.max_cache_size']
+
     alpha = property(__alpha)
     beta = property(__beta)
     ddof = property(__ddof)
@@ -203,6 +208,7 @@ class Configuration(object):
     target_diagram_bounds = property(__target_diagram_bounds)
     normalise_target_diagram = property(__normalise_target_diagram)
     utilise_stddev_difference = property(__utilise_stddev_difference)
+    max_cache_size = property(__max_cache_size)
 
 def get_default_config():
     return Configuration()
@@ -221,7 +227,7 @@ def log_level_conv(value):
         return 100              # made-up logging value higher than max
     raise RuntimeError('Erroneous log level: %s' % value)
 
-def bool(value):
+def bool_conv(value):
     return str(value).lower() == 'true'
 
 def separator_conv(value):

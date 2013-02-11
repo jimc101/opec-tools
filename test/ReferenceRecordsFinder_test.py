@@ -50,7 +50,7 @@ class ReferenceRecordsFinder_test(TestCase):
         self.assertEqual(3, len(reference_records))
 
     def test_find_reference_records_gridded(self):
-        self.data = Data(self.path + 'resources/ogs_test.nc')
+        self.data = Data(self.path + 'resources/ogs_test_smaller.nc')
         rrf = ReferenceRecordsFinder(self.data)
         reference_records = rrf.find_reference_records()
-        self.assertEqual(128 * 336, len(reference_records))
+        self.assertEqual(41 * 80, len(reference_records))

@@ -11,18 +11,22 @@
 #
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, see http://www.gnu.org/licenses/gpl.html
+import functools
 
-import numpy as np
+import sys
 from opec.NetCDFFacade import NetCDFFacade
 
 class Data(dict):
 
-    def __init__(self, model_file_name, ref_file_name=None):
+    def __init__(self, model_file_name, ref_file_name=None, max_cache_size=None):
         super().__init__()
         if ref_file_name is not None:
             self.__reference_file = NetCDFFacade(ref_file_name)
         self.__model_file = NetCDFFacade(model_file_name)
         self.__current_storage = {}
+        self.max_cache_size = max_cache_size if max_cache_size is not None else sys.maxsize
+        self.cached_list = []
+        self.current_memory = 0
 
     def model_vars(self):
         return self.__model_file.get_model_variables()
@@ -101,14 +105,16 @@ class Data(dict):
         ncfile = self.__reference_file if self.is_ref_data_split() else self.__model_file
         return self.__read(ncfile, variable_name, origin, shape)
 
-    # reads the whole variable when asked first into memory
-    # returns only slices when asked afterwards
-    # todo: implement strategy that clears variables when memory is going over a threshold
-    # something like LIFO should be appropriate
     def __read(self, ncfile, variable_name, origin=None, shape=None):
+        if self.max_cache_size <= self.current_memory + self.compute_variable_size(variable_name):
+            first_in_cache = self.cached_list.pop(0)
+            del self[first_in_cache]
+            self.current_memory -= self.compute_variable_size(first_in_cache)
         if not self.__is_cached(variable_name):
             self[variable_name] = ncfile.get_variable(variable_name)[:]
             self.__current_storage[variable_name] = 'fully_read'
+            self.cached_list.append(variable_name)
+            self.current_memory += self.compute_variable_size(variable_name)
         if self.__can_return_all(origin, shape, variable_name):
             return self[variable_name]
 
@@ -141,28 +147,6 @@ class Data(dict):
         return array.flatten()
 
 
-    #todo - allow access to values that have been read, but not exactly the same shape as requested
-    def __read2(self, ncfile, variable_name, origin=None, shape=None):
-        if self.__is_cached(variable_name):
-            if self.__can_return_all(origin, shape, variable_name):
-                return self[variable_name]
-        else:
-            self[variable_name] = ncfile.get_variable(variable_name)[:]
-            self.__current_storage[variable_name] = 'fully_read'
-            index_array = []
-            for dim_index in range(0, len(origin)):
-                current_index = range(origin[dim_index], origin[dim_index] + shape[dim_index])
-                index_array.append(current_index)
-            array = self[variable_name][index_array]
-#            if len(array.shape) < len(variable._getdims()):
-#                new_shape = []
-#                for d in range(len(origin) - len(array.shape)):
-#                    new_shape.append(1)
-#                for i in array.shape:
-#                    new_shape.append(i)
-#                array = array.reshape(new_shape)
-            return array
-
     def __is_cached(self, variable_name):
         return variable_name in self.__current_storage.keys()
 
@@ -194,6 +178,16 @@ class Data(dict):
         if self.is_ref_data_split() and unit(self.__reference_file, variable_name):
             return unit(self.__reference_file, variable_name)
         return None
+
+    def compute_variable_size(self, variable_name):
+        variable = self.__model_file.get_variable(variable_name)
+        if variable is None and self.is_ref_data_split():
+            variable = self.__reference_file.get_variable(variable_name)
+        if variable is None:
+            raise ValueError('No variable found with name \'%s\'' % variable_name)
+        num_entries = functools.reduce(lambda x, y: x * y, variable.shape)
+        byte_size = num_entries * variable.dtype.itemsize
+        return byte_size / (1024 * 1024)
 
 def unit(ncfile, variable_name):
     if ncfile.get_variable(variable_name):
