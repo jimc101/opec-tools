@@ -124,8 +124,7 @@ with this program; if not, see http://www.gnu.org/licenses/gpl.html-->
                         with
                         <xsl:value-of select="ref_name"/>
                         <a class="hide">
-                            <xsl:attribute name="href">JavaScript:doMenu('<xsl:value-of select="model_name"/>_
-                                <xsl:value-of select="ref_name"/>');
+                            <xsl:attribute name="href">JavaScript:doMenu('<xsl:value-of select="model_name"/>_<xsl:value-of select="ref_name"/>');
                             </xsl:attribute>
                             <xsl:attribute name="id">id_<xsl:value-of select="model_name"/>_
                                 <xsl:value-of select="ref_name"/>
