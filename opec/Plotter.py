@@ -56,6 +56,7 @@ def create_taylor_diagrams(statistics, config=None):
                 model_name = stats['model_name'] if 'model_name' in stats else None
                 diagram.plot_sample(stats['corrcoeff'], stats['stddev'], model_name, stats['unit'])
 
+            diagram.update_legend()
             diagrams.append(diagram)
 
     return diagrams
@@ -71,6 +72,8 @@ def create_target_diagram(statistics, config=None):
         diagram.plot_sample(stats['bias'], stats['unbiased_rmse'], stats['normalised_rmse'], stats['rmse'],
             stats['ref_stddev'], stats['stddev'], create_sample_name(stats['model_name'], stats['unit']))
 
+    diagram.update_legend()
+
     if config.normalise_target_diagram:
         diagram.plot_correcoeff_marker_line()
 
@@ -82,6 +85,7 @@ def create_scatter_plot(reference_values, model_values, ref_name, model_name, un
     diagram.setup_axes()
     for (ref_value, model_value) in zip(reference_values, model_values):
         diagram.plot_sample(ref_value, model_value)
+    diagram.draw_regression_line()
     return diagram
 
 class Diagram(object):
@@ -115,7 +119,8 @@ class Diagram(object):
         xmax = max_x if max_x is not None else xmax
         ymax = max_y if max_y is not None else ymax
         pyplot.axis([xmin, xmax, ymin, ymax])
-        return xmax, xmin
+        self.xmax = xmax
+        self.xmin = xmin
 
     def must_update_ranges(self, x, y):
         must_update_ranges = self.needs_update(x, 'xmin', min)
@@ -176,22 +181,23 @@ class ScatterPlot(Diagram):
     def plot_sample(self, ref_value, model_value):
         if np.ma.masked in [ref_value, model_value]:
             return
-        xmin, xmax = 0, 0
         if self.must_update_ranges(ref_value, model_value):
-            xmax, xmin = self.update_ranges()
+            self.update_ranges()
 
         self.x = np.append(self.x, ref_value)
         self.y = np.append(self.y, model_value)
-        m, b = pylab.polyfit(self.x, self.y, 1)
-
-        line, = pyplot.plot([xmin, xmax], [m * xmin + b, m * xmax + b], '-b', linewidth=0.4)
-        if hasattr(self, 'line'):
-            self.ax.lines.remove(self.line)
-        self.line = line
 
         self.update_title()
 
         pyplot.plot(ref_value, model_value, 'ro', markersize=4)
+
+    def draw_regression_line(self):
+        m, b = pylab.polyfit(self.x, self.y, 1)
+
+        line, = pyplot.plot([self.xmin, self.xmax], [m * self.xmin + b, m * self.xmax + b], '-b', linewidth=0.4)
+        if hasattr(self, 'line'):
+            self.ax.lines.remove(self.line)
+        self.line = line
 
 #noinspection PyUnusedLocal
 def hide_zero(value, pos):
@@ -262,7 +268,6 @@ class TargetDiagram(Diagram):
         else:
             self.sample_points = [data_value[0]]
             self.sample_names = [name]
-        self.update_legend()
 
         if not hasattr(self, 'minimum_unbiased_rmse') or self.minimum_unbiased_rmse > rmse:
             self.minimum_unbiased_rmse = unbiased_rmse
@@ -401,7 +406,7 @@ class TaylorDiagram(Diagram):
         self.sample_points.append(v[0])
         sample_name = create_sample_name(model_name, unit)
         self.sample_names.append(sample_name)
-        self.update_legend()
+
 
 class CenteredFormatter(mpl.ticker.ScalarFormatter):
     """Acts exactly like the default Scalar Formatter, but yields an empty
