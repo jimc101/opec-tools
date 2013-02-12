@@ -76,12 +76,12 @@ def create_target_diagram(statistics, config=None):
 
     return diagram
 
-def create_scatter_plot(reference_values, model_values, ref_name, model_name, unit=None):
+def create_scatter_plot(matchups, ref_name, model_name, unit=None):
     figure = pyplot.figure()
     diagram = ScatterPlot(figure, ref_name, model_name, unit)
     diagram.setup_axes()
-    for (ref_value, model_value) in zip(reference_values, model_values):
-        diagram.plot_sample(ref_value, model_value)
+    for matchup in matchups:
+        diagram.plot_sample(matchup.values[ref_name], matchup.values[model_name])
 
     diagram.draw_regression_line()
 
