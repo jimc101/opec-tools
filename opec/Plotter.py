@@ -82,6 +82,9 @@ def create_scatter_plot(reference_values, model_values, ref_name, model_name, un
     diagram.setup_axes()
     for (ref_value, model_value) in zip(reference_values, model_values):
         diagram.plot_sample(ref_value, model_value)
+
+    diagram.draw_regression_line()
+
     return diagram
 
 class Diagram(object):
@@ -115,7 +118,9 @@ class Diagram(object):
         xmax = max_x if max_x is not None else xmax
         ymax = max_y if max_y is not None else ymax
         pyplot.axis([xmin, xmax, ymin, ymax])
-        return xmax, xmin
+        self.xmin = xmin
+        self.xmax = xmax
+
 
     def must_update_ranges(self, x, y):
         must_update_ranges = self.needs_update(x, 'xmin', min)
@@ -173,21 +178,22 @@ class ScatterPlot(Diagram):
         matchup_count = len(self.ax.lines)
         self.ax.set_title('Scatter plot of %s and %s\nNumber of considered matchups: %s' % (self.model_name, self.ref_name, matchup_count))
 
-    def plot_sample(self, ref_value, model_value):
-        if np.ma.masked in [ref_value, model_value]:
-            return
-        xmin, xmax = 0, 0
-        if self.must_update_ranges(ref_value, model_value):
-            xmax, xmin = self.update_ranges()
-
-        self.x = np.append(self.x, ref_value)
-        self.y = np.append(self.y, model_value)
+    def draw_regression_line(self):
         m, b = pylab.polyfit(self.x, self.y, 1)
-
-        line, = pyplot.plot([xmin, xmax], [m * xmin + b, m * xmax + b], '-b', linewidth=0.4)
+        line, = pyplot.plot([self.xmin, self.xmax], [m * self.xmin + b, m * self.xmax + b], '-b', linewidth=0.4)
         if hasattr(self, 'line'):
             self.ax.lines.remove(self.line)
         self.line = line
+
+
+    def plot_sample(self, ref_value, model_value):
+        if np.ma.masked in [ref_value, model_value]:
+            return
+        if self.must_update_ranges(ref_value, model_value):
+            self.update_ranges()
+
+        self.x = np.append(self.x, ref_value)
+        self.y = np.append(self.y, model_value)
 
         self.update_title()
 

@@ -267,6 +267,7 @@ class Output(object):
         ref_values = []
         model_values = []
         for matchup in matchups:
+            # todo - remove data duplication!
             ref_values.append(matchup.values[ref_name])
             model_values.append(matchup.values[model_name])
         diagram = Plotter.create_scatter_plot(ref_values, model_values, ref_name, model_name, unit)

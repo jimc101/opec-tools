@@ -26,6 +26,8 @@ from opec.Data import Data
 from opec.Output import Output
 import numpy as np
 import os
+if not os.name == 'nt':
+    import resource
 
 class VariableMappingsParseAction(argparse.Action):
 
@@ -126,10 +128,16 @@ def main():
     output = Output(config=config, source_file=parsed_args.path)
     matchups = me.find_all_matchups()
 
+    if not os.name == 'nt':
+        logging.debug('Memory after matchups have been found: %s' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+
     for (model_name, ref_name) in parsed_args.variable_mappings:
         unit = data.unit(model_name)
         stats = Processor.calculate_statistics(matchups=matchups, config=config, model_name=model_name, ref_name=ref_name, unit=unit)
         collected_statistics.append(stats)
+
+    if not os.name == 'nt':
+        logging.debug('Memory after statistics have been computed: %s' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
 
     target_files = []
     if config.write_csv:

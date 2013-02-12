@@ -12,6 +12,7 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, see http://www.gnu.org/licenses/gpl.html
 import functools
+import logging
 
 import sys
 from opec.NetCDFFacade import NetCDFFacade
@@ -29,7 +30,9 @@ class Data(dict):
         self.current_memory = 0
 
     def model_vars(self):
-        return self.__model_file.get_model_variables()
+        if not hasattr(self, 'model_variables'):
+            self.model_variables = self.__model_file.get_model_variables()
+        return self.model_variables
 
     def close(self):
         self.__model_file.close()
@@ -37,10 +40,13 @@ class Data(dict):
             self.__reference_file.close()
 
     def ref_vars(self):
-        ref_vars = self.__model_file.get_reference_variables()
+        if hasattr(self, 'reference_variables'):
+            return self.reference_variables
+        reference_variables = self.__model_file.get_reference_variables()
         if self.is_ref_data_split():
-            ref_vars.extend(self.__reference_file.get_reference_variables())
-        return ref_vars
+            reference_variables.extend(self.__reference_file.get_reference_variables())
+        self.reference_variables = reference_variables
+        return reference_variables
 
     def has_model_dimension(self, dimension_name):
         return self.__model_file.has_model_dimension(dimension_name)
@@ -96,7 +102,11 @@ class Data(dict):
         return ncfile.get_dimensions(variable_name)
 
     def get_model_dimensions(self, variable_name=None):
-        return self.__model_file.get_dimensions(variable_name)
+        if not hasattr(self, 'model_dimensions'):
+            self.model_dimensions = {}
+        if not variable_name in self.model_dimensions:
+            self.model_dimensions[variable_name] = self.__model_file.get_dimensions(variable_name)
+        return self.model_dimensions[variable_name]
 
     def read_model(self, variable_name, origin=None, shape=None):
         return self.__read(self.__model_file, variable_name, origin, shape)
@@ -106,11 +116,12 @@ class Data(dict):
         return self.__read(ncfile, variable_name, origin, shape)
 
     def __read(self, ncfile, variable_name, origin=None, shape=None):
-        if self.max_cache_size <= self.current_memory + self.compute_variable_size(variable_name):
+        if not self.__is_cached(variable_name) and self.max_cache_size <= self.current_memory + self.compute_variable_size(variable_name):
             first_in_cache = self.cached_list.pop(0)
             del self[first_in_cache]
             self.current_memory -= self.compute_variable_size(first_in_cache)
         if not self.__is_cached(variable_name):
+            logging.debug('Reading variable \'%s\' fully into cache.' % variable_name)
             self[variable_name] = ncfile.get_variable(variable_name)[:]
             self.__current_storage[variable_name] = 'fully_read'
             self.cached_list.append(variable_name)
@@ -118,34 +129,34 @@ class Data(dict):
         if self.__can_return_all(origin, shape, variable_name):
             return self[variable_name]
 
+        return self.return_from_origin(origin, shape, variable_name)
+
+    def return_from_origin(self, origin, shape, variable_name):
         # gruesome code, but works; I tried to perform the indexing with genuine numpy methods, but failed.
 
         if len(origin) == 4:
-            array = self[variable_name][
-                    origin[0]:origin[0] + shape[0],
-                    origin[1]:origin[1] + shape[1],
-                    origin[2]:origin[2] + shape[2],
-                    origin[3]:origin[3] + shape[3]]
+            return self[variable_name][
+                   origin[0]:origin[0] + shape[0],
+                   origin[1]:origin[1] + shape[1],
+                   origin[2]:origin[2] + shape[2],
+                   origin[3]:origin[3] + shape[3]].flatten()
         elif len(origin) == 3:
-            array = self[variable_name][
-                    origin[0]:origin[0] + shape[0],
-                    origin[1]:origin[1] + shape[1],
-                    origin[2]:origin[2] + shape[2]]
+            return self[variable_name][
+                   origin[0]:origin[0] + shape[0],
+                   origin[1]:origin[1] + shape[1],
+                   origin[2]:origin[2] + shape[2]].flatten()
 
         elif len(origin) == 2:
-            array = self[variable_name][
-                    origin[0]:origin[0] + shape[0],
-                    origin[1]:origin[1] + shape[1]]
+            return self[variable_name][
+                   origin[0]:origin[0] + shape[0],
+                   origin[1]:origin[1] + shape[1]].flatten()
 
         elif len(origin) == 1:
-            array = self[variable_name][
-                    origin[0]:origin[0] + shape[0]]
+            return self[variable_name][
+                   origin[0]:origin[0] + shape[0]].flatten()
 
         else:
             raise ValueError('Invalid origin: \'%s\'' % origin)
-
-        return array.flatten()
-
 
     def __is_cached(self, variable_name):
         return variable_name in self.__current_storage.keys()
