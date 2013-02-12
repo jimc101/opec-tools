@@ -188,7 +188,7 @@ with this program; if not, see http://www.gnu.org/licenses/gpl.html-->
 
                 <table class="matchup">
                     <tr class="table_header">
-                        <td>Matchup #</td>
+                        <td>Record #</td>
                         <td>Time</td>
                         <td>Depth</td>
                         <td>Lat</td>
