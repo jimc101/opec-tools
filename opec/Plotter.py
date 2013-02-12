@@ -14,6 +14,7 @@
 
 import logging
 from math import copysign
+import os
 from matplotlib import pyplot, pylab
 from matplotlib.patches import Ellipse
 from matplotlib.projections.polar import PolarTransform
@@ -24,6 +25,8 @@ import mpl_toolkits.axisartist.grid_finder as GF
 from opec.Configuration import get_default_config
 import matplotlib as mpl
 import matplotlib.ticker
+if not os.name == 'nt':
+    import resource
 
 def create_taylor_diagrams(statistics, config=None):
     if config is None:
@@ -64,7 +67,7 @@ def create_target_diagram(statistics, config=None):
     figure = pyplot.figure()
     if config is None:
         config = get_default_config()
-    diagram = TargetDiagram(figure, config.normalise_target_diagram, config.show_legends, config.utilise_stddev_difference, config.target_diagram_bounds)
+    diagram = TargetDiagram(figure, config.normalise_target_diagram, config.show_legends, config.utilise_stddev_difference)
 
     diagram.setup_axes()
     for stats in statistics:
@@ -74,60 +77,34 @@ def create_target_diagram(statistics, config=None):
     if config.normalise_target_diagram:
         diagram.plot_correcoeff_marker_line()
 
+    diagram.update_legend()
+    if not config.normalise_target_diagram:
+        diagram.update_ranges(config.target_diagram_bounds)
+
     return diagram
 
 def create_scatter_plot(matchups, ref_name, model_name, unit=None):
     figure = pyplot.figure()
     diagram = ScatterPlot(figure, ref_name, model_name, unit)
-    diagram.setup_axes()
+    ax = diagram.setup_axes()
+    index = 0
     for matchup in matchups:
-        diagram.plot_sample(matchup.values[ref_name], matchup.values[model_name])
+        if index % 100 == 0 and not os.name == 'nt':
+            logging.debug('Memory after %s scatter points: %s' % (index, resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
+        diagram.collect_sample(matchup.values[ref_name], matchup.values[model_name])
+        index += 1
 
     diagram.draw_regression_line()
+    diagram.update_ranges()
+    diagram.update_title(len(matchups))
 
+    ax.scatter(diagram.x, diagram.y)
+
+    if not os.name == 'nt':
+        logging.debug('Memory after scatter plot has been computed: %s' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
     return diagram
 
 class Diagram(object):
-
-    def extract_bounds(self, target_rectangle):
-        if target_rectangle is not None:
-            min_x = target_rectangle[0]
-            max_x = target_rectangle[1]
-            min_y = target_rectangle[2]
-            max_y = target_rectangle[3]
-        else:
-            min_x = None
-            max_x = None
-            min_y = None
-            max_y = None
-        return max_x, max_y, min_x, min_y
-
-    def update_ranges(self, target_rectangle=None):
-        max_x, max_y, min_x, min_y = self.extract_bounds(target_rectangle)
-        xmin = self.__getattribute__('xmin')
-        growing_factor = 1.2
-        xmin = xmin * growing_factor if xmin < 0 else xmin / growing_factor
-        ymin = self.__getattribute__('ymin')
-        ymin = ymin * growing_factor if ymin < 0 else ymin / growing_factor
-        xmax = self.__getattribute__('xmax')
-        xmax = xmax * growing_factor if xmax > 0 else xmax / growing_factor
-        ymax = self.__getattribute__('ymax')
-        ymax = ymax * growing_factor if ymax > 0 else ymax / growing_factor
-        xmin = min_x if min_x is not None else xmin
-        ymin = min_y if min_y is not None else ymin
-        xmax = max_x if max_x is not None else xmax
-        ymax = max_y if max_y is not None else ymax
-        pyplot.axis([xmin, xmax, ymin, ymax])
-        self.xmin = xmin
-        self.xmax = xmax
-
-
-    def must_update_ranges(self, x, y):
-        must_update_ranges = self.needs_update(x, 'xmin', min)
-        must_update_ranges |= self.needs_update(y, 'ymin', min)
-        must_update_ranges |= self.needs_update(x, 'xmax', max)
-        must_update_ranges |= self.needs_update(y, 'ymax', max)
-        return must_update_ranges
 
     def needs_update(self, value, field_name, func):
         if not hasattr(self, field_name):
@@ -159,8 +136,8 @@ class ScatterPlot(Diagram):
 
     def __init__(self, figure, ref_name, model_name, unit=None):
         self.fig = figure
-        self.x = np.array([])
-        self.y = np.array([])
+        self.x = []
+        self.y = []
         self.model_name = model_name
         self.ref_name = ref_name
         self.unit_string = '(%s)' % unit if unit is not None else ''
@@ -172,32 +149,31 @@ class ScatterPlot(Diagram):
         ax.set_ylabel('%s %s' % (self.model_name, self.unit_string))
         ax.grid()
         self.ax = ax
-        self.update_title()
+        return ax
 
-    def update_title(self):
-        matchup_count = len(self.ax.lines)
+    def update_title(self, matchup_count):
         self.ax.set_title('Scatter plot of %s and %s\nNumber of considered matchups: %s' % (self.model_name, self.ref_name, matchup_count))
+
 
     def draw_regression_line(self):
         m, b = pylab.polyfit(self.x, self.y, 1)
-        line, = pyplot.plot([self.xmin, self.xmax], [m * self.xmin + b, m * self.xmax + b], '-b', linewidth=0.4)
+        line, = pyplot.plot([np.min(self.x), np.max(self.x)], [m * np.min(self.x) + b, m * np.max(self.x) + b], '-b', linewidth=0.4)
         if hasattr(self, 'line'):
             self.ax.lines.remove(self.line)
         self.line = line
 
 
-    def plot_sample(self, ref_value, model_value):
+    def collect_sample(self, ref_value, model_value):
         if np.ma.masked in [ref_value, model_value]:
             return
-        if self.must_update_ranges(ref_value, model_value):
-            self.update_ranges()
 
-        self.x = np.append(self.x, ref_value)
-        self.y = np.append(self.y, model_value)
+        self.x.append(ref_value)
+        self.y.append(model_value)
 
-        self.update_title()
+    def update_ranges(self):
+        growing_factor = 1.2
+        pyplot.axis([min(self.x) / growing_factor, growing_factor * max(self.x), min(self.y) / growing_factor, growing_factor * max(self.y)])
 
-        pyplot.plot(ref_value, model_value, 'ro', markersize=4)
 
 #noinspection PyUnusedLocal
 def hide_zero(value, pos):
@@ -218,12 +194,13 @@ class TargetDiagram(Diagram):
     statistics as well as the bias thus yielding a broader overview of
     their respective contributions to the total RMSE (see Jolliff et al 2009 for details)."""
 
-    def __init__(self, figure, normalise, show_legend, utilise_stddev_difference, target_rectangle=None):
+    def __init__(self, figure, normalise, show_legend, utilise_stddev_difference):
         self.fig = figure
-        self.target_rectangle = target_rectangle
         self.show_legend = show_legend
         self.normalise = normalise
         self.utilise_stddev_difference = utilise_stddev_difference
+        self.x = []
+        self.y = []
 
     def setup_axes(self):
         ax = self.fig.add_subplot(1, 1, 1)
@@ -252,14 +229,14 @@ class TargetDiagram(Diagram):
 
 
     def plot_sample(self, bias, unbiased_rmse, normalised_rmse, rmse, ref_stddev, model_stddev, name):
-        if not self.normalise and self.must_update_ranges(unbiased_rmse, bias):
-            self.update_ranges(self.target_rectangle)
-
         x = normalised_rmse if self.normalise else unbiased_rmse
         y = bias / ref_stddev if self.normalise else bias
 
         if self.utilise_stddev_difference:
             x = copysign(x, model_stddev - ref_stddev)
+
+        self.x.append(x)
+        self.y.append(y)
 
         data_value = self.ax.plot(x, y, '%sh' % self.get_color(), markersize=6)
         if hasattr(self, 'sample_names'):
@@ -268,7 +245,6 @@ class TargetDiagram(Diagram):
         else:
             self.sample_points = [data_value[0]]
             self.sample_names = [name]
-        self.update_legend()
 
         if not hasattr(self, 'minimum_unbiased_rmse') or self.minimum_unbiased_rmse > rmse:
             self.minimum_unbiased_rmse = unbiased_rmse
@@ -277,6 +253,29 @@ class TargetDiagram(Diagram):
     def plot_correcoeff_marker_line(self):
         marker_line = Ellipse((0,0), 2 * self.marker_radius, 2 * self.marker_radius, edgecolor='k', linewidth=0.8, linestyle='dashed', fill=False)
         self.ax.add_artist(marker_line)
+
+    def extract_bounds(self, target_rectangle):
+        if target_rectangle is not None:
+            min_x = target_rectangle[0]
+            max_x = target_rectangle[1]
+            min_y = target_rectangle[2]
+            max_y = target_rectangle[3]
+        else:
+            min_x = None
+            max_x = None
+            min_y = None
+            max_y = None
+        return max_x, max_y, min_x, min_y
+
+    def update_ranges(self, target_rectangle=None):
+        max_x, max_y, min_x, min_y = self.extract_bounds(target_rectangle)
+        growing_factor = 1.2
+        max_x = max_x if max_x is not None else max(self.x)
+        max_y = max_y if max_y is not None else max(self.y)
+        min_x = min_x if min_x is not None else min(self.x)
+        min_y = min_y if min_y is not None else min(self.y)
+        pyplot.axis([min_x / growing_factor, growing_factor * max_x, min_y / growing_factor, growing_factor * max_y])
+
 
 class TaylorDiagram(Diagram):
     """Taylor diagram: plot model standard deviation and correlation

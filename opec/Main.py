@@ -155,6 +155,7 @@ def main():
     if config.write_taylor_diagrams:
         taylor_target_file = '%s/%staylor.png' % (parsed_args.output_dir, config.target_prefix)
         written_taylor_diagrams, d = output.taylor(collected_statistics, taylor_target_file)
+        del d
         if written_taylor_diagrams:
             for written_taylor_diagram in written_taylor_diagrams:
                 logging.info('Taylor diagram written to \'%s\'' % written_taylor_diagram)
@@ -168,6 +169,7 @@ def main():
             scatter_plot_files.append(scatter_target)
             target_files.append(scatter_target)
             output.scatter_plot(matchups, ref_name, model_name, scatter_target, data.unit(model_name))
+            logging.info('Scatter plot written to \'%s\'' % scatter_target)
 
     target_diagram_file = None
     if config.write_target_diagram:

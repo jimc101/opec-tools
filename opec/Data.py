@@ -129,9 +129,9 @@ class Data(dict):
         if self.__can_return_all(origin, shape, variable_name):
             return self[variable_name]
 
-        return self.return_from_origin(origin, shape, variable_name)
+        return self.get_data(origin, shape, variable_name)
 
-    def return_from_origin(self, origin, shape, variable_name):
+    def get_data(self, origin, shape, variable_name):
         # gruesome code, but works; I tried to perform the indexing with genuine numpy methods, but failed.
 
         if len(origin) == 4:

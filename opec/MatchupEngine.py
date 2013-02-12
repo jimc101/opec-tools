@@ -116,12 +116,17 @@ class MatchupEngine(object):
         return [self.__find_matchup_index_in_model_data('depth', ref_depth, self.config.depth_delta)]
 
     def get_all_indices(self, coordinate_variable_name):
+        if not hasattr(self, 'indices'):
+            self.indices = {}
+        if coordinate_variable_name in self.indices:
+            return self.indices[coordinate_variable_name]
         indices = []
         self.data.read_model(coordinate_variable_name)
         dimension_data = self.data[coordinate_variable_name]
         index = 0
         for d in dimension_data:
             indices.append((index, d))
+        self.indices[coordinate_variable_name] = indices
         return indices
 
     def __find_matchup_index_in_model_data(self, dimension, ref, max_delta):

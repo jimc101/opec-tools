@@ -28,6 +28,7 @@ class Data_test(unittest.TestCase):
         self.data = Data(self.test_file)
 
     def tearDown(self):
+        self.data.close()
         logging.basicConfig(level=logging.WARNING)
 
     def test_model_vars(self):
@@ -43,23 +44,20 @@ class Data_test(unittest.TestCase):
 
     def test_gridded_reference_records_count(self):
         test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/ogs_test_smaller.nc"
-        self.data = Data(test_file)
-        self.assertEqual(41 * 80, self.data.reference_records_count({'latitude', 'longitude'}))
+        data = Data(test_file)
+        self.assertEqual(41 * 80, data.reference_records_count({'latitude', 'longitude'}))
 
     def test_find_model_latitude_variable_name(self):
         self.assertEqual('lat', self.data.find_model_latitude_variable_name())
         test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/ogs_test_smaller.nc"
-        self.data = Data(test_file)
-        self.assertEqual('latitude', self.data.find_model_latitude_variable_name())
+        data = Data(test_file)
+        self.assertEqual('latitude', data.find_model_latitude_variable_name())
 
     def test_find_model_longitude_variable_name(self):
         self.assertEqual('lon', self.data.find_model_longitude_variable_name())
         test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/ogs_test_smaller.nc"
-        self.data = Data(test_file)
-        self.assertEqual('longitude', self.data.find_model_longitude_variable_name())
-
-    def tearDown(self):
-        self.data.close()
+        data = Data(test_file)
+        self.assertEqual('longitude', data.find_model_longitude_variable_name())
 
     def test_var_access(self):
         chl_data = self.data.read_model('chl', [0, 0, 0, 0], [1, 1, 1, 1])
@@ -143,3 +141,8 @@ class Data_test(unittest.TestCase):
         self.assertAlmostEqual(0.0250244140625, data.compute_variable_size('dox'))
         self.assertAlmostEqual(0.00030517578125, data.compute_variable_size('longitude'))
         self.assertAlmostEqual(0.003192901611328125, data.compute_variable_size('Ref_dox'))
+
+    def test_return_from_origin(self):
+        self.data.read_model('chl')
+        array = self.data.get_data([0, 0, 0, 0], [1, 1, 2, 3], 'chl')
+        assert_array_equal(np.array([0.1111, 0.2111, 0.1211, 0.1121, 0.2121, 0.1221], dtype='float32'), array)
