@@ -93,8 +93,6 @@ def create_scatter_plot(matchups, ref_name, model_name, unit=None):
     ax = diagram.setup_axes()
     index = 0
     for matchup in matchups:
-        if index % 100 == 0 and not os.name == 'nt':
-            logging.debug('Memory after %s scatter points: %s' % (index, resource.getrusage(resource.RUSAGE_SELF).ru_maxrss))
         diagram.collect_sample(matchup.values[ref_name], matchup.values[model_name])
         index += 1
 

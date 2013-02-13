@@ -11,14 +11,16 @@
 #
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, see http://www.gnu.org/licenses/gpl.html
-import functools
 
 import logging
 import unittest
+import os
+
 import numpy as np
 from numpy.testing import assert_array_equal
-from opec.Data import Data
-import os
+
+from opec.Data import Data, get_strides
+
 
 class Data_test(unittest.TestCase):
 
@@ -59,40 +61,21 @@ class Data_test(unittest.TestCase):
         data = Data(test_file)
         self.assertEqual('longitude', data.find_model_longitude_variable_name())
 
+
     def test_var_access(self):
         chl_data = self.data.read_model('chl', [0, 0, 0, 0], [1, 1, 1, 1])
-        self.assertEqual(np.ndarray, type(chl_data))
-        self.assertAlmostEqual(0.1111, chl_data[0])
+        self.assertAlmostEqual(0.1111, chl_data)
 
-        self.data.read_model('chl')
-        chl_data = self.data['chl']
-        self.assertEqual(np.ndarray, type(chl_data))
-        self.assertEqual(32, chl_data.size)
 
     def test_data_is_read_only_once_full_variable(self):
         self.data.read_model('chl')
-        chl_data = self.data['chl']
-        self.assertEqual(32, chl_data.size)
-        self.assertAlmostEqual(0.1111, chl_data[0][0][0][0])
+        chl_data = self.data.read_model('chl', [0, 0, 0, 0])
+        self.assertAlmostEqual(0.1111, chl_data)
 
         self.data['chl'][0][0][0][0] = 0.5
-        chl_data = self.data.read_model('chl')
-        self.assertAlmostEqual(0.5, chl_data[0][0][0][0])
+        chl_data = self.data.read_model('chl', [0, 0, 0, 0])
+        self.assertAlmostEqual(0.5, chl_data)
 
-    def test_data_is_read_only_once_part_of_variable(self):
-        origin = np.array([0, 0, 0, 1])
-        shape = np.array([1, 1, 2, 2])
-        num_read_values = functools.reduce(lambda x, y: x * y, shape)
-        chl_data = self.data.read_model('chl', origin, shape)
-        self.assertEqual(num_read_values, chl_data.size)
-        self.assertAlmostEqual(0.2111, chl_data[0])
-        self.assertAlmostEqual(0.1211, chl_data[1])
-        self.assertAlmostEqual(0.2121, chl_data[2])
-        self.assertAlmostEqual(0.1221, chl_data[3])
-
-        self.data['chl'][0] = 0.5
-        chl_data = self.data.read_model('chl', [0, 0, 0, 1], [1, 1, 2, 2])
-        self.assertAlmostEqual(0.5, chl_data[0])
 
     def test_data_works_with_split_files(self):
         test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/test_without_records.nc"
@@ -105,6 +88,7 @@ class Data_test(unittest.TestCase):
         self.assertTrue('chl_ref' in data.ref_vars())
         self.assertEqual(4, len(data.reference_coordinate_variables()))
 
+
     def test_unit(self):
         self.assertEqual('milligram m-3', self.data.unit('chl'))
         self.assertEqual('kelvin', self.data.unit('sst'))
@@ -112,11 +96,13 @@ class Data_test(unittest.TestCase):
         self.assertIsNone(self.data.unit('var_without_unit'))
         self.assertRaises(ValueError, lambda: self.data.unit('toad_count'))
 
+
     def test_gridded_reference_data(self):
         test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/ogs_test_smaller.nc"
         data = Data(test_file)
         self.assertEqual(1, len(data.ref_vars()))
         self.assertEqual('Ref_chl', data.ref_vars()[0])
+
 
     def test_caching(self):
         test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/ogs_test_smaller.nc"
@@ -134,6 +120,7 @@ class Data_test(unittest.TestCase):
         self.assertTrue('dox' in data)
         self.assertTrue('chl' in data)
 
+
     def test_compute_variable_size(self):
         test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/ogs_test_smaller.nc"
         data = Data(test_file)
@@ -142,7 +129,18 @@ class Data_test(unittest.TestCase):
         self.assertAlmostEqual(0.00030517578125, data.compute_variable_size('longitude'))
         self.assertAlmostEqual(0.003192901611328125, data.compute_variable_size('Ref_dox'))
 
-    def test_return_from_origin(self):
+    def test_get_data(self):
         self.data.read_model('chl')
-        array = self.data.get_data([0, 0, 0, 0], [1, 1, 2, 3], 'chl')
-        assert_array_equal(np.array([0.1111, 0.2111, 0.1211, 0.1121, 0.2121, 0.1221], dtype='float32'), array)
+        array = self.data.get_data([0, 0, 0, 0], 'chl')
+        assert_array_equal(np.array([0.1111], dtype='float32'), array)
+
+        array = self.data.get_data([1, 0, 1, 2], 'chl')
+        assert_array_equal(np.array([0.1223], dtype='float32'), array)
+        array = self.data.get_data([1, 0, 1, 3], 'chl')
+        assert_array_equal(np.array([0.2223], dtype='float32'), array)
+
+
+    def test_get_stride(self):
+        assert_array_equal(np.array([16, 8, 4, 1]), get_strides([2, 2, 2, 4]))
+        assert_array_equal(np.array([4, 2, 1]), get_strides([2, 2, 2]))
+        assert_array_equal(np.array([21, 3, 1]), get_strides([1, 7, 3]))

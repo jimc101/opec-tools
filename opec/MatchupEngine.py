@@ -15,12 +15,15 @@
 import logging
 from math import fabs, floor
 import math
+import os
+
+import numpy as np
+
 from opec.Configuration import get_default_config
 from opec.Matchup import Matchup
-import numpy as np
 from opec.ReferenceRecordsFinder import ReferenceRecordsFinder
 from opec.Utils import retrieve_origin
-import os
+
 if not os.name == 'nt':
     import resource
 
@@ -149,20 +152,20 @@ class MatchupEngine(object):
             model_dimensions = self.data.get_model_dimensions(model_name)
             if not len(model_dimensions) == len(origin):
                 continue
-            value = self.data.read_model(model_name, origin, np.ones([len(origin)], int))
-            matchup.add_variable_value(model_name, value.flatten()[0])
+            value = self.data.read_model(model_name, origin)
+            matchup.add_variable_value(model_name, value)
         for ref_name in self.data.ref_vars():
             reference_dimensions = self.data.get_reference_dimensions(ref_name)
             if len(reference_dimensions) == 1:
-                value = self.data.read_reference(ref_name, [matchup.reference_record.record_number], [1])
+                value = self.data.read_reference(ref_name, [matchup.reference_record.record_number])
             else:
                 if matchup.reference_record.time is None:
                     matchup.cell_position[0] = None
                 if matchup.reference_record.depth is None:
                     matchup.cell_position[1] = None
                 origin = list(retrieve_origin(matchup.cell_position))
-                value = self.data.read_reference(ref_name, origin, np.ones([len(origin)], int))
-            matchup.add_variable_value(ref_name, value.flatten()[0])
+                value = self.data.read_reference(ref_name, origin)
+            matchup.add_variable_value(ref_name, value)
 
 def normalise(n, max):
     # don't use built-in round because for x.5 it rounds to the next even integer, not to the next higher one

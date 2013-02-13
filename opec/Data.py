@@ -13,9 +13,28 @@
 # with this program; if not, see http://www.gnu.org/licenses/gpl.html
 import functools
 import logging
-
 import sys
+
+import numpy as np
+
 from opec.NetCDFFacade import NetCDFFacade
+
+
+def get_strides(shape):
+    strides = []
+    for i in range(len(shape)):
+        strides.append(get_stride(shape, i))
+    return strides
+
+
+def get_stride(shape, index):
+    if index == len(shape):
+        return 1
+    else:
+        result = 1
+        for current_index in range(index + 1, len(shape)):
+            result *= shape[current_index]
+        return result
 
 class Data(dict):
 
@@ -108,61 +127,48 @@ class Data(dict):
             self.model_dimensions[variable_name] = self.__model_file.get_dimensions(variable_name)
         return self.model_dimensions[variable_name]
 
-    def read_model(self, variable_name, origin=None, shape=None):
-        return self.__read(self.__model_file, variable_name, origin, shape)
+    def read_model(self, variable_name, origin=None):
+        return self.__read(self.__model_file, variable_name, origin)
 
-    def read_reference(self, variable_name, origin=None, shape=None):
+    def read_reference(self, variable_name, origin=None):
         ncfile = self.__reference_file if self.is_ref_data_split() else self.__model_file
-        return self.__read(ncfile, variable_name, origin, shape)
+        return self.__read(ncfile, variable_name, origin)
 
-    def __read(self, ncfile, variable_name, origin=None, shape=None):
+    def __read(self, ncfile, variable_name, origin=None):
         if not self.__is_cached(variable_name) and self.max_cache_size <= self.current_memory + self.compute_variable_size(variable_name):
             first_in_cache = self.cached_list.pop(0)
             del self[first_in_cache]
             self.current_memory -= self.compute_variable_size(first_in_cache)
         if not self.__is_cached(variable_name):
             logging.debug('Reading variable \'%s\' fully into cache.' % variable_name)
-            self[variable_name] = ncfile.get_variable(variable_name)[:]
+            variable = ncfile.get_variable(variable_name)
+            self[variable_name] = variable[:].flatten()
+            self[variable_name + '_shape'] = variable.shape
             self.__current_storage[variable_name] = 'fully_read'
             self.cached_list.append(variable_name)
             self.current_memory += self.compute_variable_size(variable_name)
-        if self.__can_return_all(origin, shape, variable_name):
+        if self.__can_return_all(origin, variable_name):
             return self[variable_name]
 
-        return self.get_data(origin, shape, variable_name)
+        return self.get_data(origin, variable_name)
 
-    def get_data(self, origin, shape, variable_name):
-        # gruesome code, but works; I tried to perform the indexing with genuine numpy methods, but failed.
+    def get_data(self, origin, variable_name):
+        '''
+        Read single pixel from origin
+        '''
+        var_array = self[variable_name]
+        shape = self[variable_name + '_shape']
+        strides = get_strides(shape)
+        origin_strides = np.array(origin) * np.array(strides)
+        index = np.sum(origin_strides)
 
-        if len(origin) == 4:
-            return self[variable_name][
-                   origin[0]:origin[0] + shape[0],
-                   origin[1]:origin[1] + shape[1],
-                   origin[2]:origin[2] + shape[2],
-                   origin[3]:origin[3] + shape[3]].flatten()
-        elif len(origin) == 3:
-            return self[variable_name][
-                   origin[0]:origin[0] + shape[0],
-                   origin[1]:origin[1] + shape[1],
-                   origin[2]:origin[2] + shape[2]].flatten()
-
-        elif len(origin) == 2:
-            return self[variable_name][
-                   origin[0]:origin[0] + shape[0],
-                   origin[1]:origin[1] + shape[1]].flatten()
-
-        elif len(origin) == 1:
-            return self[variable_name][
-                   origin[0]:origin[0] + shape[0]].flatten()
-
-        else:
-            raise ValueError('Invalid origin: \'%s\'' % origin)
+        return var_array[index]
 
     def __is_cached(self, variable_name):
         return variable_name in self.__current_storage.keys()
 
-    def __can_return_all(self, origin, shape, variable_name):
-        return origin is None and shape is None and self.__current_storage[variable_name] == 'fully_read'
+    def __can_return_all(self, origin, variable_name):
+        return origin is None and self.__current_storage[variable_name] == 'fully_read'
 
     def __find_model_variable_name(self, possible_names, standard_name):
         for name in possible_names:
