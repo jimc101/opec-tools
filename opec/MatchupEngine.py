@@ -20,6 +20,9 @@ from opec.Matchup import Matchup
 import numpy as np
 from opec.ReferenceRecordsFinder import ReferenceRecordsFinder
 from opec.Utils import retrieve_origin
+import os
+if not os.name == 'nt':
+    import resource
 
 class MatchupEngine(object):
 
@@ -31,8 +34,14 @@ class MatchupEngine(object):
         rrf = ReferenceRecordsFinder(self.data)
         reference_records = rrf.find_reference_records()
         all_matchups = []
+        index = 0
         for rr in reference_records:
+            index += 1
             matchups = self.find_matchups(rr)
+            if index % 1000 == 0:
+                logging.debug('Found matchups for %s reference records so far' % index)
+                if not os.name == 'nt':
+                    logging.debug('Memory in use after %s reference records: %.2f MB' % (index, resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024))
             if matchups:
                 all_matchups.extend(matchups)
         logging.debug('Found %s matchups' % len(all_matchups))
@@ -59,7 +68,8 @@ class MatchupEngine(object):
 
                 matchup = Matchup(cell_position, spacetime_position, reference_record)
                 self.__fill_matchup(matchup)
-                matchups.append(matchup)
+                if not all(np.ma.is_masked(e) for e in matchup.values.values()):
+                    matchups.append(matchup)
 
         return matchups
 
@@ -106,13 +116,18 @@ class MatchupEngine(object):
         return [self.__find_matchup_index_in_model_data('depth', ref_depth, self.config.depth_delta)]
 
     def get_all_indices(self, coordinate_variable_name):
-        matchup_depths = []
+        if not hasattr(self, 'indices'):
+            self.indices = {}
+        if coordinate_variable_name in self.indices:
+            return self.indices[coordinate_variable_name]
+        indices = []
         self.data.read_model(coordinate_variable_name)
         dimension_data = self.data[coordinate_variable_name]
         index = 0
         for d in dimension_data:
-            matchup_depths.append((index, d))
-        return matchup_depths
+            indices.append((index, d))
+        self.indices[coordinate_variable_name] = indices
+        return indices
 
     def __find_matchup_index_in_model_data(self, dimension, ref, max_delta):
         self.data.read_model(dimension)

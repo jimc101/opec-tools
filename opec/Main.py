@@ -26,6 +26,8 @@ from opec.Data import Data
 from opec.Output import Output
 import numpy as np
 import os
+if not os.name == 'nt':
+    import resource
 
 class VariableMappingsParseAction(argparse.Action):
 
@@ -129,10 +131,16 @@ def main():
         logging.warning('No matchups found. System will exit.')
         exit(0)
 
+    if not os.name == 'nt':
+        logging.debug('Memory after matchups have been found: %s' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+
     for (model_name, ref_name) in parsed_args.variable_mappings:
         unit = data.unit(model_name)
         stats = Processor.calculate_statistics(matchups=matchups, config=config, model_name=model_name, ref_name=ref_name, unit=unit)
         collected_statistics.append(stats)
+
+    if not os.name == 'nt':
+        logging.debug('Memory after statistics have been computed: %s' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
 
     target_files = []
     if config.write_csv:
@@ -150,6 +158,7 @@ def main():
     if config.write_taylor_diagrams:
         taylor_target_file = '%s/%staylor.png' % (parsed_args.output_dir, config.target_prefix)
         written_taylor_diagrams, d = output.taylor(collected_statistics, taylor_target_file)
+        del d
         if written_taylor_diagrams:
             for written_taylor_diagram in written_taylor_diagrams:
                 logging.info('Taylor diagram written to \'%s\'' % written_taylor_diagram)

@@ -264,12 +264,7 @@ class Output(object):
         return result, diagrams
 
     def scatter_plot(self, matchups, ref_name, model_name, target_file=None, unit=None):
-        ref_values = []
-        model_values = []
-        for matchup in matchups:
-            ref_values.append(matchup.values[ref_name])
-            model_values.append(matchup.values[model_name])
-        diagram = Plotter.create_scatter_plot(ref_values, model_values, ref_name, model_name, unit)
+        diagram = Plotter.create_scatter_plot(matchups, ref_name, model_name, unit)
         if target_file is not None:
             diagram.write(target_file)
         return diagram
