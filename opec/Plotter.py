@@ -15,6 +15,7 @@
 import logging
 from math import copysign
 import os
+
 from matplotlib import pyplot, pylab
 from matplotlib.patches import Ellipse
 from matplotlib.projections.polar import PolarTransform
@@ -22,9 +23,11 @@ from mpl_toolkits.axisartist import SubplotZero
 import numpy as np
 import mpl_toolkits.axisartist.floating_axes as FA
 import mpl_toolkits.axisartist.grid_finder as GF
-from opec.Configuration import get_default_config
 import matplotlib as mpl
 import matplotlib.ticker
+
+from opec.Configuration import get_default_config
+
 if not os.name == 'nt':
     import resource
 
@@ -74,8 +77,6 @@ def create_target_diagram(statistics, config=None):
     for stats in statistics:
         diagram.plot_sample(stats['bias'], stats['unbiased_rmse'], stats['normalised_rmse'], stats['rmse'],
             stats['ref_stddev'], stats['stddev'], create_sample_name(stats['model_name'], stats['unit']))
-
-    diagram.update_legend()
 
     if config.normalise_target_diagram:
         diagram.plot_correcoeff_marker_line()
@@ -212,10 +213,8 @@ class TargetDiagram(Diagram):
         ax.xaxis.set_ticks_position('bottom')
         ax.yaxis.set_ticks_position('left')
 
-        minor_tick_locator = matplotlib.ticker.MaxNLocator(nbins=90, prune='both', symmetric=True,
-            steps=[1.0, 1.25, 1.5, 1.75, 2.0])
-        ax.xaxis.set_minor_locator(minor_tick_locator)
-        ax.yaxis.set_minor_locator(minor_tick_locator)
+        ax.xaxis.set_minor_locator(matplotlib.ticker.NullLocator())
+        ax.yaxis.set_minor_locator(matplotlib.ticker.NullLocator())
 
         ax.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(hide_zero))
         ax.xaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(move_zero))
@@ -269,12 +268,16 @@ class TargetDiagram(Diagram):
 
     def update_ranges(self, target_rectangle=None):
         max_x, max_y, min_x, min_y = self.extract_bounds(target_rectangle)
-        growing_factor = 1.2
         max_x = max_x if max_x is not None else max(self.x)
         max_y = max_y if max_y is not None else max(self.y)
         min_x = min_x if min_x is not None else min(self.x)
         min_y = min_y if min_y is not None else min(self.y)
-        pyplot.axis([min_x / growing_factor, growing_factor * max_x, min_y / growing_factor, growing_factor * max_y])
+        growing_factor = 1.2
+        max_x = growing_factor * max_x if max_x > 0 else max_x / growing_factor
+        max_y = growing_factor * max_y if max_y > 0 else max_y / growing_factor
+        min_x = growing_factor * min_x if min_x < 0 else min_x / growing_factor
+        min_y = growing_factor * min_y if min_y < 0 else min_y / growing_factor
+        pyplot.axis([min_x, max_x, min_y, max_y])
 
 
 class TaylorDiagram(Diagram):
