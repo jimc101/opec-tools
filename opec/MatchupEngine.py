@@ -78,8 +78,8 @@ class MatchupEngine(object):
 
     def __find_position(self, dimension, target_value):
         dim_size = self.data.model_dim_size(dimension)
-        pixel_size = self.data[dimension][1] - self.data[dimension][0]
-        return normalise((target_value - self.data[dimension][0]) / pixel_size, dim_size - 1)
+        pixel_size = self.data.__getattribute__(dimension)[1] - self.data.__getattribute__(dimension)[0]
+        return normalise((target_value - self.data.__getattribute__(dimension)[0]) / pixel_size, dim_size - 1)
 
     def find_matchup_position(self, ref_lat, ref_lon):
         self.__prepare_lat_lon_data()
@@ -92,8 +92,8 @@ class MatchupEngine(object):
 
         pixel_position = None
 
-        current_lon = self.data[lon_variable_name][pixel_x]
-        current_lat = self.data[lat_variable_name][pixel_y]
+        current_lon = self.data.__getattribute__(lon_variable_name)[pixel_x]
+        current_lat = self.data.__getattribute__(lat_variable_name)[pixel_y]
 
         if delta(current_lat, current_lon, ref_lat, ref_lon) < self.config.geo_delta:
             pixel_position = (pixel_x, pixel_y, current_lon, current_lat)
@@ -125,7 +125,7 @@ class MatchupEngine(object):
             return self.indices[coordinate_variable_name]
         indices = []
         self.data.read_model(coordinate_variable_name)
-        dimension_data = self.data[coordinate_variable_name]
+        dimension_data = self.data.__getattribute__(coordinate_variable_name)
         index = 0
         for d in dimension_data:
             indices.append((index, d))
@@ -134,7 +134,7 @@ class MatchupEngine(object):
 
     def __find_matchup_index_in_model_data(self, dimension, ref, max_delta):
         self.data.read_model(dimension)
-        dimension_data = self.data[dimension]
+        dimension_data = self.data.__getattribute__(dimension)
         current_delta = float("inf")
         index = 0
         matchup_index = None

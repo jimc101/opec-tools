@@ -51,15 +51,15 @@ class ReferenceRecordsFinder(object):
                                                ref_lon_variable_name, ref_time_variable_name, dimension_profile,
                                                reference_records):
         for record_number in range(self.data.ref_dim_size(list(dimension_profile)[0])):
-            ref_lat = self.data[ref_lat_variable_name][record_number]
-            ref_lon = self.data[ref_lon_variable_name][record_number]
+            ref_lat = self.data.__getattribute__(ref_lat_variable_name)[record_number]
+            ref_lon = self.data.__getattribute__(ref_lon_variable_name)[record_number]
             # todo - pythonise this by function object or sth
             if ref_time_variable_name is not None:
-                ref_time = self.data[ref_time_variable_name][record_number]
+                ref_time = self.data.__getattribute__(ref_time_variable_name)[record_number]
             else:
                 ref_time = None
             if ref_depth_variable_name is not None:
-                ref_depth = self.data[ref_depth_variable_name][record_number]
+                ref_depth = self.data.__getattribute__(ref_depth_variable_name)[record_number]
             else:
                 ref_depth = None
             rr = ReferenceRecord(record_number, ref_lat, ref_lon, ref_time, ref_depth)
@@ -73,23 +73,23 @@ class ReferenceRecordsFinder(object):
         depth_index = -1
         time_index = -1
         for record_number in range(self.data.reference_records_count(dimension_profile)):
-            lat_index = record_number % len(self.data[ref_lat_variable_name])
+            lat_index = record_number % len(self.data.__getattribute__(ref_lat_variable_name))
             if lat_index == 0:
                 lon_index += 1
-                lon_index %= len(self.data[ref_lon_variable_name])
+                lon_index %= len(self.data.__getattribute__(ref_lon_variable_name))
 
-            ref_lat = self.data[ref_lat_variable_name][lat_index]
-            ref_lon = self.data[ref_lon_variable_name][lon_index]
+            ref_lat = self.data.__getattribute__(ref_lat_variable_name)[lat_index]
+            ref_lon = self.data.__getattribute__(ref_lon_variable_name)[lon_index]
             if ref_time_variable_name is not None:
                 if lat_index == 0 and lon_index == 0:
-                    time_index += 1 % len(self.data[ref_time_variable_name])
-                ref_time = self.data[ref_time_variable_name][time_index]
+                    time_index += 1 % len(self.data.__getattribute__(ref_time_variable_name))
+                ref_time = self.data.__getattribute__(ref_time_variable_name)[time_index]
             else:
                 ref_time = None
             if ref_depth_variable_name is not None:
                 if lat_index == 0 and lon_index == 0 and time_index == 0:
-                    depth_index += 1 % len(self.data[ref_depth_variable_name])
-                ref_depth = self.data[ref_depth_variable_name][depth_index]
+                    depth_index += 1 % len(self.data.__getattribute__(ref_depth_variable_name))
+                ref_depth = self.data.__getattribute__(ref_depth_variable_name)[depth_index]
             else:
                 ref_depth = None
             rr = ReferenceRecord(record_number, ref_lat, ref_lon, ref_time, ref_depth)

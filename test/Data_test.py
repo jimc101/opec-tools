@@ -19,7 +19,7 @@ import os
 import numpy as np
 from numpy.testing import assert_array_equal
 
-from opec.Data import Data, get_strides
+from opec.Data import Data
 
 
 class Data_test(unittest.TestCase):
@@ -63,7 +63,7 @@ class Data_test(unittest.TestCase):
 
 
     def test_var_access(self):
-        chl_data = self.data.read_model('chl', [0, 0, 0, 0], [1, 1, 1, 1])
+        chl_data = self.data.read_model('chl', [0, 0, 0, 0])
         self.assertAlmostEqual(0.1111, chl_data)
 
 
@@ -72,7 +72,7 @@ class Data_test(unittest.TestCase):
         chl_data = self.data.read_model('chl', [0, 0, 0, 0])
         self.assertAlmostEqual(0.1111, chl_data)
 
-        self.data['chl'][0][0][0][0] = 0.5
+        self.data.__getattribute__('chl')[0][0][0][0] = 0.5
         chl_data = self.data.read_model('chl', [0, 0, 0, 0])
         self.assertAlmostEqual(0.5, chl_data)
 
@@ -108,17 +108,17 @@ class Data_test(unittest.TestCase):
         test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/ogs_test_smaller.nc"
         data = Data(test_file, None, 0.05)
         data.read_model('chl')
-        self.assertTrue('chl' in data)
+        self.assertTrue(hasattr(data, 'chl'))
         data.read_model('dox')
-        self.assertTrue('dox' in data)
-        self.assertFalse('chl' in data)
+        self.assertTrue(hasattr(data, 'dox'))
+        self.assertFalse(hasattr(data, 'chl'))
 
         data = Data(test_file, None, 2)
         data.read_model('chl')
-        self.assertTrue('chl' in data)
+        self.assertTrue(hasattr(data, 'chl'))
         data.read_model('dox')
-        self.assertTrue('dox' in data)
-        self.assertTrue('chl' in data)
+        self.assertTrue(hasattr(data, 'dox'))
+        self.assertTrue(hasattr(data, 'chl'))
 
 
     def test_compute_variable_size(self):
@@ -138,9 +138,3 @@ class Data_test(unittest.TestCase):
         assert_array_equal(np.array([0.1223], dtype='float32'), array)
         array = self.data.get_data([1, 0, 1, 3], 'chl')
         assert_array_equal(np.array([0.2223], dtype='float32'), array)
-
-
-    def test_get_stride(self):
-        assert_array_equal(np.array([16, 8, 4, 1]), get_strides([2, 2, 2, 4]))
-        assert_array_equal(np.array([4, 2, 1]), get_strides([2, 2, 2]))
-        assert_array_equal(np.array([21, 3, 1]), get_strides([1, 7, 3]))

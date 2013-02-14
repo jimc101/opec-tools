@@ -15,31 +15,11 @@ import functools
 import logging
 import sys
 
-import numpy as np
-
 from opec.NetCDFFacade import NetCDFFacade
 
-
-def get_strides(shape):
-    strides = []
-    for i in range(len(shape)):
-        strides.append(get_stride(shape, i))
-    return strides
-
-
-def get_stride(shape, index):
-    if index == len(shape):
-        return 1
-    else:
-        result = 1
-        for current_index in range(index + 1, len(shape)):
-            result *= shape[current_index]
-        return result
-
-class Data(dict):
+class Data(object):
 
     def __init__(self, model_file_name, ref_file_name=None, max_cache_size=None):
-        super().__init__()
         if ref_file_name is not None:
             self.__reference_file = NetCDFFacade(ref_file_name)
         self.__model_file = NetCDFFacade(model_file_name)
@@ -137,18 +117,17 @@ class Data(dict):
     def __read(self, ncfile, variable_name, origin=None):
         if not self.__is_cached(variable_name) and self.max_cache_size <= self.current_memory + self.compute_variable_size(variable_name):
             first_in_cache = self.cached_list.pop(0)
-            del self[first_in_cache]
+            self.__delattr__(first_in_cache)
             self.current_memory -= self.compute_variable_size(first_in_cache)
         if not self.__is_cached(variable_name):
             logging.debug('Reading variable \'%s\' fully into cache.' % variable_name)
             variable = ncfile.get_variable(variable_name)
-            self[variable_name] = variable[:].flatten()
-            self[variable_name + '_shape'] = variable.shape
+            self.__setattr__(variable_name, variable[:])
             self.__current_storage[variable_name] = 'fully_read'
             self.cached_list.append(variable_name)
             self.current_memory += self.compute_variable_size(variable_name)
         if self.__can_return_all(origin, variable_name):
-            return self[variable_name]
+            return self.__getattribute__(variable_name)
 
         return self.get_data(origin, variable_name)
 
@@ -156,13 +135,9 @@ class Data(dict):
         '''
         Read single pixel from origin
         '''
-        var_array = self[variable_name]
-        shape = self[variable_name + '_shape']
-        strides = get_strides(shape)
-        origin_strides = np.array(origin) * np.array(strides)
-        index = np.sum(origin_strides)
 
-        return var_array[index]
+        return self.__getattribute__(variable_name)[tuple(origin)]
+
 
     def __is_cached(self, variable_name):
         return variable_name in self.__current_storage.keys()

@@ -377,7 +377,7 @@ class TaylorDiagram(Diagram):
 
         # Add rmse contours
         rs, ts = np.meshgrid(np.linspace(0, y_axis_range[1], num=50),
-            np.linspace(0, x_max, num=50))
+                             np.linspace(0, x_max, num=50))
 
         for name, ref_stddev, unit in self.ref:
             # Unfortunately, I don't understand the next line AT ALL,
