@@ -12,11 +12,10 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, see http://www.gnu.org/licenses/gpl.html
 
-import logging
 from unittest import TestCase
 import unittest
 import numpy.testing as np
-from opec.MatchupEngine import delta, normalise
+from opec.MatchupEngine import normalise
 from opec.Configuration import Configuration
 from opec.MatchupEngine import MatchupEngine
 from opec.Data import Data
@@ -33,12 +32,12 @@ class MatchupEngine_test(TestCase):
         self.data.close()
 
     def test_find_pixel_positions_small_max_delta(self):
-        me = MatchupEngine(self.data, Configuration(geo_delta=0.3))
+        me = MatchupEngine(self.data, Configuration())
         pixel_position = me.find_matchup_position(55, 6.0)
         np.assert_array_almost_equal((1, 0, 5.8, 55.2), pixel_position)
 
     def test_find_pixel_positions_huge_max_delta(self):
-        me = MatchupEngine(self.data, Configuration(geo_delta=200))
+        me = MatchupEngine(self.data, Configuration())
         pixel_position = me.find_matchup_position(55, 6.0)
         np.assert_array_almost_equal((1, 0, 5.8, 55.2), pixel_position)
 
@@ -52,22 +51,10 @@ class MatchupEngine_test(TestCase):
         time_positions = me.find_matchup_times(1261447205)[0]
         np.assert_array_almost_equal((1, 1261447200), time_positions)
 
-    def test_delta(self):
-        lon1 = 45.0
-        lat1 = -5.0
-        lon2 = 55.0
-        lat2 = 5.0
-        self.assertAlmostEqual(2.98049, delta(lat1, lon1, lat2, lon2), 5)
-
-        lat1 = 55.2
-        lon1 = 5.8
-        lat2 = 55.0
-        lon2 = 6.0
-        self.assertAlmostEqual(0.20048850, delta(lat1, lon1, lat2, lon2), 5)
 
     def test_find_matchup(self):
         reference_record = ReferenceRecord(0, 55.1, 5.5, 1261440252, 0.0012)
-        me = MatchupEngine(self.data, Configuration(geo_delta=10))
+        me = MatchupEngine(self.data, Configuration())
         matchups = me.find_matchups(reference_record)
         self.assertEqual(1, len(matchups))
         matchup = matchups[0]
@@ -83,7 +70,7 @@ class MatchupEngine_test(TestCase):
 
     def test_find_matchups_single(self):
         reference_record = ReferenceRecord(0, 55.20123, 6.30048, 1261447205, 0.0020015)
-        config = Configuration(geo_delta=0.1, time_delta=10, depth_delta=0.0001)
+        config = Configuration(time_delta=10, depth_delta=0.0001)
         me = MatchupEngine(self.data, config)
         matchups = me.find_matchups(reference_record)
         self.assertEqual(1, len(matchups))
@@ -96,7 +83,7 @@ class MatchupEngine_test(TestCase):
 
     def test_find_matchups_single_no_depth(self):
         data = Data(self.path + 'resources/test_without_depth.nc')
-        config = Configuration(geo_delta=0.1, time_delta=10)
+        config = Configuration(time_delta=10)
         me = MatchupEngine(data, config)
 
         reference_record = ReferenceRecord(0, 55.20123, 6.30048, 1261447205, None)
@@ -118,7 +105,7 @@ class MatchupEngine_test(TestCase):
         self.assertEqual(None, depth)
 
     def test_find_all_matchups(self):
-        me = MatchupEngine(self.data, Configuration(geo_delta=100))
+        me = MatchupEngine(self.data, Configuration())
         all_matchups = me.find_all_matchups()
         self.assertIsNotNone(all_matchups)
         expected_matchup_count = 3 #reference_records
@@ -139,7 +126,7 @@ class MatchupEngine_test(TestCase):
     @unittest.skip('shall not run in production environment')
     def test_find_matchups_with_gridded_reference_variable(self):
         self.data = Data(self.path + 'resources/ogs_test_smaller.nc')
-        me = MatchupEngine(self.data, Configuration(geo_delta=10))
+        me = MatchupEngine(self.data, Configuration())
         matchups = me.find_all_matchups()
         self.assertIsNotNone(matchups)
         self.assertEqual(6560, len(matchups))

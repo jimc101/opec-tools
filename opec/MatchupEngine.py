@@ -90,15 +90,10 @@ class MatchupEngine(object):
         pixel_x = self.__find_position(lon_variable_name, ref_lon)
         pixel_y = self.__find_position(lat_variable_name, ref_lat)
 
-        pixel_position = None
-
         current_lon = self.data.__getattribute__(lon_variable_name)[pixel_x]
         current_lat = self.data.__getattribute__(lat_variable_name)[pixel_y]
 
-        if delta(current_lat, current_lon, ref_lat, ref_lon) < self.config.geo_delta:
-            pixel_position = (pixel_x, pixel_y, current_lon, current_lat)
-
-        return pixel_position
+        return (pixel_x, pixel_y, current_lon, current_lat)
 
     def __prepare_lat_lon_data(self):
         self.data.read_model(self.data.find_model_latitude_variable_name())
@@ -175,9 +170,3 @@ def normalise(n, max):
     if number > max:
         return max
     return number
-
-def delta(lat_position, lon_position, lat, lon):
-    # computing the spherical distance in degrees
-    temp = round(
-        math.sin(lat_position) * math.sin(lat) + math.cos(lat_position) * math.cos(lat) * math.cos(lon_position - lon), 10)
-    return math.acos(temp)

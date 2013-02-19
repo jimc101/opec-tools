@@ -81,7 +81,7 @@ class Plotter_test(unittest.TestCase):
 
         # pypl.show()
 
-    # @unittest.skip('shall not run in production environment')
+    @unittest.skip('shall not run in production environment')
     def test_target_diagram(self):
         values =           np.array([3, 3, 2, 3, 6, 8, 5, 3, 4, 6, 4, 1, 7, 7, 6])
         reference_values = np.array([2, 5, 1, 5, 5, 9, 4, 5, 3, 8, 3, 3, 6, 9, 5])

@@ -29,7 +29,7 @@ class Processor_test(TestCase):
     def setUp(self):
         path = os.path.dirname(os.path.realpath(__file__)) + '/../'
         self.data = Data(path + 'resources/test.nc')
-        self.config = Configuration(geo_delta=10, time_delta=86400, depth_delta=12, ddof=0, alpha=1, beta=1)
+        self.config = Configuration(time_delta=86400, depth_delta=12, ddof=0, alpha=1, beta=1)
         self.me = MatchupEngine(self.data, self.config)
 
     def tearDown(self):
