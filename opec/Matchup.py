@@ -11,44 +11,54 @@
 #
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, see http://www.gnu.org/licenses/gpl.html
+from opec.Utils import retrieve_origin
 
 class Matchup(object):
 
-    def __init__(self, cell_position, spacetime_position, reference_record):
-        """
-       Constructs a matchup object.
-
-       @param cell_position a list containing the cell indices.
-
-       @param spacetime_position a list containing the position in space and time.
-
-       @param reference_record a record containing the reference positions in space and time.
-        """
-
-        self.__cell_position = cell_position
-        self.__spacetime_position = spacetime_position
+    def __init__(self, time_cell_position, depth_cell_position, lat_cell_position, lon_cell_position,
+                 time_position, depth_position, lat_position, lon_position, reference_record):
+        self.time_cell_position = time_cell_position
+        self.depth_cell_position = depth_cell_position
+        self.lat_cell_position = lat_cell_position
+        self.lon_cell_position = lon_cell_position
+        self.time_position = time_position
+        self.depth_position = depth_position
+        self.lat_position = lat_position
+        self.lon_position = lon_position
         self.__reference_record = reference_record
-        self.__values = {}
 
     def get_cell_position(self):
-        return self.__cell_position
+        return [self.time_cell_position, self.depth_cell_position, self.lat_cell_position, self.lon_cell_position]
 
     def get_spacetime_position(self):
-        return self.__spacetime_position
+        return [self.time_position, self.depth_position, self.lat_position, self.lon_position]
 
     def get_reference_record(self):
         return self.__reference_record
 
-    def add_variable_value(self, name, value):
-        self.__values[name] = value
+    def get_ref_value(self, variable_name, data):
+        reference_dimensions = data.get_reference_dimensions(variable_name)
+        if len(reference_dimensions) == 1:
+            return self.__get_value(variable_name, [self.__reference_record.record_number], data.read_reference)
+        else:
+            cell_position_copy = self.cell_position[:]
+            if self.__reference_record.time is None:
+                cell_position_copy[0] = None
+            if self.__reference_record.depth is None:
+                cell_position_copy[1] = None
+            origin = list(retrieve_origin(cell_position_copy))
+            return self.__get_value(variable_name, origin, data.read_reference)
 
-    def get_variable_values(self):
-        return self.__values
+    def get_model_value(self, variable_name, data):
+        origin = list(retrieve_origin(self.cell_position))
+        return self.__get_value(variable_name, origin, data.read_model)
+
+    def __get_value(self, variable_name, origin, function):
+        return function(variable_name, origin)
 
     cell_position = property(get_cell_position)
     spacetime_position = property(get_spacetime_position)
     reference_record = property(get_reference_record)
-    values = property(get_variable_values)
 
     def __str__(self):
         return ', '.join('%s: %s' % (k.replace('_Matchup__', ''), vars(self)[k]) for k in vars(self))

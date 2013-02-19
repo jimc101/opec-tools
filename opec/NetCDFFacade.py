@@ -101,10 +101,10 @@ class NetCDFFacade(object):
 
     def get_model_variables(self):
         result = []
-        for variableName in self.data_set.variables:
-            ncVariable = self.get_variable(variableName)
-            if not self.is_coordinate_or_reference_variable(ncVariable):
-                result.append(variableName)
+        for variable_name in self.data_set.variables:
+            nc_variable = self.get_variable(variable_name)
+            if not self.is_coordinate_or_reference_variable(nc_variable) and not self.is_reference_variable(nc_variable):
+                result.append(variable_name)
         return result
 
     def read_variable_fully(self, variableName):

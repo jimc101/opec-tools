@@ -124,9 +124,8 @@ def main():
     else:
         data = Data(parsed_args.path, max_cache_size=config.max_cache_size)
     me = MatchupEngine(data, config)
-    collected_statistics = []
-    output = Output(config=config, source_file=parsed_args.path)
-    matchups = me.find_all_matchups()
+    me.find_all_matchups()
+    matchups = me.all_matchups
     if not matchups:
         logging.warning('No matchups found. System will exit.')
         exit(0)
@@ -134,15 +133,18 @@ def main():
     if not os.name == 'nt':
         logging.debug('Memory after matchups have been found: %s' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
 
+    collected_statistics = []
     for (model_name, ref_name) in parsed_args.variable_mappings:
         unit = data.unit(model_name)
-        stats = Processor.calculate_statistics(matchups=matchups, config=config, model_name=model_name, ref_name=ref_name, unit=unit)
+        stats = Processor.calculate_statistics(matchups=matchups, data=data, config=config, model_name=model_name, ref_name=ref_name, unit=unit)
+        logging.info('Calculated statistics for \'%s\' with \'%s\'' % (model_name, ref_name))
         collected_statistics.append(stats)
 
     if not os.name == 'nt':
         logging.debug('Memory after statistics have been computed: %s' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
 
     target_files = []
+    output = Output(data, config=config, source_file=parsed_args.path)
     if config.write_csv:
         for (model_name, ref_name), stats in zip(parsed_args.variable_mappings, collected_statistics):
             csv_target_file = '%s/%s%s_statistics.csv' % (parsed_args.output_dir, config.target_prefix, model_name)
@@ -171,7 +173,7 @@ def main():
             scatter_target = '%s/scatter-%s-%s.png' % (parsed_args.output_dir, model_name, ref_name)
             scatter_plot_files.append(scatter_target)
             target_files.append(scatter_target)
-            output.scatter_plot(matchups, ref_name, model_name, scatter_target, data.unit(model_name))
+            output.scatter_plot(matchups, data, ref_name, model_name, scatter_target, data.unit(model_name))
             logging.info('Scatter plot written to \'%s\'' % scatter_target)
 
     target_diagram_file = None
@@ -188,7 +190,7 @@ def main():
         css = path + 'styleset.css'
         xsl_target = '%s/%s' % (parsed_args.output_dir, os.path.basename(xsl))
         css_target = '%s/%s' % (parsed_args.output_dir, os.path.basename(css))
-        output.xhtml(collected_statistics, matchups, xml_target_file, taylor_target_files, target_diagram_file, scatter_plot_files)
+        output.xhtml(collected_statistics, matchups, data, xml_target_file, taylor_target_files, target_diagram_file, scatter_plot_files)
         logging.info('XHTML report written to \'%s\'' % xml_target_file)
         shutil.copy(xsl, parsed_args.output_dir)
         logging.info('XHTML support file written to \'%s/%s\'' % (parsed_args.output_dir, 'analysis-summary.xsl'))

@@ -37,7 +37,7 @@ class Processor_test(TestCase):
 
     def test_compute_statistics_for_matchups(self):
         matchups = self.me.find_all_matchups()
-        stats = calculate_statistics(matchups, config=self.config, ref_name='chl_ref', model_name='chl', unit='megazork')
+        stats = calculate_statistics(matchups, data=self.data, config=self.config, ref_name='chl_ref', model_name='chl', unit='megazork')
         self.assertEqual('chl', stats['model_name'])
         self.assertEqual('chl_ref', stats['ref_name'])
         self.assertEqual('megazork', stats['unit'])
@@ -233,11 +233,25 @@ class Processor_test(TestCase):
             Matchup([0, 0, 0, 0], [1261440000, 0.001, 55.2, 5.3], ReferenceRecord(0, 55.21, 5.31, 1261440250, 0.0012)),
             Matchup([0, 0, 0, 1], [1261440000, 0.001, 55.2, 5.8], ReferenceRecord(1, 55.8, 5.72, 1261440300, 0.0013))
         ]
-        matchups[0].add_variable_value('chl_ref', np.nan)
-        matchups[1].add_variable_value('chl_ref', 0.2)
-        matchups[0].add_variable_value('chl', 0.1111)
-        matchups[1].add_variable_value('chl', 0.2111)
 
-        ref, model = extract_values(matchups, 'chl_ref', 'chl')
+        class DataMock(object):
+            def get_reference_dimensions(self, variable_name):
+                return "recordNum"
+
+            def read_reference(self, variable_name, origin):
+                if hasattr(self, 'second_time_ref'):
+                    return 0.2
+                else:
+                    self.second_time_ref = True
+                    return np.nan
+
+            def read_model(self, variable_name, origin):
+                if hasattr(self, 'second_time_mod'):
+                    return 0.2111
+                else:
+                    self.second_time_mod = True
+                    return 0.1111
+
+        ref, model = extract_values(matchups, DataMock(), 'chl_ref', 'chl')
         assert_almost_equal(ref, np.ma.array([np.nan, 0.2], mask=[True, False]))
         assert_almost_equal(model, np.ma.array([0.1111, 0.2111], mask=[False, False]))

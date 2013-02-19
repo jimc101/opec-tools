@@ -34,11 +34,6 @@ with this program; if not, see http://www.gnu.org/licenses/gpl.html -->
 
     <configuration>
         <property>
-            <name>Maximum geographic delta</name>
-            <value>${geo_delta}</value>
-            <unit>degrees</unit>
-        </property>
-        <property>
             <name>Maximum time delta</name>
             <value>${time_delta}</value>
             <unit>seconds</unit>
@@ -110,13 +105,17 @@ with this program; if not, see http://www.gnu.org/licenses/gpl.html -->
     <matchups>
         <variables>
             <% vars = [] %>
-            % for matchup in matchups:
-                % for var in matchup.values:
-                    % if not var in vars:
-                        <var>${var}</var>
-                        <% vars.append(var) %>
-                    % endif
-                % endfor
+            % for var in reference_vars:
+                % if not var in vars:
+                    <var>${var}</var>
+                    <% vars.append(var) %>
+                % endif
+            % endfor
+            % for var in model_vars:
+                % if not var in vars:
+                    <var>${var}</var>
+                    <% vars.append(var) %>
+                % endif
             % endfor
         </variables>
         % for matchup in matchups:
@@ -130,10 +129,16 @@ with this program; if not, see http://www.gnu.org/licenses/gpl.html -->
             <reference_depth>${matchup.reference_record.depth}</reference_depth>
             <reference_lat>${matchup.reference_record.lat}</reference_lat>
             <reference_lon>${matchup.reference_record.lon}</reference_lon>
-            % for var in vars:
+            % for var in reference_vars:
             <property>
                 <name>${var}</name>
-                <value>${matchup.values[var] if var in matchup.values else '--'}</value>
+                <value>${matchup.get_ref_value(var, data)}</value>
+            </property>
+            % endfor
+            % for var in model_vars:
+            <property>
+                <name>${var}</name>
+                <value>${matchup.get_model_value(var, data)}</value>
             </property>
             % endfor
         </matchup>

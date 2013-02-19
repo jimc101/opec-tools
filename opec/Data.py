@@ -117,6 +117,7 @@ class Data(object):
     def __read(self, ncfile, variable_name, origin=None):
         if not self.__is_cached(variable_name) and self.max_cache_size <= self.current_memory + self.compute_variable_size(variable_name):
             first_in_cache = self.cached_list.pop(0)
+            logging.debug('Deleting variable \'%s\' from cache.' % first_in_cache)
             self.__delattr__(first_in_cache)
             self.current_memory -= self.compute_variable_size(first_in_cache)
         if not self.__is_cached(variable_name):
@@ -130,6 +131,7 @@ class Data(object):
             return self.__getattribute__(variable_name)
 
         return self.get_data(origin, variable_name)
+
 
     def get_data(self, origin, variable_name):
         '''

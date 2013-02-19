@@ -63,10 +63,9 @@ class MatchupEngine_test(TestCase):
         self.assertEqual(5.5, matchup.reference_record.lon)
         self.assertEqual(1261440252, matchup.reference_record.time)
         self.assertEqual(0.0012, matchup.reference_record.depth)
-        self.assertEqual(3, len(matchup.values))
-        self.assertAlmostEqual(0.1111, matchup.values['chl'], 5)
-        self.assertAlmostEqual(1.1111, matchup.values['sst'], 5)
-        self.assertAlmostEqual(0.1, matchup.values['chl_ref'], 5)
+        self.assertAlmostEqual(0.1111, matchup.get_model_value('chl', self.data), 5)
+        self.assertAlmostEqual(1.1111, matchup.get_model_value('sst', self.data), 5)
+        self.assertAlmostEqual(0.1, matchup.get_ref_value('chl_ref', self.data), 5)
 
     def test_find_matchups_single(self):
         reference_record = ReferenceRecord(0, 55.20123, 6.30048, 1261447205, 0.0020015)

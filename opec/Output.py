@@ -45,7 +45,7 @@ def get_basenames(files):
     return basenames
 
 class Output(object):
-    def __init__(self, **kwargs):
+    def __init__(self, data, **kwargs):
         """Constructs a new instance of Output.
 
         Keyword arguments:
@@ -56,6 +56,7 @@ class Output(object):
                                                                         'config'] is not None else get_default_config()
         self.source_file = kwargs['source_file'] if 'source_file' in kwargs.keys() else None
         self.separator = self.config.separator
+        self.data = data
 
     def csv(self, statistics, variable_name, ref_variable_name, matchups=None, target_file=None):
         """Outputs the statistics to CSV.
@@ -113,7 +114,6 @@ class Output(object):
             lines.append('# Number of matchups: %s' % len(matchups))
         lines.append('#')
         lines.append('# Matchup criteria:')
-        lines.append('#    Maximum geographic delta = {} degrees'.format(self.config.geo_delta))
         lines.append('#    Maximum time delta = {} seconds'.format(self.config.time_delta))
         lines.append('#    Maximum depth delta = {} meters'.format(self.config.depth_delta))
         lines.append('#')
@@ -161,15 +161,17 @@ class Output(object):
         header.append('model_depth')
         header.append('model_lat')
         header.append('model_lon')
-        vars = []
-        for matchup in matchups:
-            for var in matchup.values:
-                if not var in header:
-                    header.append(var)
-                    vars.append(var)
+        ref_vars = self.data.ref_vars()
+        model_vars = self.data.model_vars()
+        header.extend(ref_vars)
+        header.extend(model_vars)
+        # for matchup in matchups:
+        #     for var in matchup.values:
+        #         if not var in header:
+        #             header.append(var)
+        #             vars.append(var)
 
-        lines = []
-        lines.append(self.config.separator.join(header))
+        lines = [self.config.separator.join(header)]
         for matchup in matchups:
             line = []
             line.append(str(matchup.reference_record.record_number))
@@ -181,8 +183,10 @@ class Output(object):
             line.append(str(matchup.spacetime_position[1]))
             line.append(str(matchup.spacetime_position[2]))
             line.append(str(matchup.spacetime_position[3]))
-            for var in vars:
-                line.append(str(matchup.values[var]) if var in matchup.values else '--')
+            for var in ref_vars:
+                line.append(str(matchup.get_ref_value(var, self.data)))
+            for var in model_vars:
+                line.append(str(matchup.get_model_value(var, self.data)))
             lines.append(self.config.separator.join(line))
         return lines
 
@@ -195,7 +199,7 @@ class Output(object):
             file.write("%s\n" % line)
         file.close()
 
-    def xhtml(self, statistics_list, matchups, target_file, taylor_target_files=None, target_diagram_file=None, scatter_plot_files=None):
+    def xhtml(self, statistics_list, matchups, data, target_file, taylor_target_files=None, target_diagram_file=None, scatter_plot_files=None):
         filename = os.path.dirname(os.path.realpath(__file__)) + '/../resources/matchup_report_template.xml'
         template = Template(filename=filename)
         buf = StringIO()
@@ -223,11 +227,11 @@ class Output(object):
         scatter_plot_files = get_basenames(scatter_plot_files)
         taylor_target_files = get_basenames(taylor_target_files)
         target_diagram_file = os.path.basename(target_diagram_file) if target_diagram_file is not None else None
+
         ctx = Context(buf,
             pairs=all_relative_stats,
             performed_at=datetime.now().strftime('%b %d, %Y at %H:%M:%S'),
             record_count=len(matchups),
-            geo_delta=self.config.geo_delta,
             time_delta=self.config.time_delta,
             depth_delta=self.config.depth_delta,
             ddof=self.config.ddof,
@@ -237,6 +241,9 @@ class Output(object):
             all_model_stats=all_model_stats,
             all_ref_stats=all_ref_stats,
             matchups=matchups,
+            data=data,
+            reference_vars=data.ref_vars(),
+            model_vars=data.model_vars(),
             write_taylor_diagrams=self.config.write_taylor_diagrams,
             taylor_target_files=taylor_target_files,
             write_target_diagram=self.config.write_target_diagram,
@@ -263,8 +270,8 @@ class Output(object):
                 result.append(new_target_file)
         return result, diagrams
 
-    def scatter_plot(self, matchups, ref_name, model_name, target_file=None, unit=None):
-        diagram = Plotter.create_scatter_plot(matchups, ref_name, model_name, unit)
+    def scatter_plot(self, matchups, data, ref_name, model_name, target_file=None, unit=None):
+        diagram = Plotter.create_scatter_plot(matchups, data, ref_name, model_name, unit)
         if target_file is not None:
             diagram.write(target_file)
         return diagram
