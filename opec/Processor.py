@@ -121,6 +121,7 @@ def calculate_statistics(matchups=None, data=None, model_name=None, ref_name=Non
         raise ValueError('Cannot calculate statistics from matchups: missing either matchups or reference and model values.')
 
     reference_values, model_values = harmonise(reference_values, model_values)
+    reference_values = reference_values.reshape(model_values.shape)
     if ma.count(model_values) != ma.count(reference_values):
         raise ValueError("len(values) != len(reference_values)")
 

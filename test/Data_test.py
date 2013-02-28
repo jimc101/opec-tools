@@ -137,3 +137,9 @@ class Data_test(unittest.TestCase):
         assert_array_equal(np.array([0.1223], dtype='float32'), array)
         array = self.data.get_data([1, 0, 1, 3], 'chl')
         assert_array_equal(np.array([0.2223], dtype='float32'), array)
+
+    def test_has_gridded_ref_var(self):
+        self.assertFalse(self.data.has_gridded_ref_var())
+        test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/ogs_test_smaller.nc"
+        data = Data(test_file)
+        self.assertTrue(data.has_gridded_ref_var())

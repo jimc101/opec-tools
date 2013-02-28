@@ -23,7 +23,7 @@ class Data(object):
         if ref_file_name is not None:
             self.__reference_file = NetCDFFacade(ref_file_name)
         self.__model_file = NetCDFFacade(model_file_name)
-        self.__current_storage = {}
+        self.__current_storage = set()
         self.max_cache_size = max_cache_size if max_cache_size is not None else sys.maxsize
         self.cached_list = []
         self.current_memory = 0
@@ -124,10 +124,10 @@ class Data(object):
             logging.debug('Reading variable \'%s\' fully into cache.' % variable_name)
             variable = ncfile.get_variable(variable_name)
             self.__setattr__(variable_name, variable[:])
-            self.__current_storage[variable_name] = 'fully_read'
+            self.__current_storage.add(variable_name)
             self.cached_list.append(variable_name)
             self.current_memory += self.compute_variable_size(variable_name)
-        if self.__can_return_all(origin, variable_name):
+        if origin is None:
             return self.__getattribute__(variable_name)
 
         return self.get_data(origin, variable_name)
@@ -142,10 +142,8 @@ class Data(object):
 
 
     def __is_cached(self, variable_name):
-        return variable_name in self.__current_storage.keys()
+        return variable_name in self.__current_storage
 
-    def __can_return_all(self, origin, variable_name):
-        return origin is None and self.__current_storage[variable_name] == 'fully_read'
 
     def __find_model_variable_name(self, possible_names, standard_name):
         for name in possible_names:
@@ -182,6 +180,14 @@ class Data(object):
         num_entries = functools.reduce(lambda x, y: x * y, variable.shape)
         byte_size = num_entries * variable.dtype.itemsize
         return byte_size / (1024 * 1024)
+
+
+    def has_gridded_ref_var(self):
+        for var in self.ref_vars():
+            if len(self.get_reference_dimensions(var)) > 1:
+                return True
+        return False
+
 
 def unit(ncfile, variable_name):
     if ncfile.get_variable(variable_name):

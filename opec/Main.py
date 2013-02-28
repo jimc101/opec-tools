@@ -123,11 +123,14 @@ def main():
         data = Data(parsed_args.path, parsed_args.reference_file, config.max_cache_size)
     else:
         data = Data(parsed_args.path, max_cache_size=config.max_cache_size)
-    me = MatchupEngine(data, config)
-    matchups = me.find_all_matchups()
-    if not matchups:
-        logging.warning('No matchups found. System will exit.')
-        exit(0)
+
+    matchups = None
+    if not data.has_gridded_ref_var():
+        me = MatchupEngine(data, config)
+        matchups = me.find_all_matchups()
+        if not matchups:
+            logging.warning('No matchups found. System will exit.')
+            exit(0)
 
     if not os.name == 'nt':
         logging.debug('Memory after matchups have been found: %s' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
@@ -135,7 +138,14 @@ def main():
     collected_statistics = []
     for (model_name, ref_name) in parsed_args.variable_mappings:
         unit = data.unit(model_name)
-        stats = Processor.calculate_statistics(matchups=matchups, data=data, config=config, model_name=model_name, ref_name=ref_name, unit=unit)
+        is_gridded = len(data.get_reference_dimensions(ref_name)) > 1
+        if is_gridded:
+            model_values = data.read_model(model_name)
+            ref_values = data.read_reference(ref_name)
+            # todo: continue here !
+            stats = Processor.calculate_statistics(model_name=model_name, ref_name=ref_name, reference_values=ref_values, model_values=model_values, unit=unit, config=config)
+        else:
+            stats = Processor.calculate_statistics(matchups=matchups, data=data, config=config, model_name=model_name, ref_name=ref_name, unit=unit)
         logging.info('Calculated statistics for \'%s\' with \'%s\'' % (model_name, ref_name))
         collected_statistics.append(stats)
 
