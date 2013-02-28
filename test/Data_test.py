@@ -127,7 +127,6 @@ class Data_test(unittest.TestCase):
         self.assertAlmostEqual(0.0250244140625, data.compute_variable_size('chl'))
         self.assertAlmostEqual(0.0250244140625, data.compute_variable_size('dox'))
         self.assertAlmostEqual(0.00030517578125, data.compute_variable_size('longitude'))
-        self.assertAlmostEqual(0.003192901611328125, data.compute_variable_size('Ref_dox'))
 
     def test_get_data(self):
         self.data.read_model('chl')

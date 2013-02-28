@@ -124,8 +124,7 @@ def main():
     else:
         data = Data(parsed_args.path, max_cache_size=config.max_cache_size)
     me = MatchupEngine(data, config)
-    me.find_all_matchups()
-    matchups = me.all_matchups
+    matchups = me.find_all_matchups()
     if not matchups:
         logging.warning('No matchups found. System will exit.')
         exit(0)

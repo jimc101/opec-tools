@@ -20,7 +20,7 @@ from opec.Configuration import Configuration
 from opec.MatchupEngine import MatchupEngine
 from opec.Data import Data
 import os
-from opec.ReferenceRecordsFinder import ReferenceRecord, find_ref_coordinate_names, ReferenceRecordsFinder
+from opec.ReferenceRecordsFinder import ReferenceRecord, find_ref_coordinate_names
 
 class MatchupEngine_test(TestCase):
 
@@ -124,8 +124,8 @@ class MatchupEngine_test(TestCase):
 
     @unittest.skip('shall not run in production environment')
     def test_find_matchups_with_gridded_reference_variable(self):
-        self.data = Data(self.path + 'resources/ogs_test_smaller.nc')
-        me = MatchupEngine(self.data, Configuration())
+        data = Data(self.path + 'resources/ogs_test_smaller.nc')
+        me = MatchupEngine(data, Configuration())
         matchups = me.find_all_matchups()
         self.assertIsNotNone(matchups)
         self.assertEqual(6560, len(matchups))

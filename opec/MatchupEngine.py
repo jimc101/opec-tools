@@ -30,24 +30,26 @@ class MatchupEngine(object):
     def __init__(self, data, configuration=None):
         self.data = data
         self.config = configuration if configuration is not None else get_default_config()
-        self.all_matchups = []
+        self.pixel_sizes = {}
 
     def find_all_matchups(self):
         rrf = ReferenceRecordsFinder(self.data)
         reference_records = rrf.find_reference_records()
         index = 0
+        all_matchups = []
         for rr in reference_records:
             index += 1
             matchups = self.find_matchups(rr)
             if index % 1000 == 0:
                 logging.debug('Found matchups for %s reference records so far' % index)
-                logging.debug('Found %s matchups so far' % len(self.all_matchups))
+                logging.debug('Found %s matchups so far' % len(all_matchups))
                 if not os.name == 'nt':
                     logging.debug('Memory in use after %s reference records: %.2f MB' % (index, resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024))
             if matchups:
-                self.all_matchups.extend(matchups)
+                all_matchups.extend(matchups)
 
-        logging.debug('Found %s matchups' % len(self.all_matchups))
+        logging.debug('Found %s matchups' % len(all_matchups))
+        return all_matchups
 
     def find_matchups(self, reference_record):
         matchup_position = self.find_matchup_position(reference_record.lat, reference_record.lon)
@@ -57,15 +59,25 @@ class MatchupEngine(object):
         matchups = []
         for matchup_time in matchup_times:
             for matchup_depth in matchup_depths:
-                matchups.append(Matchup(matchup_time[0], matchup_depth[0], matchup_position[1], matchup_position[0],
-                                        matchup_time[1], matchup_depth[1], matchup_position[3], matchup_position[2], reference_record))
+                cell_position = [matchup_time[0]] # first dimension: time
+                spacetime_position = [matchup_time[1]] # first dimension: time
+                cell_position.append(matchup_depth[0]) # second dimension: depth
+                spacetime_position.append(matchup_depth[1]) # second dimension: depth
+                cell_position.append(matchup_position[1]) # third dimension: lat
+                spacetime_position.append(matchup_position[3]) # third dimension: lat
+                cell_position.append(matchup_position[0]) # fourth dimension: lon
+                spacetime_position.append(matchup_position[2]) # fourth dimension: lon
+                matchups.append(Matchup(cell_position, spacetime_position, reference_record))
 
         return matchups
 
     def __find_position(self, dimension, target_value):
         dim_size = self.data.model_dim_size(dimension)
-        # todo - remember pixel size per variable
-        pixel_size = self.data.__getattribute__(dimension)[1] - self.data.__getattribute__(dimension)[0]
+        if dimension in self.pixel_sizes:
+            pixel_size = self.pixel_sizes[dimension]
+        else:
+            self.__prepare_lat_lon_data()
+            pixel_size = self.data.__getattribute__(dimension)[1] - self.data.__getattribute__(dimension)[0]
         return normalise((target_value - self.data.__getattribute__(dimension)[0]) / pixel_size, dim_size - 1)
 
     def find_matchup_position(self, ref_lat, ref_lon):
@@ -75,7 +87,6 @@ class MatchupEngine(object):
         pixel_x = self.__find_position(lon_variable_name, ref_lon)
         pixel_y = self.__find_position(lat_variable_name, ref_lat)
 
-        self.__prepare_lat_lon_data()
         current_lon = self.data.__getattribute__(lon_variable_name)[pixel_x]
         current_lat = self.data.__getattribute__(lat_variable_name)[pixel_y]
 
