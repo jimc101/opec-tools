@@ -19,7 +19,7 @@ import shutil
 import sys
 import warnings
 from zipfile import ZipFile
-from opec import Processor, get_logging_formatter
+from opec import Processor, get_logging_formatter, Utils
 from opec.Configuration import Configuration
 from opec.MatchupEngine import MatchupEngine
 from opec.Data import Data
@@ -142,12 +142,17 @@ def main():
         if is_gridded:
             model_values = data.read_model(model_name)
             ref_values = data.read_reference(ref_name)
-            # todo: continue here !
-            stats = Processor.calculate_statistics(model_name=model_name, ref_name=ref_name, reference_values=ref_values, model_values=model_values, unit=unit, config=config)
+            model_values_aligned, ref_values_aligned = Utils.align(model_values, ref_values)
+            stats = Processor.calculate_statistics(model_name=model_name, ref_name=ref_name,
+                                                   reference_values_aligned=ref_values_aligned,
+                                                   model_values_aligned=model_values_aligned,
+                                                   reference_values_original=ref_values,
+                                                   model_values_original=model_values,
+                                                   unit=unit, config=config)
         else:
             stats = Processor.calculate_statistics(matchups=matchups, data=data, config=config, model_name=model_name, ref_name=ref_name, unit=unit)
-        logging.info('Calculated statistics for \'%s\' with \'%s\'' % (model_name, ref_name))
         collected_statistics.append(stats)
+        logging.info('Calculated statistics for \'%s\' with \'%s\'' % (model_name, ref_name))
 
     if not os.name == 'nt':
         logging.debug('Memory after statistics have been computed: %s' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)

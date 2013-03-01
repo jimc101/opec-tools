@@ -69,7 +69,7 @@ class Processor_test(TestCase):
     def test_compute_statistics(self):
         model_values = np.array(range(1, 5, 1)) # [1, 2, 3, 4]
         ref_values = np.array([1.1, 2.2, 2.9, 3.7])
-        stats = calculate_statistics(reference_values=ref_values, model_values=model_values, config=self.config)
+        stats = calculate_statistics(reference_values_aligned=ref_values, model_values_aligned=model_values, config=self.config)
         self.assertIsNone(stats['model_name'])
         self.assertIsNone(stats['ref_name'])
         self.assertAlmostEqual(0.192028, stats['unbiased_rmse'], 5)
@@ -100,7 +100,7 @@ class Processor_test(TestCase):
     def test_compute_statistics_with_masked_values(self):
         model_values = ma.array(np.arange(1.0, 5.0, 1), mask=np.array([False, False, True, False])) # [1, 2, --, 4]
         ref_values = np.array([1.1, 2.2, 2.9, 3.7])
-        stats = calculate_statistics(reference_values=ref_values, model_values=model_values, config=self.config, model_name='kate', ref_name='ref')
+        stats = calculate_statistics(reference_values_aligned=ref_values, model_values_aligned=model_values, config=self.config, model_name='kate', ref_name='ref')
         self.assertEqual('kate', stats['model_name'])
         self.assertEqual('ref', stats['ref_name'])
         self.assertAlmostEqual(0.216024, stats['unbiased_rmse'], 5)
@@ -130,7 +130,7 @@ class Processor_test(TestCase):
     def test_compute_statistics_with_extreme_model_values(self):
         model_values = np.array(range(1, 5, 1)) # [1, 2, 3, 4]
         ref_values = np.array([1, 1, 1, 1])
-        stats = calculate_statistics(reference_values=ref_values, model_values=model_values, config=self.config)
+        stats = calculate_statistics(reference_values_aligned=ref_values, model_values_aligned=model_values, config=self.config)
         self.assertAlmostEqual(1.118034, stats['unbiased_rmse'], 5)
         self.assertAlmostEqual(1.870829, stats['rmse'], 5)
         self.assertAlmostEqual(-150, stats['pbias'], 5)
@@ -158,7 +158,7 @@ class Processor_test(TestCase):
     def test_compute_statistics_with_extreme_reference_values(self):
         model_values = np.array([1, 1, 1, 1])
         ref_values = np.array([1.1, 2.2, 2.9, 3.7])
-        stats = calculate_statistics(reference_values=ref_values, model_values=model_values, config=self.config)
+        stats = calculate_statistics(reference_values_aligned=ref_values, model_values_aligned=model_values, config=self.config)
         self.assertAlmostEqual(0.954921, stats['unbiased_rmse'], 5)
         self.assertAlmostEqual(1.757128, stats['rmse'], 5)
         self.assertAlmostEqual(59.595959, stats['pbias'], 5)

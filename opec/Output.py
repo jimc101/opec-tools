@@ -27,7 +27,7 @@ def rename(string):
 
 def format_statistic(statistics, name):
     value = statistics[name]
-    if value is np.ma.masked or np.isneginf(value):
+    if value is np.ma.masked or np.isneginf(value) or np.isnan(value):
         return 'nan'
     return '%g' % round(value, 4)
 
