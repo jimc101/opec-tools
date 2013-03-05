@@ -22,7 +22,8 @@ class Data(object):
     def __init__(self, model_file_name, ref_file_name=None, max_cache_size=None):
         if ref_file_name is not None:
             self.__reference_file = NetCDFFacade(ref_file_name)
-        self.__model_file = NetCDFFacade(model_file_name)
+        if model_file_name is not None:
+            self.__model_file = NetCDFFacade(model_file_name)
         self.__current_storage = set()
         self.max_cache_size = max_cache_size if max_cache_size is not None else sys.maxsize
         self.cached_list = []
@@ -187,6 +188,24 @@ class Data(object):
             if len(self.get_reference_dimensions(var)) > 1:
                 return True
         return False
+
+
+    def get_differing_dim_names(self, model_var, ref_var):
+        dim_names = {}
+        model_dims = self.__dimension_string(self.__model_file, model_var)
+        ref_file = self.__reference_file if self.is_ref_data_split() else self.__model_file
+        ref_dims = self.__dimension_string(ref_file, ref_var)
+        if model_dims == ref_dims:
+            return dim_names
+        model_dims_list = model_dims.split(' ')
+        ref_dims_list = ref_dims.split(' ')
+        if not len(model_dims_list) == len(ref_dims_list):
+            raise ValueError('model and gridded ref variable need to have identical dimension count')
+        for index, model_dim in enumerate(model_dims_list):
+            ref_dim = ref_dims_list[index]
+            if not ref_dim == model_dim:
+                dim_names[model_dim] = ref_dim
+        return dim_names
 
 
 def unit(ncfile, variable_name):

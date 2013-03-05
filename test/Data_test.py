@@ -143,3 +143,41 @@ class Data_test(unittest.TestCase):
         test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/ogs_test_smaller.nc"
         data = Data(test_file)
         self.assertTrue(data.has_gridded_ref_var())
+
+
+    def test_get_differing_dim_names(self):
+        data = DataMock()
+        dim_indices = data.get_differing_dim_names('model_0', 'ref_0')
+        self.assertDictEqual({}, dim_indices)
+
+        data = DataMock()
+
+        dim_indices = data.get_differing_dim_names('model_0', 'ref_1')
+        self.assertDictEqual({'depth': 'depth_ref'}, dim_indices)
+
+        dim_indices = data.get_differing_dim_names('model_0', 'ref_2')
+        self.assertDictEqual({'time': 'time_ref', 'depth': 'depth_ref'}, dim_indices)
+
+        self.assertRaises(ValueError, lambda : data.get_differing_dim_names('model_0', 'ref_3'))
+
+
+class DataMock(Data):
+
+    def __init__(self):
+        super().__init__(None)
+        self._Data__model_file = None
+
+    def _Data__dimension_string(self, ignored, var):
+        if var == 'model_0':
+            return 'time depth lat lon'
+        elif var =='ref_0':
+            return 'time depth lat lon'
+        elif var == 'ref_1':
+            return 'time depth_ref lat lon'
+        elif var == 'ref_2':
+            return 'time_ref depth_ref lat lon'
+        elif var == 'ref_3':
+            return 'depth_ref lat lon'
+
+    def is_ref_data_split(self):
+        return False

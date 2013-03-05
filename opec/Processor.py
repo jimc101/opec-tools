@@ -69,7 +69,7 @@ def unbiased_rmse(reference_values, values):
 def correlation(reference_values, values):
     if len(ma.unique(reference_values)) == 1 or len(ma.unique(values)) == 1:
         return np.nan # if all reference or model values are equal, no sensible correlation coefficient can be computed.
-    return ma.corrcoef(values, reference_values)[0, 1]
+    return ma.corrcoef(values.flatten(), reference_values.flatten())[0, 1]
 
 def percentage_model_bias(reference_values, model_values):
     """
@@ -99,12 +99,6 @@ def create_masked_array(values):
         values = ma.array(values, mask=false_mask)
     return values
 
-def harmonise(reference_values, model_values):
-    reference_values = create_masked_array(reference_values)
-    model_values = create_masked_array(model_values)
-    reference_values.mask = reference_values.mask | model_values.mask
-    model_values.mask = reference_values.mask | model_values.mask
-    return reference_values, model_values
 
 def calculate_statistics(matchups=None, data=None, model_name=None, ref_name=None, reference_values_aligned=None, model_values_aligned=None, reference_values_original=None, model_values_original=None, unit=None, config=None):
     """Calculate the statistics for either the given matchups or the given reference and model arrays.
@@ -128,10 +122,6 @@ def calculate_statistics(matchups=None, data=None, model_name=None, ref_name=Non
     elif reference_values_aligned is None or model_values_aligned is None:
         raise ValueError('Cannot calculate statistics from matchups: missing either matchups or reference and model values.')
 
-    reference_values_aligned, model_values_aligned = harmonise(reference_values_aligned.flatten(), model_values_aligned.flatten())
-    if ma.count(model_values_aligned) != ma.count(reference_values_aligned):
-        raise ValueError("len(values) != len(reference_values_aligned)")
-
     if reference_values_original is None:
         reference_values_original = reference_values_aligned
     if model_values_original is None:
@@ -141,7 +131,7 @@ def calculate_statistics(matchups=None, data=None, model_name=None, ref_name=Non
         config = get_default_config()
 
     model_percentiles = percentiles(model_values_original.flatten(), config.alpha, config.beta)
-    ref_percentiles = percentiles(reference_values_original, config.alpha, config.beta)
+    ref_percentiles = percentiles(reference_values_original.flatten(), config.alpha, config.beta)
     model_minmax = minmax(model_values_original)
     ref_minmax = minmax(reference_values_original)
     stats = dict()

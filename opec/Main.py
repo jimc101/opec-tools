@@ -19,13 +19,16 @@ import shutil
 import sys
 import warnings
 from zipfile import ZipFile
-from opec import Processor, get_logging_formatter, Utils
+import os
+
+import numpy as np
+
+from opec import Processor, get_logging_formatter
 from opec.Configuration import Configuration
 from opec.MatchupEngine import MatchupEngine
 from opec.Data import Data
 from opec.Output import Output
-import numpy as np
-import os
+
 if not os.name == 'nt':
     import resource
 
@@ -115,6 +118,34 @@ def setup_logging(config):
     logging.info('Starting benchmark')
     return file_handler
 
+
+def get_dimension_var_index(differing_dim_model_values, differing_dim_ref_value):
+    # find out grid position where differing dimension variables are nearest
+    min_delta = float('inf')
+    index = -1
+    for loop_index, model_dim_value in enumerate(differing_dim_model_values):
+        current_delta = abs(model_dim_value - differing_dim_ref_value)
+        if current_delta < min_delta:
+            min_delta = current_delta
+            index = loop_index
+
+    return index
+
+
+def get_differing_model_dimension_var_indices(data, differing_dim_names):
+    differing_model_dimension_var_indices = {}
+    for differing_dim in differing_dim_names.keys():
+        differing_model_dim = differing_dim
+        differing_ref_dim = differing_dim_names[differing_dim]
+        differing_dim_model_values = data.read_model(differing_model_dim)
+        # we're assuming here that such differing dimensions for ref data have only a single value
+        differing_dim_ref_value = data.read_reference(differing_ref_dim, (0, ))
+        dim_var_index = get_dimension_var_index(differing_dim_model_values, differing_dim_ref_value)
+        differing_model_dimension_var_indices[differing_model_dim] = dim_var_index
+
+    return differing_model_dimension_var_indices
+
+
 def main():
     parsed_args = parse_arguments(sys.argv[1:])
     config = Configuration(properties_file_name=parsed_args.config, target_dir=parsed_args.output_dir, target_prefix=parsed_args.prefix)
@@ -140,12 +171,38 @@ def main():
         unit = data.unit(model_name)
         is_gridded = len(data.get_reference_dimensions(ref_name)) > 1
         if is_gridded:
+            # todo - refactor, pull methods into data or utils and write tests
+
             model_values = data.read_model(model_name)
             ref_values = data.read_reference(ref_name)
-            model_values_aligned, ref_values_aligned = Utils.align(model_values, ref_values)
+
+            differing_dim_names = data.get_differing_dim_names(model_name, ref_name)
+            differing_model_dimension_var_indices = get_differing_model_dimension_var_indices(data, differing_dim_names)
+
+            # create slice tuple from that info
+            # model_values array is then the slice of the variable
+
+            model_values_slices = []
+            for dim in data.get_model_dimensions(model_name):
+                if dim in differing_dim_names.keys():
+                    index = differing_model_dimension_var_indices[dim]
+                    model_values_slices.append(slice(index, index + 1))
+                else:
+                    model_values_slices.append(slice(0, data.model_dim_size(dim)))
+
+            ref_values_slices = []
+            for dim in data.get_reference_dimensions(ref_name):
+                if dim in differing_dim_names.values():
+                    ref_values_slices.append(slice(0, 1))
+                else:
+                    ref_values_slices.append(slice(0, data.ref_dim_size(dim)))
+
+
+            sliced_model_values = model_values[model_values_slices]
+            sliced_ref_values = ref_values[ref_values_slices]
             stats = Processor.calculate_statistics(model_name=model_name, ref_name=ref_name,
-                                                   reference_values_aligned=ref_values_aligned,
-                                                   model_values_aligned=model_values_aligned,
+                                                   reference_values_aligned=sliced_ref_values,
+                                                   model_values_aligned=sliced_model_values,
                                                    reference_values_original=ref_values,
                                                    model_values_original=model_values,
                                                    unit=unit, config=config)
@@ -163,6 +220,7 @@ def main():
         for (model_name, ref_name), stats in zip(parsed_args.variable_mappings, collected_statistics):
             csv_target_file = '%s/%s%s_statistics.csv' % (parsed_args.output_dir, config.target_prefix, model_name)
             target_files.append(csv_target_file)
+            # todo - continue here !!
             output.csv(stats, variable_name=model_name, ref_variable_name=ref_name, matchups=matchups, target_file=csv_target_file)
             logging.info('CSV output written to \'%s\'' % csv_target_file)
             if matchups and config.separate_matchups:
