@@ -150,8 +150,6 @@ class Data_test(unittest.TestCase):
         dim_indices = data.get_differing_dim_names('model_0', 'ref_0')
         self.assertDictEqual({}, dim_indices)
 
-        data = DataMock()
-
         dim_indices = data.get_differing_dim_names('model_0', 'ref_1')
         self.assertDictEqual({'depth': 'depth_ref'}, dim_indices)
 
@@ -161,11 +159,19 @@ class Data_test(unittest.TestCase):
         self.assertRaises(ValueError, lambda : data.get_differing_dim_names('model_0', 'ref_3'))
 
 
+    def test_get_slices(self):
+        data = DataMock()
+        model_values_slices, ref_values_slices = data.get_slices('model_0', 'ref_1')
+        self.assertListEqual([slice(None), slice(3, 4), slice(None), slice(None)], model_values_slices)
+        self.assertListEqual([slice(0, 5), slice(0, 1), slice(0, 5), slice(0, 10)], ref_values_slices)
+
+
 class DataMock(Data):
 
     def __init__(self):
         super().__init__(None)
         self._Data__model_file = None
+
 
     def _Data__dimension_string(self, ignored, var):
         if var == 'model_0':
@@ -179,5 +185,29 @@ class DataMock(Data):
         elif var == 'ref_3':
             return 'depth_ref lat lon'
 
+
     def is_ref_data_split(self):
         return False
+
+
+    def read_model(self, ignored_1, ignored_2=None):
+        return [2, 3, 4, 5]
+
+
+    def read_reference(self, ignored_1, ignored_2=None):
+        return 5
+
+
+    def get_model_dimensions(self, ignored=None):
+        return ['time', 'depth', 'lat', 'lon']
+
+
+    def get_reference_dimensions(self, ignored=None):
+        return ['time', 'depth_ref', 'lat', 'lon']
+
+
+    def ref_dim_size(self, dim_name):
+        if dim_name == 'lon':
+            return 10
+        else:
+            return 5

@@ -47,3 +47,8 @@ def extract_values(matchups, data, ref_name, model_name):
         model_values[index] = matchup.get_model_value(model_name, data)
         index += 1
     return reference_values, model_values
+
+def get_unit(ncfile, variable_name):
+    if ncfile.get_variable(variable_name):
+        return ncfile.get_variable_attribute(variable_name, 'units')
+    return None

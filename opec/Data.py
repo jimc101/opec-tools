@@ -14,6 +14,7 @@
 import functools
 import logging
 import sys
+from opec import Utils
 
 from opec.NetCDFFacade import NetCDFFacade
 
@@ -166,10 +167,11 @@ class Data(object):
         is_not_in_model_file = self.__model_file.get_variable(variable_name) is None
         if is_not_in_model_file and is_not_in_ref_file:
             raise ValueError('Variable \'%s\' not found.' % variable_name)
-        if unit(self.__model_file, variable_name):
-            return unit(self.__model_file, variable_name)
-        if self.is_ref_data_split() and unit(self.__reference_file, variable_name):
-            return unit(self.__reference_file, variable_name)
+        model_unit = Utils.get_unit(self.__model_file, variable_name)
+        if model_unit:
+            return model_unit
+        if self.is_ref_data_split() and Utils.get_unit(self.__reference_file, variable_name):
+            return Utils.get_unit(self.__reference_file, variable_name)
         return None
 
     def compute_variable_size(self, variable_name):
@@ -190,6 +192,25 @@ class Data(object):
         return False
 
 
+    def get_slices(self, model_name, ref_name):
+        differing_dim_names = self.get_differing_dim_names(model_name, ref_name)
+        differing_model_dimension_var_indices = self.__get_differing_model_dimension_var_indices(differing_dim_names)
+        model_values_slices = []
+        for dim in self.get_model_dimensions(model_name):
+            if dim in differing_dim_names.keys():
+                index = differing_model_dimension_var_indices[dim]
+                model_values_slices.append(slice(index, index + 1))
+            else:
+                model_values_slices.append(slice(None))
+        ref_values_slices = []
+        for dim in self.get_reference_dimensions(ref_name):
+            if dim in differing_dim_names.values():
+                ref_values_slices.append(slice(0, 1))
+            else:
+                ref_values_slices.append(slice(0, self.ref_dim_size(dim)))
+        return model_values_slices, ref_values_slices
+
+
     def get_differing_dim_names(self, model_var, ref_var):
         dim_names = {}
         model_dims = self.__dimension_string(self.__model_file, model_var)
@@ -208,7 +229,28 @@ class Data(object):
         return dim_names
 
 
-def unit(ncfile, variable_name):
-    if ncfile.get_variable(variable_name):
-        return ncfile.get_variable_attribute(variable_name, 'units')
-    return None
+    def __get_differing_model_dimension_var_indices(self, differing_dim_names):
+        differing_model_dimension_var_indices = {}
+        for differing_dim in differing_dim_names.keys():
+            differing_model_dim = differing_dim
+            differing_ref_dim = differing_dim_names[differing_dim]
+            differing_dim_model_values = self.read_model(differing_model_dim)
+            # we're assuming here that such differing dimensions for ref data have only a single value
+            differing_dim_ref_value = self.read_reference(differing_ref_dim, (0, ))
+            dim_var_index = self.__get_dimension_var_index(differing_dim_model_values, differing_dim_ref_value)
+            differing_model_dimension_var_indices[differing_model_dim] = dim_var_index
+
+        return differing_model_dimension_var_indices
+
+
+    def __get_dimension_var_index(self, dim_values, ref_value):
+        # find out grid position where differing dimension variables are nearest
+        min_delta = float('inf')
+        index = -1
+        for loop_index, model_dim_value in enumerate(dim_values):
+            current_delta = abs(model_dim_value - ref_value)
+            if current_delta < min_delta:
+                min_delta = current_delta
+                index = loop_index
+
+        return index
