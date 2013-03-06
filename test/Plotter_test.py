@@ -34,15 +34,15 @@ class Plotter_test(unittest.TestCase):
     def test_taylor_diagram(self):
         values = np.array([0, 15, 2, 3, 15, 8, 5, 3, 9, 11, 12, 1, 7, 7, 6])
         reference_values = np.array([9, 10, 1, 2, 11, 3, 7, 5, 4, 12, 7, 8, 5, 1, 14])
-        stats = Processor.calculate_statistics(model_values_aligned=values, reference_values_aligned=reference_values, unit='mg')
+        stats = Processor.calculate_statistics(model_values=values, reference_values=reference_values, unit='mg')
 
         values1 = np.array([2, 14, 8, 6, 10, 9, 6, 7, 2, 15, 10, 0, 2, 2, 8])
         reference_values1 = np.array([9, 10, 1, 2, 11, 3, 7, 5, 4, 12, 7, 8, 5, 1, 14])
-        stats1 = Processor.calculate_statistics(model_values_aligned=values1, reference_values_aligned=reference_values1, model_name='Kate', unit='mg')
+        stats1 = Processor.calculate_statistics(model_values=values1, reference_values=reference_values1, model_name='Kate', unit='mg')
 
         values2 = np.array([-2, -14, -8, -6, -10, -9, -6, 7, 2, 15, 10, 0, 2, 2, 8])
         reference_values2 = np.array([9, 10, 1, 2, 11, 3, 7, 5, 4, 12, 7, 8, 5, 1, 14])
-        stats2 = Processor.calculate_statistics(model_values_aligned=values2, reference_values_aligned=reference_values2, unit='g')
+        stats2 = Processor.calculate_statistics(model_values=values2, reference_values=reference_values2, unit='g')
 
      #   print('ref_stddev: %s' % stats['ref_stddev'])
      #   print('stddev: %s' % stats['stddev'])
@@ -63,15 +63,15 @@ class Plotter_test(unittest.TestCase):
     def test_taylor_diagrams(self):
         values = np.array([0, 15, 2, 3, 15, 8, 5, 3, 9, 11, 12, 1, 7, 7, 6])
         reference_values = np.array([9, 10, 1, 2, 11, 3, 7, 5, 4, 12, 7, 8, 5, 1, 14])
-        stats = Processor.calculate_statistics(model_values_aligned=values, reference_values_aligned=reference_values, model_name='Kate', unit='megazork')
+        stats = Processor.calculate_statistics(model_values=values, reference_values=reference_values, model_name='Kate', unit='megazork')
 
         values1 = np.array([2, 14, 8, 6, 10, 9, 6, 7, 2, 15, 10, 0, 2, 2, 8])
         reference_values1 = np.array([9, 10, 1, 2, 11, 3, 7, 5, 4, 12, 7, 8, 5, 1, 14])
-        stats1 = Processor.calculate_statistics(model_values_aligned=values1, reference_values_aligned=reference_values1, model_name='Linda', unit='megazork')
+        stats1 = Processor.calculate_statistics(model_values=values1, reference_values=reference_values1, model_name='Linda', unit='megazork')
 
         values2 = np.array([-2, -14, -8, -6, -10, -9, -6, 7, 2, 15, 10, 0, 2, 2, 8])
         reference_values2 = np.array([9, 10, 1, 2, 11, 3, 7, 5, 4, 12, 7, 8, 5, 1, 14])
-        stats2 = Processor.calculate_statistics(model_values_aligned=values2, reference_values_aligned=reference_values2, model_name='Linda', unit='gimpel/m^3')
+        stats2 = Processor.calculate_statistics(model_values=values2, reference_values=reference_values2, model_name='Linda', unit='gimpel/m^3')
 
         diagrams = plotter.create_taylor_diagrams((stats, stats1, stats2))
         self.assertEqual(2, len(diagrams))
@@ -85,15 +85,15 @@ class Plotter_test(unittest.TestCase):
     def test_target_diagram(self):
         values =           np.array([3, 3, 2, 3, 6, 8, 5, 3, 4, 6, 4, 1, 7, 7, 6])
         reference_values = np.array([2, 5, 1, 5, 5, 9, 4, 5, 3, 8, 3, 3, 6, 9, 5])
-        stats = Processor.calculate_statistics(model_values_aligned=values, reference_values_aligned=reference_values, model_name='Linda', unit='g')
+        stats = Processor.calculate_statistics(model_values=values, reference_values=reference_values, model_name='Linda', unit='g')
 
         values1 =           np.array([2, 14, 8, 6, 10, 9, 6, 7, 2, 15, 10, 0, 2, 2, 8])
         reference_values1 = np.array([5, 11, 6, 4, 11, 8, 7, 9, 2, 5, 11, -2, 1, 3, 9])
-        stats1 = Processor.calculate_statistics(model_values_aligned=values1, reference_values_aligned=reference_values1, model_name='Kate', unit='mg')
+        stats1 = Processor.calculate_statistics(model_values=values1, reference_values=reference_values1, model_name='Kate', unit='mg')
 
         values2 =           np.array([-2, -14, -8, -6, -10, -9, -6, 7, 2, 15, 10, 0, 2, 2, 8])
         reference_values2 = np.array([-1, -10, -5, -5, -11, -8, -7, 5, 3, 13, 10, 2, 2, -1, 7])
-        stats2 = Processor.calculate_statistics(model_values_aligned=values2, reference_values_aligned=reference_values2, model_name='Naomi', unit='kg')
+        stats2 = Processor.calculate_statistics(model_values=values2, reference_values=reference_values2, model_name='Naomi', unit='kg')
 
      #   print('ref_stddev: %s' % stats['ref_stddev'])
      #   print('stddev: %s' % stats['stddev'])

@@ -71,7 +71,7 @@ def calculate_statistics_from_values(model_values, ref_values, config=None):
     @param config: the optional configuration.
     @return: a dictionary of statistics.
     """
-    return Processor.calculate_statistics(model_values_aligned=model_values, reference_values_aligned=ref_values, config=config)
+    return Processor.calculate_statistics(model_values=model_values, reference_values=ref_values, config=config)
 
 def get_matchups(data, config=None):
     """

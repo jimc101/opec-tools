@@ -11,3 +11,4 @@ dist
 build
 opec.egg-info
 MANIFEST
+resources/ogs_test*

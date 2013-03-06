@@ -50,11 +50,11 @@ class Formatter(argparse.RawDescriptionHelpFormatter):
     def _format_usage(self, usage, actions, groups, prefix):
         # clumsy way, but there's no native argparse support for what I do here
         # (what I do is: move <path> argument in usage description to beginning, where it belongs)
-        format = super(argparse.RawDescriptionHelpFormatter, self)._format_usage(usage, actions, groups, prefix)
-        format = format.replace('<path>', '')
-        index = format.index('[-c')
-        format = format[:index] + '| <path> ' + format[index:]
-        return format
+        the_format = super(argparse.RawDescriptionHelpFormatter, self)._format_usage(usage, actions, groups, prefix)
+        the_format = the_format.replace('<path>', '')
+        index = the_format.index('[-c')
+        the_format = the_format[:index] + '| <path> ' + the_format[index:]
+        return the_format
 
     def _format_action(self, action):
         # some cleanup of the help message
@@ -201,10 +201,8 @@ def main():
             sliced_model_values = model_values[model_values_slices]
             sliced_ref_values = ref_values[ref_values_slices]
             stats = Processor.calculate_statistics(model_name=model_name, ref_name=ref_name,
-                                                   reference_values_aligned=sliced_ref_values,
-                                                   model_values_aligned=sliced_model_values,
-                                                   reference_values_original=ref_values,
-                                                   model_values_original=model_values,
+                                                   reference_values=sliced_ref_values,
+                                                   model_values=sliced_model_values,
                                                    unit=unit, config=config)
         else:
             stats = Processor.calculate_statistics(matchups=matchups, data=data, config=config, model_name=model_name, ref_name=ref_name, unit=unit)

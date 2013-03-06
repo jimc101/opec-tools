@@ -16,30 +16,25 @@ import logging
 import numpy as np
 import numpy.ma as ma
 import scipy.stats.mstats as mstats
+from opec import Utils
 from opec.Configuration import get_default_config
 
-def extract_values(matchups, data, ref_name, model_name):
-    logging.debug('Extracting values of variables \'%s\' and \'%s\'' % (ref_name, model_name))
-    reference_values = np.ma.empty(len(matchups))
-    model_values = np.ma.empty(len(matchups))
-    index = 0
-    for matchup in matchups:
-        reference_values[index] = matchup.get_ref_value(ref_name, data)
-        model_values[index] = matchup.get_model_value(model_name, data)
-        index += 1
-    return reference_values, model_values
 
 def mean(values):
     return np.mean(values)
 
+
 def stddev(values, ddof):
     return ma.std(values, ddof=ddof)
+
 
 def percentiles(values, alphap, betap):
     return mstats.mquantiles(values, [0.5, 0.9, 0.95], alphap, betap)
 
+
 def minmax(values):
     return [ma.min(values), ma.max(values)]
+
 
 def rmse(reference_values, values):
     """
@@ -48,6 +43,7 @@ def rmse(reference_values, values):
     squared_errors = (values - reference_values) ** 2
     return ma.sqrt(ma.mean(squared_errors))
 
+
 def normalised_rmse(reference_values, values, ddof, correlation):
     """
     according to "Diagrams for coupled hydrodynamic-ecosystem model skill assessment", Joliff et. al. 2009
@@ -55,21 +51,25 @@ def normalised_rmse(reference_values, values, ddof, correlation):
     normalised_stddev = ma.std(values, ddof=ddof) / ma.std(reference_values, ddof=ddof)
     return ma.sqrt(1 + normalised_stddev**2 - 2 * normalised_stddev * correlation)
 
+
 def bias(reference_values, values):
     """
     according to http://en.wikipedia.org/wiki/Bias_of_an_estimator
     """
     return ma.mean(reference_values) - ma.mean(values)
 
+
 def unbiased_rmse(reference_values, values):
     squared_differences = ((values - ma.mean(values)) - (reference_values - ma.mean(reference_values))) ** 2
     squared_differences /= ma.count(values)
     return ma.sqrt(ma.sum(squared_differences))
 
+
 def correlation(reference_values, values):
     if len(ma.unique(reference_values)) == 1 or len(ma.unique(values)) == 1:
         return np.nan # if all reference or model values are equal, no sensible correlation coefficient can be computed.
     return ma.corrcoef(values.flatten(), reference_values.flatten())[0, 1]
+
 
 def percentage_model_bias(reference_values, model_values):
     """
@@ -85,6 +85,7 @@ def reliability_index(reference_values, model_values):
     n = 1 / ma.count(reference_values)
     return ma.exp(ma.sqrt(n * ma.sum(ma.power(ma.log10(reference_values / model_values), 2))))
 
+
 def model_efficiency(reference_values, model_values):
     """
     Nash-Sutcliffe model efficiency according to MEECE D2.7 User guide and report outlining validation methodology
@@ -93,63 +94,46 @@ def model_efficiency(reference_values, model_values):
         return np.nan # if all reference values are equal, no sensible model efficiency can be computed.
     return 1 - ma.sum(ma.power(reference_values - model_values, 2)) / ma.sum(ma.power(reference_values - np.mean(reference_values), 2))
 
-def create_masked_array(values):
-    false_mask = np.zeros(len(values))
-    if type(values) is not ma.core.MaskedArray:
-        values = ma.array(values, mask=false_mask)
-    return values
 
-
-def calculate_statistics(matchups=None, data=None, model_name=None, ref_name=None, reference_values_aligned=None, model_values_aligned=None, reference_values_original=None, model_values_original=None, unit=None, config=None):
+def calculate_statistics(matchups=None, data=None, model_name=None, ref_name=None, reference_values=None, model_values=None, unit=None, config=None):
     """Calculate the statistics for either the given matchups or the given reference and model arrays.
     If matchups are given, the reference and model arrays are NOT considered and vice versa.
     If matchups are given, the data, model_name, and ref_name arguments are mandatory. Otherwise, it is recommended to
     provide model_name and ref_name in order to create meaningful output.
-
-    Note that there might be gridded reference variables that have dimensionality different to those of the model variable.
-    In such cases, the data with the lesser dimensionality is duplicated and thus brought onto the same grid as the other data.
-    So, for example, if the model variable has the dimensions time, lat, and lon, while the reference variable has only lat and lon,
-    there are practically matchups created for each point in time of the model variable.
-    Since using such a blown-up variable might yield slightly different results for the percentiles,
-    their original values can and should be passed into this method as well, as reference_values_original and
-    as model_values_original.
     """
 
     if matchups is not None:
         if model_name is None or ref_name is None or data is None:
             raise ValueError('Cannot calculate statistics from matchups: data, model_name, or ref_name missing.')
-        reference_values_aligned, model_values_aligned = extract_values(matchups, data, ref_name, model_name)
-    elif reference_values_aligned is None or model_values_aligned is None:
+        reference_values, model_values = Utils.extract_values(matchups, data, ref_name, model_name)
+    elif reference_values is None or model_values is None:
         raise ValueError('Cannot calculate statistics from matchups: missing either matchups or reference and model values.')
-
-    if reference_values_original is None:
-        reference_values_original = reference_values_aligned
-    if model_values_original is None:
-        model_values_original = model_values_aligned
 
     if config is None:
         config = get_default_config()
 
-    model_percentiles = percentiles(model_values_original.flatten(), config.alpha, config.beta)
-    ref_percentiles = percentiles(reference_values_original.flatten(), config.alpha, config.beta)
-    model_minmax = minmax(model_values_original)
-    ref_minmax = minmax(reference_values_original)
+    reference_values, model_values = Utils.harmonise(reference_values, model_values)
+
+    model_percentiles = percentiles(model_values.flatten(), config.alpha, config.beta)
+    ref_percentiles = percentiles(reference_values.flatten(), config.alpha, config.beta)
+    model_minmax = minmax(model_values)
+    ref_minmax = minmax(reference_values)
     stats = dict()
     stats['model_name'] = model_name
     stats['ref_name'] = ref_name
     stats['unit'] = unit
-    stats['rmse'] = rmse(reference_values_aligned, model_values_aligned)
-    stats['corrcoeff'] = correlation(reference_values_aligned, model_values_aligned)
-    stats['unbiased_rmse'] = unbiased_rmse(reference_values_aligned, model_values_aligned)
-    stats['normalised_rmse'] = normalised_rmse(reference_values_aligned, model_values_aligned, config.ddof, stats['corrcoeff'])
-    stats['pbias'] = percentage_model_bias(reference_values_aligned, model_values_aligned)
-    stats['bias'] = bias(reference_values_aligned, model_values_aligned)
-    stats['reliability_index'] = reliability_index(reference_values_aligned, model_values_aligned)
-    stats['model_efficiency'] = model_efficiency(reference_values_aligned, model_values_aligned)
-    stats['mean'] = mean(model_values_original)
-    stats['ref_mean'] = mean(reference_values_original)
-    stats['stddev'] = stddev(model_values_original, config.ddof)
-    stats['ref_stddev'] = stddev(reference_values_original, config.ddof)
+    stats['rmse'] = rmse(reference_values, model_values)
+    stats['corrcoeff'] = correlation(reference_values, model_values)
+    stats['unbiased_rmse'] = unbiased_rmse(reference_values, model_values)
+    stats['normalised_rmse'] = normalised_rmse(reference_values, model_values, config.ddof, stats['corrcoeff'])
+    stats['pbias'] = percentage_model_bias(reference_values, model_values)
+    stats['bias'] = bias(reference_values, model_values)
+    stats['reliability_index'] = reliability_index(reference_values, model_values)
+    stats['model_efficiency'] = model_efficiency(reference_values, model_values)
+    stats['mean'] = mean(model_values)
+    stats['ref_mean'] = mean(reference_values)
+    stats['stddev'] = stddev(model_values, config.ddof)
+    stats['ref_stddev'] = stddev(reference_values, config.ddof)
     stats['median'] = model_percentiles[0]
     stats['ref_median'] = ref_percentiles[0]
     stats['p90'] = model_percentiles[1]
