@@ -95,24 +95,13 @@ def model_efficiency(reference_values, model_values):
     return 1 - ma.sum(ma.power(reference_values - model_values, 2)) / ma.sum(ma.power(reference_values - np.mean(reference_values), 2))
 
 
-def calculate_statistics(matchups=None, data=None, model_name=None, ref_name=None, reference_values=None, model_values=None, unit=None, config=None):
-    """Calculate the statistics for either the given matchups or the given reference and model arrays.
-    If matchups are given, the reference and model arrays are NOT considered and vice versa.
-    If matchups are given, the data, model_name, and ref_name arguments are mandatory. Otherwise, it is recommended to
-    provide model_name and ref_name in order to create meaningful output.
+def calculate_statistics(model_name=None, ref_name=None, reference_values=None, model_values=None, unit=None, config=None):
+    """Calculate the statistics for the given reference and model arrays.
+    It is recommended to provide model_name and ref_name in order to allow for meaningful output.
     """
-
-    if matchups is not None:
-        if model_name is None or ref_name is None or data is None:
-            raise ValueError('Cannot calculate statistics from matchups: data, model_name, or ref_name missing.')
-        reference_values, model_values = Utils.extract_values(matchups, data, ref_name, model_name)
-    elif reference_values is None or model_values is None:
-        raise ValueError('Cannot calculate statistics from matchups: missing either matchups or reference and model values.')
 
     if config is None:
         config = get_default_config()
-
-    reference_values, model_values = Utils.harmonise(reference_values, model_values)
 
     model_percentiles = percentiles(model_values.flatten(), config.alpha, config.beta)
     ref_percentiles = percentiles(reference_values.flatten(), config.alpha, config.beta)

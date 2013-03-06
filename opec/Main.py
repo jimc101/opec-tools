@@ -22,8 +22,10 @@ from zipfile import ZipFile
 import os
 
 import numpy as np
+import numpy.ma as ma
+import scipy.stats as sp
 
-from opec import Processor, get_logging_formatter
+from opec import Processor, get_logging_formatter, Utils
 from opec.Configuration import Configuration
 from opec.MatchupEngine import MatchupEngine
 from opec.Data import Data
@@ -128,6 +130,8 @@ def main():
     else:
         data = Data(parsed_args.path, max_cache_size=config.max_cache_size)
 
+    output = Output(data, config=config, source_file=parsed_args.path)
+
     matchups = None
     if not data.has_gridded_ref_var():
         me = MatchupEngine(data, config)
@@ -139,24 +143,31 @@ def main():
     if not os.name == 'nt':
         logging.debug('Memory after matchups have been found: %s' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
 
+    matchup_count = 0 if matchups is None else len(matchups)
     collected_statistics = []
+    scatter_plots = {}
     for (model_name, ref_name) in parsed_args.variable_mappings:
         unit = data.unit(model_name)
         is_gridded = len(data.get_reference_dimensions(ref_name)) > 1
         if is_gridded:
             model_values = data.read_model(model_name)
-            ref_values = data.read_reference(ref_name)
+            reference_values = data.read_reference(ref_name)
 
             model_values_slices, ref_values_slices = data.get_slices(model_name, ref_name)
-
             sliced_model_values = model_values[model_values_slices]
-            sliced_ref_values = ref_values[ref_values_slices]
-            stats = Processor.calculate_statistics(model_name=model_name, ref_name=ref_name,
-                                                   reference_values=sliced_ref_values,
-                                                   model_values=sliced_model_values,
-                                                   unit=unit, config=config)
+            sliced_ref_values = reference_values[ref_values_slices]
+
+            reference_values, model_values = Utils.harmonise(sliced_ref_values, sliced_model_values)
+            matchup_count += ma.count(reference_values)
         else:
-            stats = Processor.calculate_statistics(matchups=matchups, data=data, config=config, model_name=model_name, ref_name=ref_name, unit=unit)
+            reference_values, model_values = Utils.extract_values(matchups, data, ref_name, model_name)
+            reference_values, model_values = Utils.harmonise(reference_values, model_values)
+
+        if config.write_scatter_plots:
+            scatter_plot = output.scatter_plot(ref_name, model_name, reference_values.compressed(), model_values.compressed(), data.unit(model_name))
+            scatter_plots[model_name + ref_name] = scatter_plot
+
+        stats = Processor.calculate_statistics(model_name, ref_name, reference_values, model_values, unit, config)
         collected_statistics.append(stats)
         logging.info('Calculated statistics for \'%s\' with \'%s\'' % (model_name, ref_name))
 
@@ -164,18 +175,15 @@ def main():
         logging.debug('Memory after statistics have been computed: %s' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
 
     target_files = []
-    output = Output(data, config=config, source_file=parsed_args.path)
     if config.write_csv:
         for (model_name, ref_name), stats in zip(parsed_args.variable_mappings, collected_statistics):
             csv_target_file = '%s/%s%s_statistics.csv' % (parsed_args.output_dir, config.target_prefix, model_name)
             target_files.append(csv_target_file)
-            # todo - continue here !!
-            output.csv(stats, variable_name=model_name, ref_variable_name=ref_name, matchups=matchups, target_file=csv_target_file)
+            output.csv(stats, model_name, ref_name, matchup_count, matchups=matchups, target_file=csv_target_file)
             logging.info('CSV output written to \'%s\'' % csv_target_file)
-            if matchups and config.separate_matchups:
-                matchup_filename = '%s_matchups.csv' % os.path.splitext(csv_target_file)[0]
-                logging.info('Matchups written to \'%s\'' % matchup_filename)
-                target_files.append(matchup_filename)
+            matchup_filename = '%s_matchups.csv' % os.path.splitext(csv_target_file)[0]
+            logging.info('Matchups written to \'%s\'' % matchup_filename)
+            target_files.append(matchup_filename)
 
     taylor_target_files = []
     if config.write_taylor_diagrams:
@@ -194,7 +202,7 @@ def main():
             scatter_target = '%s/scatter-%s-%s.png' % (parsed_args.output_dir, model_name, ref_name)
             scatter_plot_files.append(scatter_target)
             target_files.append(scatter_target)
-            output.scatter_plot(matchups, data, ref_name, model_name, scatter_target, data.unit(model_name))
+            output.write_scatter_plot(scatter_plots[model_name + ref_name], scatter_target)
             logging.info('Scatter plot written to \'%s\'' % scatter_target)
 
     target_diagram_file = None

@@ -37,6 +37,7 @@ def key(string, is_ref_var):
         return 'ref_' + string
     return string
 
+
 def get_basenames(files):
     basenames = []
     if files is not None:
@@ -44,7 +45,9 @@ def get_basenames(files):
             basenames.append(os.path.basename(file))
     return basenames
 
+
 class Output(object):
+
     def __init__(self, data, **kwargs):
         """Constructs a new instance of Output.
 
@@ -58,14 +61,10 @@ class Output(object):
         self.separator = self.config.separator
         self.data = data
 
-    def csv(self, statistics, variable_name, ref_variable_name, matchups=None, target_file=None):
-        """Outputs the statistics to CSV.
 
-        Arguments:
-            variable_name -- the model variable name
-            ref_variable_name -- the reference variable name
-            matchups -- the matchups used to calculate the statistics (optional)
-            target_file -- if specified, the CSV will be written to the file. (optional)
+    def csv(self, statistics, variable_name, ref_variable_name, matchup_count, matchups=None, target_file=None):
+        """
+        Outputs the statistics to CSV.
         """
 
         if variable_name is None:
@@ -77,30 +76,24 @@ class Output(object):
 
         lines = []
         if include_header:
-            self.__write_header(lines, matchups)
+            self.__write_header(lines, matchup_count)
         lines.append('\n'.join(self.__reference_statistics(statistics, variable_name, ref_variable_name)))
         lines.append('')
         lines.append('\n'.join(self.__single_statistics(statistics, variable_name, False)))
         lines.append('')
         lines.append('\n'.join(self.__single_statistics(statistics, ref_variable_name, True)))
 
-        if matchups is not None:
-            matchup_lines = self.__matchup_infos(matchups)
-
-        if matchups is not None and not self.config.separate_matchups:
-            lines.append('')
-            #noinspection PyUnboundLocalVariable
-            lines.extend(matchup_lines)
-
         if target_file is not None:
             self.__write_lines_to_file(target_file, lines)
-            if matchups is not None and self.config.separate_matchups:
+            if matchups is not None:
+                matchup_lines = self.__matchup_infos(matchups)
                 matchup_filename = '%s_matchups.csv' % os.path.splitext(target_file)[0]
                 self.__write_lines_to_file(matchup_filename, matchup_lines)
 
         return '\n'.join(lines)
 
-    def __write_header(self, lines, matchups):
+
+    def __write_header(self, lines, matchup_count):
         source = '' if self.source_file is None else ' of file \'{}\''.format(self.source_file)
         lines.append('##############################################################')
         lines.append('#')
@@ -110,8 +103,7 @@ class Output(object):
         lines.append('#')
         lines.append('# Performed at {}'.format(datetime.now().strftime('%b %d, %Y at %H:%M:%S')))
         lines.append('#')
-        if matchups is not None:
-            lines.append('# Number of matchups: %s' % len(matchups))
+        lines.append('# Number of matchups: %s' % matchup_count)
         lines.append('#')
         lines.append('# Matchup criteria:')
         lines.append('#    Maximum time delta = {} seconds'.format(self.config.time_delta))
@@ -123,6 +115,7 @@ class Output(object):
         lines.append('#    alpha (used for percentile computation) = 1'.format(self.config.alpha))
         lines.append('#    beta (used for percentile computation) = 1'.format(self.config.beta))
         lines.append('#')
+
 
     def __reference_statistics(self, stats, model_variable, reference_variable):
         lines = []
@@ -137,6 +130,7 @@ class Output(object):
         lines.append('model_efficiency%s%s' % (self.separator, format_statistic(stats, 'model_efficiency')))
         return lines
 
+
     def __single_statistics(self, stats, variable, is_ref_var):
         lines = []
         lines.append('# Statistics of variable \'%s\':' % variable)
@@ -149,6 +143,7 @@ class Output(object):
         lines.append('p90%s%s' % (self.separator, format_statistic(stats, key('p90', is_ref_var))))
         lines.append('p95%s%s' % (self.separator, format_statistic(stats, key('p95', is_ref_var))))
         return lines
+
 
     def __matchup_infos(self, matchups):
         header = []
@@ -165,11 +160,6 @@ class Output(object):
         model_vars = self.data.model_vars()
         header.extend(ref_vars)
         header.extend(model_vars)
-        # for matchup in matchups:
-        #     for var in matchup.values:
-        #         if not var in header:
-        #             header.append(var)
-        #             vars.append(var)
 
         lines = [self.config.separator.join(header)]
         for matchup in matchups:
@@ -190,6 +180,7 @@ class Output(object):
             lines.append(self.config.separator.join(line))
         return lines
 
+
     def __write_lines_to_file(self, target_file, lines):
         directory = os.path.dirname(target_file)
         if not os.path.exists(directory):
@@ -198,6 +189,7 @@ class Output(object):
         for line in lines:
             file.write("%s\n" % line)
         file.close()
+
 
     def xhtml(self, statistics_list, matchups, data, target_file, taylor_target_files=None, target_diagram_file=None, scatter_plot_files=None):
         filename = os.path.dirname(os.path.realpath(__file__)) + '/../resources/matchup_report_template.xml'
@@ -259,6 +251,7 @@ class Output(object):
         file.write(xml)
         file.close()
 
+
     def taylor(self, statistics, target_file=None):
         diagrams = Plotter.create_taylor_diagrams(statistics, config=self.config)
         result = []
@@ -270,11 +263,16 @@ class Output(object):
                 result.append(new_target_file)
         return result, diagrams
 
-    def scatter_plot(self, matchups, data, ref_name, model_name, target_file=None, unit=None):
-        diagram = Plotter.create_scatter_plot(matchups, data, ref_name, model_name, unit)
-        if target_file is not None:
-            diagram.write(target_file)
-        return diagram
+
+    def scatter_plot(self, ref_name, model_name, ref_data, model_data, unit=None):
+        scatter_plot = Plotter.create_scatter_plot(ref_name, model_name, unit)
+        scatter_plot.set_data(ref_data, model_data, len(ref_data))
+        return scatter_plot
+
+
+    def write_scatter_plot(self, scatter_plot, target_file):
+        scatter_plot.write(target_file)
+
 
     def target_diagram(self, statistics, target_file=None):
         target_diagram = Plotter.create_target_diagram(statistics, self.config)

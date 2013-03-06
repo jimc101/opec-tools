@@ -20,7 +20,7 @@ from opec.Configuration import Configuration
 class Configuration_test(unittest.TestCase):
 
     def test_initialisation(self):
-        c = Configuration(alpha=5, ddof=2, show_legends=False, write_taylor_diagrams=False, separate_matchups=False)
+        c = Configuration(alpha=5, ddof=2, show_legends=False, write_taylor_diagrams=False)
         self.assertEqual(5, c.alpha)
         self.assertEqual(1, c.beta)
         self.assertEqual(2, c.ddof)
@@ -37,7 +37,6 @@ class Configuration_test(unittest.TestCase):
         self.assertEqual(None, c.log_file)
         self.assertEqual(True, c.write_csv)
         self.assertEqual(True, c.write_xhtml)
-        self.assertEqual(False, c.separate_matchups)
         self.assertEqual(True, c.write_scatter_plots)
 
     def test_initialisation_by_file(self):
@@ -58,7 +57,6 @@ class Configuration_test(unittest.TestCase):
         self.assertEqual(None, c.log_file)
         self.assertEqual(False, c.write_csv)
         self.assertEqual(False, c.write_xhtml)
-        self.assertEqual(True, c.separate_matchups)
 
     def test_wrong_log_level(self):
         self.assertRaises(RuntimeError, lambda: Configuration(log_level='LOG_EVERYTHING_PLEASE'))

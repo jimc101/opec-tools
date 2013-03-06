@@ -87,24 +87,12 @@ def create_target_diagram(statistics, config=None):
 
     return diagram
 
-def create_scatter_plot(matchups, data, ref_name, model_name, unit=None):
+def create_scatter_plot(ref_name, model_name, unit=None):
     figure = pyplot.figure()
     diagram = ScatterPlot(figure, ref_name, model_name, unit)
-    ax = diagram.setup_axes()
-    index = 0
-    for matchup in matchups:
-        diagram.collect_sample(matchup.get_ref_value(ref_name, data), matchup.get_model_value(model_name, data))
-        index += 1
-
-    diagram.draw_regression_line()
-    diagram.update_ranges()
-    diagram.update_title(len(matchups))
-
-    ax.scatter(diagram.x, diagram.y)
-
-    if not os.name == 'nt':
-        logging.debug('Memory after scatter plot has been computed: %s' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+    diagram.setup_axes()
     return diagram
+
 
 class Diagram(object):
 
@@ -144,6 +132,7 @@ class ScatterPlot(Diagram):
         self.ref_name = ref_name
         self.unit_string = '(%s)' % unit if unit is not None else ''
 
+
     def setup_axes(self):
         ax = SubplotZero(self.fig, 1, 1, 1)
         self.fig.add_subplot(ax)
@@ -151,28 +140,31 @@ class ScatterPlot(Diagram):
         ax.set_ylabel('%s %s' % (self.model_name, self.unit_string))
         ax.grid()
         self.ax = ax
-        return ax
+
 
     def update_title(self, matchup_count):
         self.ax.set_title('Scatter plot of %s and %s\nNumber of considered matchups: %s' % (self.model_name, self.ref_name, matchup_count))
 
-    def draw_regression_line(self):
-        m, b = pylab.polyfit(self.x, self.y, 1)
-        line, = pyplot.plot([np.min(self.x), np.max(self.x)], [m * np.min(self.x) + b, m * np.max(self.x) + b], '-b', linewidth=0.4)
+
+    def draw_regression_line(self, x_data, y_data):
+        m, b = pylab.polyfit(x_data.flatten(), y_data.flatten(), 1)
+        line, = pyplot.plot([np.min(x_data), np.max(x_data)], [m * np.min(x_data) + b, m * np.max(x_data) + b], '-b', linewidth=0.4)
         if hasattr(self, 'line'):
             self.ax.lines.remove(self.line)
         self.line = line
 
-    def collect_sample(self, ref_value, model_value):
-        if np.ma.masked in [ref_value, model_value]:
-            return
 
-        self.x.append(ref_value)
-        self.y.append(model_value)
+    def set_data(self, x_data, y_data, matchup_count):
+        self.ax.scatter(x_data, y_data)
+        self.update_title(matchup_count)
+        self.draw_regression_line(x_data, y_data)
+        # self.update_ranges(x_data, y_data)
 
-    def update_ranges(self):
+
+    def update_ranges(self, x_data, y_data):
         growing_factor = 1.2
-        pyplot.axis([min(self.x) / growing_factor, growing_factor * max(self.x), min(self.y) / growing_factor, growing_factor * max(self.y)])
+        pyplot.axis([min(x_data) / growing_factor, growing_factor * max(x_data), min(y_data) / growing_factor, growing_factor * max(y_data)])
+
 
 #noinspection PyUnusedLocal
 def hide_zero(value, pos):

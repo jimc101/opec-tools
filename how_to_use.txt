@@ -64,3 +64,7 @@ functions needed for working with the tool. Use IPythons's code completion and h
 possibilities you have. See file 'interactive_demo.txt' for a sample interactive session with the tool.
 Of course you can also use the other Python modules the benchmarking tool contains, such as Data, MatchupEngine, and
 Plotter, but since these are considered internal they are not as well documented as the dedicated Benchmarking module.
+
+LIMITATIONS
+
+- currently, it is not possible to write out matchup information for gridded reference variables

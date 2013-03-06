@@ -15,11 +15,10 @@
 import configparser
 import logging
 import os
+import re
 
 # needed because configparser.ConfigParser requires at least one section header in a properties file
 # See http://stackoverflow.com/a/8555776 for source
-import re
-
 def add_section_header(properties_file, header_name):
     yield '[{}]\n'.format(header_name)
     for line in properties_file:
@@ -30,7 +29,7 @@ class Configuration(object):
     def __init__(self, alpha=None, beta=None, ddof=None, time_delta=None, depth_delta=None,
                  log_level=None, log_file=None, zip=None, show_negative_corrcoeff=None,
                  show_legends=None, target_dir=None, target_prefix=None, include_header=None, separator=None,
-                 separate_matchups=None, properties_file_name=None, write_taylor_diagrams=None, write_xhtml=None,
+                 properties_file_name=None, write_taylor_diagrams=None, write_xhtml=None,
                  write_csv=None, write_scatter_plots=None, split_diagrams=None, write_target_diagram=None,
                  target_diagram_bounds=None, normalise_target_diagram=None, utilise_stddev_difference=None,
                  max_cache_size=None):
@@ -61,7 +60,6 @@ class Configuration(object):
         self.__set(target_prefix, 'opec.output.target_prefix', str)
         self.__set(separator, 'opec.output.csv.separator', separator_conv)
         self.__set(include_header, 'opec.output.csv.include_header', bool_conv)
-        self.__set(separate_matchups, 'opec.output.csv.separate_matchups', bool_conv)
         self.__set(write_taylor_diagrams, 'opec.output.plot.taylor.write_taylor_diagrams', bool_conv)
         self.__set(write_xhtml, 'opec.output.xhtml.write_xhtml', bool_conv)
         self.__set(write_csv, 'opec.output.csv.write_csv', bool_conv)
@@ -74,6 +72,7 @@ class Configuration(object):
         self.__set(utilise_stddev_difference, 'opec.output.plot.target.utilise_stddev_difference', bool_conv)
         self.__set(max_cache_size, 'opec.general.max_cache_size', int)
 
+
     def __set(self, value, name, converter, target_name=None):
         if value is not None:
              actual_value = value
@@ -85,6 +84,7 @@ class Configuration(object):
             target_name = name
         self.__dict[target_name] = converter(actual_value)
 
+
     def __read_properties(self, properties_file_name):
         if properties_file_name is not None:
             self.__config = configparser.ConfigParser()
@@ -94,89 +94,113 @@ class Configuration(object):
         else:
             self.__config = None
 
+
     def __read_default_properties(self):
         self.__default_config = configparser.ConfigParser()
         default_properties_file = open(os.path.dirname(os.path.realpath(__file__)) + '/../resources/default.properties')
         self.__default_config.read_file(add_section_header(default_properties_file, 'dummy_section'))
         default_properties_file.close()
 
+
     def __alpha(self):
         return self.__dict['opec.algo.percentile.alpha']
+
 
     def __beta(self):
         return self.__dict['opec.algo.percentile.beta']
 
+
     def __ddof(self):
         return self.__dict['opec.algo.stddev.ddof']
+
 
     def __time_delta(self):
         return self.__dict['opec.matchup.time_delta']
 
+
     def __depth_delta(self):
         return self.__dict['opec.matchup.depth_delta']
+
 
     def __log_level(self):
         return self.__dict['opec.general.log_level']
 
+
     def __log_file(self):
         return self.__dict['opec.general.log_file']
+
 
     def __zip(self):
         return self.__dict['opec.output.zip']
 
+
     def __show_negative_corrcoeff(self):
         return self.__dict['opec.output.plot.taylor.show_negative_corrcoeff']
+
 
     def __show_legends(self):
         return self.__dict['opec.output.plot.show_legends']
 
+
     def __target_dir(self):
         return self.__dict['target_dir']
+
 
     def __target_prefix(self):
         return self.__dict['opec.output.target_prefix']
 
+
     def __include_header(self):
         return self.__dict['opec.output.csv.include_header']
+
 
     def __separator(self):
         return self.__dict['opec.output.csv.separator']
 
-    def __separate_matchups(self):
-        return self.__dict['opec.output.csv.separate_matchups']
 
     def __write_taylor_diagrams(self):
         return self.__dict['opec.output.plot.taylor.write_taylor_diagrams']
 
+
     def __write_csv(self):
         return self.__dict['opec.output.csv.write_csv']
+
 
     def __write_xhtml(self):
         return self.__dict['opec.output.xhtml.write_xhtml']
 
+
     def __write_scatter_plots(self):
         return self.__dict['opec.output.plot.scatter.write_scatter_plots']
+
 
     def __split_on_unit(self):
         return self.__dict['opec.output.plot.split_on_unit']
 
+
     def __split_on_name(self):
         return self.__dict['opec.output.plot.split_on_name']
+
 
     def __write_target_diagram(self):
         return self.__dict['opec.output.plot.target.write_target_diagram']
 
+
     def __target_diagram_bounds(self):
         return self.__dict['opec.output.plot.target.diagram_bounds']
+
 
     def __normalise_target_diagram(self):
         return self.__dict['opec.output.plot.target.normalise_target_diagram']
 
+
     def __utilise_stddev_difference(self):
         return self.__dict['opec.output.plot.target.utilise_stddev_difference']
 
+
     def __max_cache_size(self):
         return self.__dict['opec.general.max_cache_size']
+
 
     alpha = property(__alpha)
     beta = property(__beta)
@@ -192,7 +216,6 @@ class Configuration(object):
     target_prefix = property(__target_prefix)
     include_header = property(__include_header)
     separator = property(__separator)
-    separate_matchups = property(__separate_matchups)
     write_taylor_diagrams = property(__write_taylor_diagrams)
     write_csv = property(__write_csv)
     write_xhtml = property(__write_xhtml)
@@ -205,8 +228,10 @@ class Configuration(object):
     utilise_stddev_difference = property(__utilise_stddev_difference)
     max_cache_size = property(__max_cache_size)
 
+
 def get_default_config():
     return Configuration()
+
 
 def log_level_conv(value):
     log_level = value.upper()
@@ -222,8 +247,10 @@ def log_level_conv(value):
         return 100              # made-up logging value higher than max
     raise RuntimeError('Erroneous log level: %s' % value)
 
+
 def bool_conv(value):
     return str(value).lower() == 'true'
+
 
 def separator_conv(value):
     # I just didn't get escaped strings unescaped, so here's the low-tech version
@@ -233,8 +260,10 @@ def separator_conv(value):
         return ' '
     return value
 
+
 def log_file_conv(value):
     return None if value.strip() == 'None' else value
+
 
 def split_diagrams_conv(key):
     def shall_split_for_value(value):
@@ -244,6 +273,7 @@ def split_diagrams_conv(key):
             return True
         return False
     return shall_split_for_value
+
 
 def bounds_conv(value):
     if type(value) == list:
