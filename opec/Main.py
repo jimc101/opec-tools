@@ -133,7 +133,7 @@ def main():
     output = Output(data, config=config, source_file=parsed_args.path)
 
     matchups = None
-    if not data.has_gridded_ref_var():
+    if data.has_one_dim_ref_var():
         me = MatchupEngine(data, config)
         matchups = me.find_all_matchups()
         if not matchups:

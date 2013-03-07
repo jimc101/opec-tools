@@ -94,3 +94,8 @@ class Utils_test(unittest.TestCase):
 
         test.assert_array_equal(np.array([1.1, 2.2, 2.9, 3.7]), ref_values)
         test.assert_array_equal(np.array([True, False, True, False]), ref_values.mask)
+
+    def test_create_masked_array(self):
+        values = np.arange(160000000).reshape((500, 4, 200, 400))
+        masked_array = Utils.create_masked_array(values)
+        self.assertEqual(values.shape, masked_array.shape)

@@ -23,6 +23,7 @@ class ReferenceRecordsFinder_test(TestCase):
         self.path = os.path.dirname(os.path.realpath(__file__)) + '/../'
         self.data = Data(self.path + 'resources/test.nc')
 
+
     def test_find_reference_records(self):
         rrf = ReferenceRecordsFinder(self.data)
         reference_records = rrf.find_reference_records()
@@ -43,14 +44,9 @@ class ReferenceRecordsFinder_test(TestCase):
         self.assertAlmostEqual(1261440300, reference_records[1].time, 4)
         self.assertAlmostEqual(1261447000, reference_records[2].time, 4)
 
+
     def test_find_reference_records_no_depth(self):
         self.data = Data(self.path + 'resources/test_without_depth.nc')
         rrf = ReferenceRecordsFinder(self.data)
         reference_records = rrf.find_reference_records()
         self.assertEqual(3, len(reference_records))
-
-    def test_find_reference_records_gridded(self):
-        self.data = Data(self.path + 'resources/ogs_test_smaller.nc')
-        rrf = ReferenceRecordsFinder(self.data)
-        reference_records = rrf.find_reference_records()
-        self.assertEqual(41 * 80, len(reference_records))

@@ -19,23 +19,17 @@ class ReferenceRecordsFinder(object):
         self.data = data
 
     def find_reference_records(self):
-        reference_records = []
         ref_coordinate_variables = self.data.reference_coordinate_variables()
         ref_lat_variable_name, ref_lon_variable_name, ref_time_variable_name, ref_depth_variable_name = find_ref_coordinate_names(ref_coordinate_variables)
         self.__read_reference_dimensions(ref_depth_variable_name, ref_lat_variable_name, ref_lon_variable_name, ref_time_variable_name)
 
-        dimension_profiles = []
         for ref_var in self.data.ref_vars():
-            dims = {dim for dim in self.data.get_reference_dimensions(ref_var)}
-            if dims not in dimension_profiles:
-                dimension_profiles.append(dims)
-        for dimension_profile in dimension_profiles:
-            if len(dimension_profile) == 1:
-                self.__find_reference_records_one_dimensional(ref_depth_variable_name, ref_lat_variable_name, ref_lon_variable_name, ref_time_variable_name, dimension_profile, reference_records)
-            else:
-                self.__find_reference_records_multi_dimensional(ref_depth_variable_name, ref_lat_variable_name, ref_lon_variable_name, ref_time_variable_name, dimension_profile, reference_records)
-
-        return reference_records
+            dimensions = self.data.get_reference_dimensions(ref_var)
+            if len(dimensions) > 1:
+                continue
+            dim_size = self.data.ref_dim_size(dimensions[0])
+            return self.__find_reference_records(dim_size, ref_depth_variable_name, ref_lat_variable_name, ref_lon_variable_name, ref_time_variable_name)
+        return []
 
     def __read_reference_dimensions(self, ref_depth_variable_name, ref_lat_variable_name, ref_lon_variable_name,
                                     ref_time_variable_name):
@@ -47,10 +41,9 @@ class ReferenceRecordsFinder(object):
         if ref_depth_variable_name is not None:
             self.data.read_reference(ref_depth_variable_name)
 
-    def __find_reference_records_one_dimensional(self, ref_depth_variable_name, ref_lat_variable_name,
-                                               ref_lon_variable_name, ref_time_variable_name, dimension_profile,
-                                               reference_records):
-        for record_number in range(self.data.ref_dim_size(list(dimension_profile)[0])):
+    def __find_reference_records(self, dim_size, ref_depth_variable_name, ref_lat_variable_name, ref_lon_variable_name, ref_time_variable_name):
+        reference_records = []
+        for record_number in range(dim_size):
             ref_lat = self.data.__getattribute__(ref_lat_variable_name)[record_number]
             ref_lon = self.data.__getattribute__(ref_lon_variable_name)[record_number]
             # todo - pythonise this by function object or sth
@@ -65,36 +58,8 @@ class ReferenceRecordsFinder(object):
             rr = ReferenceRecord(record_number, ref_lat, ref_lon, ref_time, ref_depth)
             reference_records.append(rr)
         logging.debug('Found %s reference records' % (len(reference_records)))
+        return reference_records
 
-    def __find_reference_records_multi_dimensional(self, ref_depth_variable_name, ref_lat_variable_name,
-                                               ref_lon_variable_name, ref_time_variable_name, dimension_profile,
-                                               reference_records):
-        lon_index = -1
-        depth_index = -1
-        time_index = -1
-        for record_number in range(self.data.reference_records_count(dimension_profile)):
-            lat_index = record_number % len(self.data.__getattribute__(ref_lat_variable_name))
-            if lat_index == 0:
-                lon_index += 1
-                lon_index %= len(self.data.__getattribute__(ref_lon_variable_name))
-
-            ref_lat = self.data.__getattribute__(ref_lat_variable_name)[lat_index]
-            ref_lon = self.data.__getattribute__(ref_lon_variable_name)[lon_index]
-            if ref_time_variable_name is not None:
-                if lat_index == 0 and lon_index == 0:
-                    time_index += 1 % len(self.data.__getattribute__(ref_time_variable_name))
-                ref_time = self.data.__getattribute__(ref_time_variable_name)[time_index]
-            else:
-                ref_time = None
-            if ref_depth_variable_name is not None:
-                if lat_index == 0 and lon_index == 0 and time_index == 0:
-                    depth_index += 1 % len(self.data.__getattribute__(ref_depth_variable_name))
-                ref_depth = self.data.__getattribute__(ref_depth_variable_name)[depth_index]
-            else:
-                ref_depth = None
-            rr = ReferenceRecord(record_number, ref_lat, ref_lon, ref_time, ref_depth)
-            reference_records.append(rr)
-        logging.debug('Found %s reference records' % (len(reference_records)))
 
 def find_ref_coordinate_names(ref_coordinate_variables):
     lat = None

@@ -139,10 +139,10 @@ class Data_test(unittest.TestCase):
         assert_array_equal(np.array([0.2223], dtype='float32'), array)
 
     def test_has_gridded_ref_var(self):
-        self.assertFalse(self.data.has_gridded_ref_var())
+        self.assertTrue(self.data.has_one_dim_ref_var())
         test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/ogs_test_smaller.nc"
         data = Data(test_file)
-        self.assertTrue(data.has_gridded_ref_var())
+        self.assertFalse(data.has_one_dim_ref_var())
 
 
     def test_get_differing_dim_names(self):

@@ -185,9 +185,9 @@ class Data(object):
         return byte_size / (1024 * 1024)
 
 
-    def has_gridded_ref_var(self):
+    def has_one_dim_ref_var(self):
         for var in self.ref_vars():
-            if len(self.get_reference_dimensions(var)) > 1:
+            if len(self.get_reference_dimensions(var)) == 1:
                 return True
         return False
 

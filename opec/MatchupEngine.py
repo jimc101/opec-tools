@@ -97,18 +97,21 @@ class MatchupEngine(object):
         self.data.read_model(self.data.find_model_longitude_variable_name())
 
     def find_matchup_times(self, ref_time):
-        if not self.data.has_model_dimension('time'):
-            return [[None, None]]
-        if ref_time is None:
-            return self.get_all_indices('time')
-        return [self.__find_matchup_index_in_model_data('time', ref_time, self.config.time_delta)]
+        return self.__find_matchup_index(ref_time, 'time', self.config.time_delta)
 
     def __find_matchup_depths(self, ref_depth):
-        if not self.data.has_model_dimension('depth'):
+        return self.__find_matchup_index(ref_depth, 'depth', self.config.depth_delta)
+
+    def __find_matchup_index(self, ref_value, name, delta):
+        if not self.data.has_model_dimension(name):
             return [[None, None]]
-        if ref_depth is None:
-            return self.get_all_indices('depth')
-        return [self.__find_matchup_index_in_model_data('depth', ref_depth, self.config.depth_delta)]
+        if ref_value is None:
+            return self.get_all_indices(name)
+        matchup_index = self.__find_matchup_index_in_model_data(name, ref_value, delta)
+        if matchup_index is not None:
+            return [matchup_index]
+        else:
+            return []
 
     def get_all_indices(self, coordinate_variable_name):
         if not hasattr(self, 'indices'):
@@ -139,26 +142,6 @@ class MatchupEngine(object):
             index += 1
         return matchup_index
 
-    def __fill_matchup(self, matchup):
-        for model_name in self.data.model_vars():
-            origin = list(retrieve_origin(matchup.cell_position))
-            model_dimensions = self.data.get_model_dimensions(model_name)
-            if not len(model_dimensions) == len(origin):
-                continue
-            value = self.data.read_model(model_name, origin)
-            matchup.add_variable_value(model_name, value)
-        for ref_name in self.data.ref_vars():
-            reference_dimensions = self.data.get_reference_dimensions(ref_name)
-            if len(reference_dimensions) == 1:
-                value = self.data.read_reference(ref_name, [matchup.reference_record.record_number])
-            else:
-                if matchup.reference_record.time is None:
-                    matchup.cell_position[0] = None
-                if matchup.reference_record.depth is None:
-                    matchup.cell_position[1] = None
-                origin = list(retrieve_origin(matchup.cell_position))
-                value = self.data.read_reference(ref_name, origin)
-            matchup.add_variable_value(ref_name, value)
 
 def normalise(n, max):
     # don't use built-in round because for x.5 it rounds to the next even integer, not to the next higher one

@@ -31,7 +31,7 @@ def harmonise(reference_values, model_values):
 
 
 def create_masked_array(values):
-    false_mask = np.zeros(len(values))
+    false_mask = np.zeros(values.shape)
     if type(values) is not ma.core.MaskedArray:
         values = ma.array(values, mask=false_mask)
     return values
@@ -52,3 +52,26 @@ def get_unit(ncfile, variable_name):
     if ncfile.get_variable(variable_name):
         return ncfile.get_variable_attribute(variable_name, 'units')
     return None
+
+
+def create_test_file():
+    '''
+    Creates a test file. Don't use.
+    '''
+    import numpy.random as random
+    import numpy as np
+    from netCDF4 import Dataset
+    d = Dataset('c:/temp/input/big_gridded_big_ref.nc', 'a', format='NETCDF4_CLASSIC')
+    d.variables['time'][:] = np.arange(1261440000, 1261465000, 50)
+    d.variables['depth'][:] = np.arange(0.001, 0.005, 0.001)
+    d.variables['lat'][:] = np.linspace(-90, 90, 200)
+    d.variables['lon'][:] = np.linspace(-180, 180, 400)
+    d.variables['time_ref'][:] = np.arange(1261440000, 1261940000, 100)
+    d.variables['depth_ref'][:] = random.rand(5000)
+    d.variables['lat_ref'][:] = random.rand(5000) * 180 - 90
+    d.variables['lon_ref'][:] = random.rand(5000) * 360 - 180
+    d.variables['chl_ref'][:] = random.rand(5000)
+    d.variables['chl'][:] = random.rand(500, 4, 200, 400)
+    d.variables['sst'][:] = random.rand(500, 4, 200, 400) + 1
+    d.variables['sst_ref'][:] = random.rand(500, 4, 200, 400) * 0.5 + 1
+    d.close()
