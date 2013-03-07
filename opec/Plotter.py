@@ -17,6 +17,7 @@ from math import copysign
 import os
 
 from matplotlib import pyplot, pylab
+from matplotlib import lines as mpl_lines
 from matplotlib.patches import Ellipse
 from matplotlib.projections.polar import PolarTransform
 from mpl_toolkits.axisartist import SubplotZero
@@ -148,22 +149,24 @@ class ScatterPlot(Diagram):
 
     def draw_regression_line(self, x_data, y_data):
         m, b = pylab.polyfit(x_data.flatten(), y_data.flatten(), 1)
-        line, = pyplot.plot([np.min(x_data), np.max(x_data)], [m * np.min(x_data) + b, m * np.max(x_data) + b], '-b', linewidth=0.4)
-        if hasattr(self, 'line'):
-            self.ax.lines.remove(self.line)
-        self.line = line
+        x_lim = self.ax.get_xlim()
+        data_y = [x_lim[0] * m + b, x_lim[1] * m + b]
+        line = mpl_lines.Line2D(x_lim, data_y, color='blue', linewidth=0.4)
+        self.ax.add_line(line)
 
 
     def set_data(self, x_data, y_data, matchup_count):
         self.ax.scatter(x_data, y_data)
         self.update_title(matchup_count)
+        self.update_ranges(x_data, y_data)
         self.draw_regression_line(x_data, y_data)
-        # self.update_ranges(x_data, y_data)
 
 
     def update_ranges(self, x_data, y_data):
-        growing_factor = 1.2
-        pyplot.axis([min(x_data) / growing_factor, growing_factor * max(x_data), min(y_data) / growing_factor, growing_factor * max(y_data)])
+        s_x = np.mean(x_data)
+        s_y = np.mean(y_data)
+        bounds = [min(x_data) - s_x, max(x_data) + s_x, min(y_data) - s_y, max(y_data) + s_y]
+        pyplot.axis(bounds)
 
 
 #noinspection PyUnusedLocal
