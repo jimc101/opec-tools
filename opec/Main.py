@@ -219,7 +219,7 @@ def main():
         css = path + 'styleset.css'
         xsl_target = '%s/%s' % (parsed_args.output_dir, os.path.basename(xsl))
         css_target = '%s/%s' % (parsed_args.output_dir, os.path.basename(css))
-        output.xhtml(collected_statistics, matchups, data, xml_target_file, taylor_target_files, target_diagram_file, scatter_plot_files)
+        output.xhtml(collected_statistics, matchup_count, matchups, data, xml_target_file, taylor_target_files, target_diagram_file, scatter_plot_files)
         logging.info('XHTML report written to \'%s\'' % xml_target_file)
         shutil.copy(xsl, parsed_args.output_dir)
         logging.info('XHTML support file written to \'%s/%s\'' % (parsed_args.output_dir, 'analysis-summary.xsl'))

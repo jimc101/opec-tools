@@ -191,7 +191,7 @@ class Output(object):
         file.close()
 
 
-    def xhtml(self, statistics_list, matchups, data, target_file, taylor_target_files=None, target_diagram_file=None, scatter_plot_files=None):
+    def xhtml(self, statistics_list, matchup_count, matchups, data, target_file, taylor_target_files=None, target_diagram_file=None, scatter_plot_files=None):
         filename = os.path.dirname(os.path.realpath(__file__)) + '/../resources/matchup_report_template.xml'
         template = Template(filename=filename)
         buf = StringIO()
@@ -223,7 +223,7 @@ class Output(object):
         ctx = Context(buf,
             pairs=all_relative_stats,
             performed_at=datetime.now().strftime('%b %d, %Y at %H:%M:%S'),
-            record_count=len(matchups),
+            record_count=matchup_count,
             time_delta=self.config.time_delta,
             depth_delta=self.config.depth_delta,
             ddof=self.config.ddof,

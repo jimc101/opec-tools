@@ -124,7 +124,8 @@ with this program; if not, see http://www.gnu.org/licenses/gpl.html-->
                         with
                         <xsl:value-of select="ref_name"/>
                         <a class="hide">
-                            <xsl:attribute name="href">JavaScript:doMenu('<xsl:value-of select="model_name"/>_<xsl:value-of select="ref_name"/>');
+                            <xsl:attribute name="href">JavaScript:doMenu('<xsl:value-of select="model_name"/>_
+                                <xsl:value-of select="ref_name"/>');
                             </xsl:attribute>
                             <xsl:attribute name="id">id_<xsl:value-of select="model_name"/>_
                                 <xsl:value-of select="ref_name"/>
@@ -234,69 +235,6 @@ with this program; if not, see http://www.gnu.org/licenses/gpl.html-->
                     </table>
                 </xsl:for-each>
 
-                <h3>Matchups
-                    <a class="hide" href="JavaScript:doMenu('matchups');" id="id_matchups">[hide]</a>
-                </h3>
-
-                <table class="matchup" id="matchups" display="block">
-                    <tr class="table_header">
-                        <td>Record #</td>
-                        <td>Time</td>
-                        <td>Depth</td>
-                        <td>Lat</td>
-                        <td>Lon</td>
-                        <td>Reference Time</td>
-                        <td>Reference Depth</td>
-                        <td>Reference Lat</td>
-                        <td>Reference Lon</td>
-                        <xsl:for-each select="analysisSummary/matchups/variables/var">
-                            <td>
-                                <xsl:value-of select="text()"/>
-                            </td>
-                        </xsl:for-each>
-                    </tr>
-
-                    <xsl:for-each select="analysisSummary/matchups/matchup">
-                        <tr>
-                            <td>
-                                <xsl:value-of select="recordNumber"/>
-                            </td>
-                            <td class="value">
-                                <xsl:value-of select="time"/>
-                            </td>
-                            <td class="value">
-                                <xsl:value-of select="depth"/>
-                            </td>
-                            <td class="value">
-                                <xsl:value-of select="lat"/>
-                            </td>
-                            <td class="value">
-                                <xsl:value-of select="lon"/>
-                            </td>
-                            <td class="value">
-                                <xsl:value-of select="reference_time"/>
-                            </td>
-                            <td class="value">
-                                <xsl:value-of select="reference_depth"/>
-                            </td>
-                            <td class="value">
-                                <xsl:value-of select="reference_lat"/>
-                            </td>
-                            <td class="value">
-                                <xsl:value-of select="reference_lon"/>
-                            </td>
-
-                            <xsl:for-each select="property">
-                                <td>
-                                    <xsl:value-of select="value"/>
-                                </td>
-                            </xsl:for-each>
-
-                        </tr>
-                    </xsl:for-each>
-
-                </table>
-
                 <xsl:if test="/analysisSummary/taylorDiagrams">
                     <h3>Taylor Diagrams
                         <a class="hide" href="JavaScript:doMenu('taylor');" id="id_taylor">[hide]</a>
@@ -342,6 +280,71 @@ with this program; if not, see http://www.gnu.org/licenses/gpl.html-->
                             <br/>
                         </xsl:for-each>
                     </div>
+                </xsl:if>
+
+                <xsl:if test="/analysisSummary/matchups">
+                    <h3>Matchups
+                        <a class="hide" href="JavaScript:doMenu('matchups');" id="id_matchups">[hide]</a>
+                    </h3>
+
+                    <table class="matchup" id="matchups" display="block">
+                        <tr class="table_header">
+                            <td>Record #</td>
+                            <td>Time</td>
+                            <td>Depth</td>
+                            <td>Lat</td>
+                            <td>Lon</td>
+                            <td>Reference Time</td>
+                            <td>Reference Depth</td>
+                            <td>Reference Lat</td>
+                            <td>Reference Lon</td>
+                            <xsl:for-each select="analysisSummary/matchups/variables/var">
+                                <td>
+                                    <xsl:value-of select="text()"/>
+                                </td>
+                            </xsl:for-each>
+                        </tr>
+
+                        <xsl:for-each select="analysisSummary/matchups/matchup">
+                            <tr>
+                                <td>
+                                    <xsl:value-of select="recordNumber"/>
+                                </td>
+                                <td class="value">
+                                    <xsl:value-of select="time"/>
+                                </td>
+                                <td class="value">
+                                    <xsl:value-of select="depth"/>
+                                </td>
+                                <td class="value">
+                                    <xsl:value-of select="lat"/>
+                                </td>
+                                <td class="value">
+                                    <xsl:value-of select="lon"/>
+                                </td>
+                                <td class="value">
+                                    <xsl:value-of select="reference_time"/>
+                                </td>
+                                <td class="value">
+                                    <xsl:value-of select="reference_depth"/>
+                                </td>
+                                <td class="value">
+                                    <xsl:value-of select="reference_lat"/>
+                                </td>
+                                <td class="value">
+                                    <xsl:value-of select="reference_lon"/>
+                                </td>
+
+                                <xsl:for-each select="property">
+                                    <td>
+                                        <xsl:value-of select="value"/>
+                                    </td>
+                                </xsl:for-each>
+
+                            </tr>
+                        </xsl:for-each>
+
+                    </table>
                 </xsl:if>
 
             </body>
