@@ -17,6 +17,7 @@ import os
 
 import numpy as np
 import numpy.ma as ma
+from opec import Utils
 
 from opec.Processor import calculate_statistics
 from opec.Configuration import Configuration
@@ -31,39 +32,10 @@ class Processor_test(TestCase):
         self.config = Configuration(time_delta=86400, depth_delta=12, ddof=0, alpha=1, beta=1)
         self.me = MatchupEngine(self.data, self.config)
 
+
     def tearDown(self):
         self.data.close()
 
-    def test_compute_statistics_for_matchups(self):
-        matchups = self.me.find_all_matchups()
-        stats = calculate_statistics(matchups, data=self.data, config=self.config, ref_name='chl_ref', model_name='chl', unit='megazork')
-        self.assertEqual('chl', stats['model_name'])
-        self.assertEqual('chl_ref', stats['ref_name'])
-        self.assertEqual('megazork', stats['unit'])
-        self.assertAlmostEqual(0.04570989, stats['rmse'], 5)
-        self.assertAlmostEqual(0.04181358, stats['unbiased_rmse'], 5)
-        self.assertAlmostEqual(0.512109, stats['normalised_rmse'], 5)
-        self.assertAlmostEqual(9.2333366, stats['pbias'], 5)
-        self.assertAlmostEqual(0.01846667, stats['bias'], 5)
-        self.assertAlmostEqual(0.908450244, stats['corrcoeff'], 5)
-        self.assertAlmostEqual(1.084043, stats['reliability_index'], 5)
-        self.assertAlmostEqual(0.686590903, stats['model_efficiency'], 5)
-        self.assertAlmostEqual(0.18153333, stats['mean'], 5)
-        self.assertAlmostEqual(0.2, stats['ref_mean'], 5)
-        self.assertAlmostEqual(0.050017, stats['stddev'], 5)
-        self.assertAlmostEqual(0.0816496, stats['ref_stddev'], 5)
-        self.assertAlmostEqual(0.211099, stats['median'], 5)
-        self.assertAlmostEqual(0.2, stats['ref_median'], 5)
-        self.assertAlmostEqual(0.220139, stats['p90'], 5)
-        self.assertAlmostEqual(0.28, stats['ref_p90'], 5)
-        self.assertAlmostEqual(0.22126999, stats['p95'], 5)
-        self.assertAlmostEqual(0.29, stats['ref_p95'], 5)
-        self.assertAlmostEqual(0.1111, stats['min'], 5)
-        self.assertAlmostEqual(0.1, stats['ref_min'], 5)
-        self.assertAlmostEqual(0.2224, stats['max'], 5)
-        self.assertAlmostEqual(0.3, stats['ref_max'], 5)
-
-        self.assertAlmostEqual(stats['rmse'] ** 2, stats['bias'] ** 2 + stats['unbiased_rmse'] ** 2, 5)
 
     def test_compute_statistics(self):
         model_values = np.array(range(1, 5, 1)) # [1, 2, 3, 4]
@@ -96,9 +68,11 @@ class Processor_test(TestCase):
 
         self.assertAlmostEqual(stats['rmse'] ** 2, stats['bias'] ** 2 + stats['unbiased_rmse'] ** 2, 5)
 
+
     def test_compute_statistics_with_masked_values(self):
         model_values = ma.array(np.arange(1.0, 5.0, 1), mask=np.array([False, False, True, False])) # [1, 2, --, 4]
         ref_values = ma.array([1.1, 2.2, 2.9, 3.7])
+        ref_values, model_values = Utils.harmonise(ref_values, model_values)
         stats = calculate_statistics(reference_values=ref_values, model_values=model_values, config=self.config, model_name='kate', ref_name='ref')
         self.assertEqual('kate', stats['model_name'])
         self.assertEqual('ref', stats['ref_name'])
@@ -125,6 +99,7 @@ class Processor_test(TestCase):
         self.assertAlmostEqual(3.7, stats['ref_max'], 5)
 
         self.assertAlmostEqual(stats['rmse'] ** 2, stats['bias'] ** 2 + stats['unbiased_rmse'] ** 2, 5)
+
 
     def test_compute_statistics_with_extreme_model_values(self):
         model_values = np.array(range(1, 5, 1)) # [1, 2, 3, 4]
@@ -153,6 +128,7 @@ class Processor_test(TestCase):
         self.assertAlmostEqual(1, stats['ref_max'], 5)
 
         self.assertAlmostEqual(stats['rmse'] ** 2, stats['bias'] ** 2 + stats['unbiased_rmse'] ** 2, 5)
+
 
     def test_compute_statistics_with_extreme_reference_values(self):
         model_values = np.array([1, 1, 1, 1])
