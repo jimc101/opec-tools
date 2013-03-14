@@ -12,14 +12,17 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, see http://www.gnu.org/licenses/gpl.html
 
-import numpy as np
 from io import StringIO
-from mako.runtime import Context
-from mako.template import Template
 from datetime import datetime
 import os
+
+import numpy as np
+from mako.runtime import Context
+from mako.template import Template
+
 from opec import Plotter
 from opec.Configuration import get_default_config
+
 
 def rename(string):
     return string if string is not None else 'Unknown'
@@ -266,7 +269,7 @@ class Output(object):
 
     def scatter_plot(self, ref_name, model_name, ref_data, model_data, unit=None):
         scatter_plot = Plotter.create_scatter_plot(ref_name, model_name, unit)
-        scatter_plot.set_data(ref_data, model_data, len(ref_data))
+        scatter_plot.set_data(ref_data, model_data, ref_data.size)
         return scatter_plot
 
 

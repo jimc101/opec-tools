@@ -16,12 +16,14 @@ import logging
 from math import copysign
 import os
 
-from matplotlib import pyplot, pylab
+import matplotlib.pyplot as plt
+import matplotlib.pylab as plb
 from matplotlib import lines as mpl_lines
 from matplotlib.patches import Ellipse
 from matplotlib.projections.polar import PolarTransform
 from mpl_toolkits.axisartist import SubplotZero
 import numpy as np
+import numpy.ma as ma
 import mpl_toolkits.axisartist.floating_axes as FA
 import mpl_toolkits.axisartist.grid_finder as GF
 import matplotlib as mpl
@@ -55,7 +57,7 @@ def create_taylor_diagrams(statistics, config=None):
                     logging.debug('Statistics: %s' % current_statistics)
                     return None
 
-            figure = pyplot.figure()
+            figure = plt.figure()
             diagram = TaylorDiagram(figure, ref, config.show_negative_corrcoeff, config.show_legends, max_stddev)
 
             diagram.setup_axes()
@@ -69,7 +71,7 @@ def create_taylor_diagrams(statistics, config=None):
     return diagrams
 
 def create_target_diagram(statistics, config=None):
-    figure = pyplot.figure()
+    figure = plt.figure()
     if config is None:
         config = get_default_config()
     diagram = TargetDiagram(figure, config.normalise_target_diagram, config.show_legends, config.utilise_stddev_difference)
@@ -89,7 +91,7 @@ def create_target_diagram(statistics, config=None):
     return diagram
 
 def create_scatter_plot(ref_name, model_name, unit=None):
-    figure = pyplot.figure()
+    figure = plt.figure()
     diagram = ScatterPlot(figure, ref_name, model_name, unit)
     diagram.setup_axes()
     return diagram
@@ -109,7 +111,7 @@ class Diagram(object):
         self.fig.savefig(target_file)
 
     def show(self):
-        pyplot.show(self.fig)
+        plt.show(self.fig)
 
     def get_figure(self):
         return self.fig
@@ -144,29 +146,36 @@ class ScatterPlot(Diagram):
 
 
     def update_title(self, matchup_count):
-        self.ax.set_title('Scatter plot of %s and %s\nNumber of considered matchups: %s' % (self.model_name, self.ref_name, matchup_count))
+        plt.title('Scatter plot of %s and %s\nNumber of considered matchups: %s' % (self.model_name, self.ref_name, matchup_count))
 
 
     def draw_regression_line(self, x_data, y_data):
-        m, b = pylab.polyfit(x_data.flatten(), y_data.flatten(), 1)
-        x_lim = self.ax.get_xlim()
+        m, b = plb.polyfit(x_data.ravel(), y_data.ravel(), 1)
+        x_lim = plt.xlim()
         data_y = [x_lim[0] * m + b, x_lim[1] * m + b]
         line = mpl_lines.Line2D(x_lim, data_y, color='blue', linewidth=0.4)
-        self.ax.add_line(line)
+        plt.axes().add_line(line)
 
 
     def set_data(self, x_data, y_data, matchup_count):
-        self.ax.scatter(x_data, y_data)
+        logging.debug('Trying to create scatter plot...')
+
+        # (H, xedges, yedges) = np.histogram2d(x_data, y_data, bins=(100, 100), normed=True)
+        # x_bin_sizes = (xedges[1:] - xedges[:-1]).reshape((1, 100))
+        # y_bin_sizes = (yedges[1:] - yedges[:-1]).reshape((100, 1))
+
+        plt.scatter(x_data, y_data)
+        logging.debug('...success!')
         self.update_title(matchup_count)
-        self.update_ranges(x_data, y_data)
-        self.draw_regression_line(x_data, y_data)
+        # self.update_ranges(x_data, y_data)
+        # self.draw_regression_line(x_data, y_data)
 
 
     def update_ranges(self, x_data, y_data):
-        s_x = np.mean(x_data)
-        s_y = np.mean(y_data)
-        bounds = [min(x_data) - s_x, max(x_data) + s_x, min(y_data) - s_y, max(y_data) + s_y]
-        pyplot.axis(bounds)
+        s_x = ma.mean(x_data)
+        s_y = ma.mean(y_data)
+        bounds = [ma.min(x_data) - s_x, ma.max(x_data) + s_x, ma.min(y_data) - s_y, ma.max(y_data) + s_y]
+        plt.axis(bounds)
 
 
 #noinspection PyUnusedLocal
@@ -214,7 +223,7 @@ class TargetDiagram(Diagram):
 
         if self.normalise:
             ax.set_aspect('equal')
-            pyplot.axis([-1.3, 1.3, -1.3, 1.3])
+            plt.axis([-1.3, 1.3, -1.3, 1.3])
             marker_line = Ellipse((0,0), 2, 2, edgecolor='k', linewidth=0.8, fill=False)
             ax.add_artist(marker_line)
         self.ax = ax
@@ -270,7 +279,7 @@ class TargetDiagram(Diagram):
         max_y = growing_factor * max_y if max_y > 0 else max_y / growing_factor
         min_x = growing_factor * min_x if min_x < 0 else min_x / growing_factor
         min_y = growing_factor * min_y if min_y < 0 else min_y / growing_factor
-        pyplot.axis([min_x, max_x, min_y, max_y])
+        plt.axis([min_x, max_x, min_y, max_y])
 
 
 class TaylorDiagram(Diagram):
@@ -383,7 +392,7 @@ class TaylorDiagram(Diagram):
             colors = ('#7F0000', '#6F0000', '#5F0000', '#4F0000', '#3F0000', '#2F0000', '#1F0000', '#0F0000')
             rmse_contour = self.ax.contour(ts, rs, rmse, 8, linewidths=0.5, colors=colors)
 
-            pyplot.clabel(rmse_contour, inline=1, fmt='%1.2f', fontsize=8)
+            plt.clabel(rmse_contour, inline=1, fmt='%1.2f', fontsize=8)
 
 
     def get_angle(self, corrcoeff):

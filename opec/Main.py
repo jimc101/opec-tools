@@ -23,7 +23,6 @@ import os
 
 import numpy as np
 import numpy.ma as ma
-import scipy.stats as sp
 
 from opec import Processor, get_logging_formatter, Utils
 from opec.Configuration import Configuration
@@ -145,27 +144,48 @@ def main():
 
     matchup_count = 0 if matchups is None else len(matchups)
     collected_statistics = []
-    scatter_plots = {}
+    scatter_plot_files = []
+    target_files = []
+
     for (model_name, ref_name) in parsed_args.variable_mappings:
         unit = data.unit(model_name)
         is_gridded = len(data.get_reference_dimensions(ref_name)) > 1
         if is_gridded:
+            logging.debug('Reading gridded ref-variable %s' % ref_name)
             model_values = data.read_model(model_name)
             reference_values = data.read_reference(ref_name)
 
+            logging.debug('Computing slices of gridded ref-variable %s' % ref_name)
             model_values_slices, ref_values_slices = data.get_slices(model_name, ref_name)
+
+            # todo - move slicing to data object, so that memory issues can all be handled there
+
+            logging.debug('Slicing gridded ref-variable %s' % ref_name)
             sliced_model_values = model_values[model_values_slices]
             sliced_ref_values = reference_values[ref_values_slices]
 
+            logging.debug('Harmonising gridded ref-variable %s with model variable %s' % (ref_name, model_name))
             reference_values, model_values = Utils.harmonise(sliced_ref_values, sliced_model_values)
+
             matchup_count += ma.count(reference_values)
         else:
             reference_values, model_values = Utils.extract_values(matchups, data, ref_name, model_name)
             reference_values, model_values = Utils.harmonise(reference_values, model_values)
 
+        logging.debug('Compressing gridded ref-variable %s' % ref_name)
+        reference_values = reference_values.compressed()
+
+        logging.debug('Compressing model-variable %s' % model_name)
+        model_values = model_values.compressed()
+
         if config.write_scatter_plots:
-            scatter_plot = output.scatter_plot(ref_name, model_name, reference_values.compressed(), model_values.compressed(), data.unit(model_name))
-            scatter_plots[model_name + ref_name] = scatter_plot
+            scatter_plot = output.scatter_plot(ref_name, model_name, reference_values, model_values, data.unit(model_name))
+            logging.debug('Having computed scatter plot for ref-variable %s' % ref_name)
+            scatter_target = '%s/scatter-%s-%s.png' % (parsed_args.output_dir, model_name, ref_name)
+            scatter_plot_files.append(scatter_target)
+            target_files.append(scatter_target)
+            output.write_scatter_plot(scatter_plot, scatter_target)
+            logging.info('Scatter plot written to \'%s\'' % scatter_target)
 
         stats = Processor.calculate_statistics(model_name, ref_name, reference_values, model_values, unit, config)
         collected_statistics.append(stats)
@@ -174,7 +194,6 @@ def main():
     if not os.name == 'nt':
         logging.debug('Memory after statistics have been computed: %s' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
 
-    target_files = []
     if config.write_csv:
         for (model_name, ref_name), stats in zip(parsed_args.variable_mappings, collected_statistics):
             csv_target_file = '%s/%s%s_statistics.csv' % (parsed_args.output_dir, config.target_prefix, model_name)
@@ -196,14 +215,14 @@ def main():
                 target_files.append(written_taylor_diagram)
                 taylor_target_files.append(written_taylor_diagram)
 
-    scatter_plot_files = []
-    if config.write_scatter_plots:
-        for (model_name, ref_name) in parsed_args.variable_mappings:
-            scatter_target = '%s/scatter-%s-%s.png' % (parsed_args.output_dir, model_name, ref_name)
-            scatter_plot_files.append(scatter_target)
-            target_files.append(scatter_target)
-            output.write_scatter_plot(scatter_plots[model_name + ref_name], scatter_target)
-            logging.info('Scatter plot written to \'%s\'' % scatter_target)
+    # scatter_plot_files = []
+    # if config.write_scatter_plots:
+    #     for (model_name, ref_name) in parsed_args.variable_mappings:
+    #         scatter_target = '%s/scatter-%s-%s.png' % (parsed_args.output_dir, model_name, ref_name)
+    #         scatter_plot_files.append(scatter_target)
+    #         target_files.append(scatter_target)
+    #         output.write_scatter_plot(scatter_plots[model_name + ref_name], scatter_target)
+            # logging.info('Scatter plot written to \'%s\'' % scatter_target)
 
     target_diagram_file = None
     if config.write_target_diagram:

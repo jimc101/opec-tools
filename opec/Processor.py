@@ -11,12 +11,10 @@
 #
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, see http://www.gnu.org/licenses/gpl.html
-import logging
 
 import numpy as np
 import numpy.ma as ma
 import scipy.stats.mstats as mstats
-from opec import Utils
 from opec.Configuration import get_default_config
 
 
@@ -68,7 +66,7 @@ def unbiased_rmse(reference_values, values):
 def correlation(reference_values, values):
     if len(ma.unique(reference_values)) == 1 or len(ma.unique(values)) == 1:
         return np.nan # if all reference or model values are equal, no sensible correlation coefficient can be computed.
-    return ma.corrcoef(values.flatten(), reference_values.flatten())[0, 1]
+    return ma.corrcoef(values.ravel(), reference_values.ravel())[0, 1]
 
 
 def percentage_model_bias(reference_values, model_values):
@@ -103,8 +101,8 @@ def calculate_statistics(model_name=None, ref_name=None, reference_values=None, 
     if config is None:
         config = get_default_config()
 
-    model_percentiles = percentiles(model_values.flatten(), config.alpha, config.beta)
-    ref_percentiles = percentiles(reference_values.flatten(), config.alpha, config.beta)
+    model_percentiles = percentiles(model_values.ravel(), config.alpha, config.beta)
+    ref_percentiles = percentiles(reference_values.ravel(), config.alpha, config.beta)
     model_minmax = minmax(model_values)
     ref_minmax = minmax(reference_values)
     stats = dict()

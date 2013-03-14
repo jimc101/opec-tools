@@ -14,7 +14,13 @@
 import functools
 import logging
 import sys
+import os
+
 from opec import Utils
+
+
+if not os.name == 'nt':
+    import resource
 
 from opec.NetCDFFacade import NetCDFFacade
 
@@ -117,18 +123,24 @@ class Data(object):
         return self.__read(ncfile, variable_name, origin)
 
     def __read(self, ncfile, variable_name, origin=None):
-        if not self.__is_cached(variable_name) and self.max_cache_size <= self.current_memory + self.compute_variable_size(variable_name):
-            first_in_cache = self.cached_list.pop(0)
-            logging.debug('Deleting variable \'%s\' from cache.' % first_in_cache)
-            self.__delattr__(first_in_cache)
-            self.current_memory -= self.compute_variable_size(first_in_cache)
+        variable_size = self.compute_variable_size(variable_name)
+        if not self.__is_cached(variable_name):
+            while self.max_cache_size <= self.current_memory + variable_size:
+                first_in_cache = self.cached_list.pop(0)
+                logging.debug('Deleting variable \'%s\' from cache.' % first_in_cache)
+                self.__delattr__(first_in_cache)
+                self.current_memory -= self.compute_variable_size(first_in_cache)
         if not self.__is_cached(variable_name):
             logging.debug('Reading variable \'%s\' fully into cache.' % variable_name)
+            if not os.name == 'nt':
+                logging.debug('Memory in use before reading variable %s fully into cache: %.2f MB' % (variable_name, resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024))
             variable = ncfile.get_variable(variable_name)
             self.__setattr__(variable_name, variable[:])
             self.__current_storage.add(variable_name)
             self.cached_list.append(variable_name)
             self.current_memory += self.compute_variable_size(variable_name)
+            if not os.name == 'nt':
+                logging.debug('Memory in use after reading variable %s fully into cache: %.2f MB' % (variable_name, resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024))
         if origin is None:
             return self.__getattribute__(variable_name)
 
@@ -156,11 +168,14 @@ class Data(object):
                 return var.name
         raise ValueError('Unable to find \'%s\'-variable.' % standard_name)
 
+
     def find_model_latitude_variable_name(self):
         return self.__find_model_variable_name(['lat', 'latitude'], 'latitude')
 
+
     def find_model_longitude_variable_name(self):
         return self.__find_model_variable_name(['lon', 'longitude'], 'longitude')
+
 
     def unit(self, variable_name):
         is_not_in_ref_file = not self.is_ref_data_split() or self.is_ref_data_split() and self.__reference_file.get_variable(variable_name) is None
@@ -173,6 +188,7 @@ class Data(object):
         if self.is_ref_data_split() and Utils.get_unit(self.__reference_file, variable_name):
             return Utils.get_unit(self.__reference_file, variable_name)
         return None
+
 
     def compute_variable_size(self, variable_name):
         variable = self.__model_file.get_variable(variable_name)

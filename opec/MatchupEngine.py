@@ -14,16 +14,11 @@
 
 import logging
 from math import fabs, floor
-import os
-import gc
 
 from opec.Configuration import get_default_config
 from opec.Matchup import Matchup
 from opec.ReferenceRecordsFinder import ReferenceRecordsFinder
-from opec.Utils import retrieve_origin
 
-if not os.name == 'nt':
-    import resource
 
 class MatchupEngine(object):
 
@@ -43,8 +38,6 @@ class MatchupEngine(object):
             if index % 1000 == 0:
                 logging.debug('Found matchups for %s reference records so far' % index)
                 logging.debug('Found %s matchups so far' % len(all_matchups))
-                if not os.name == 'nt':
-                    logging.debug('Memory in use after %s reference records: %.2f MB' % (index, resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024))
             if matchups:
                 all_matchups.extend(matchups)
 
