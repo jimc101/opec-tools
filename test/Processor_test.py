@@ -73,6 +73,8 @@ class Processor_test(TestCase):
         model_values = ma.array(np.arange(1.0, 5.0, 1), mask=np.array([False, False, True, False])) # [1, 2, --, 4]
         ref_values = ma.array([1.1, 2.2, 2.9, 3.7])
         ref_values, model_values = Utils.harmonise(ref_values, model_values)
+        ref_values = ref_values.compressed()
+        model_values = model_values.compressed()
         stats = calculate_statistics(reference_values=ref_values, model_values=model_values, config=self.config, model_name='kate', ref_name='ref')
         self.assertEqual('kate', stats['model_name'])
         self.assertEqual('ref', stats['ref_name'])

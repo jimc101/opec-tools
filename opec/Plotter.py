@@ -157,14 +157,25 @@ class ScatterPlot(Diagram):
         plt.axes().add_line(line)
 
 
-    def set_data(self, x_data, y_data, matchup_count):
-        logging.debug('Trying to create scatter plot...')
+    def set_data(self, x_data, y_data, axis_min, axis_max, matchup_count):
+        logging.debug('Creating scatter plot...')
 
-        # (H, xedges, yedges) = np.histogram2d(x_data, y_data, bins=(100, 100), normed=True)
+        (H, xedges, yedges) = np.histogram2d(x_data, y_data, bins=(500, 500), range=[[axis_min, axis_max], [axis_min, axis_max]])
         # x_bin_sizes = (xedges[1:] - xedges[:-1]).reshape((1, 100))
         # y_bin_sizes = (yedges[1:] - yedges[:-1]).reshape((100, 1))
 
-        plt.scatter(x_data, y_data)
+        extent = [axis_min, axis_max, axis_min, axis_max]
+
+        from matplotlib.cm import jet as jet
+        from matplotlib.cm import ScalarMappable as ScalarMappable
+
+        self.ax.imshow(H, extent=extent, interpolation='None', cmap=jet)
+        mappable = ScalarMappable()
+        mappable.set_array(H)
+        self.fig.colorbar(mappable, ax=self.ax)
+
+        # plt.scatter(x_data, y_data)
+
         logging.debug('...success!')
         self.update_title(matchup_count)
         # self.update_ranges(x_data, y_data)

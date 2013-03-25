@@ -33,8 +33,8 @@ from opec.Output import Output
 if not os.name == 'nt':
     import resource
 
-class VariableMappingsParseAction(argparse.Action):
 
+class VariableMappingsParseAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         result = []
         pair_string = values[0].replace('[', '').replace(']', '')
@@ -47,7 +47,6 @@ class VariableMappingsParseAction(argparse.Action):
 
 
 class Formatter(argparse.RawDescriptionHelpFormatter):
-
     def _format_usage(self, usage, actions, groups, prefix):
         # clumsy way, but there's no native argparse support for what I do here
         # (what I do is: move <path> argument in usage description to beginning, where it belongs)
@@ -62,13 +61,14 @@ class Formatter(argparse.RawDescriptionHelpFormatter):
         parts = super(argparse.RawDescriptionHelpFormatter, self)._format_action(action)
         return parts.replace(' ,', ',').replace('  [ ...]', '')
 
-class MyArgumentParser(ArgumentParser):
 
+class MyArgumentParser(ArgumentParser):
     def __init__(self):
         super(MyArgumentParser, self).__init__(formatter_class=Formatter)
 
     def error(self, message):
         raise ValueError(self.format_usage())
+
 
 def parse_arguments(arguments):
     parser = MyArgumentParser()
@@ -76,12 +76,15 @@ def parse_arguments(arguments):
     parser.add_argument('-c', '--config', help='Path to the configuration file', metavar='')
     parser.add_argument('-o', '--output_dir', help='Path to the target directory', metavar='')
     parser.add_argument('-p', '--prefix', help='Target prefix', metavar='')
-    parser.add_argument('-v', '--variable_mappings', help='A list of variable mappings <var>:<ref_var>', metavar='', nargs='+', action=VariableMappingsParseAction)
+    parser.add_argument('-v', '--variable_mappings', help='A list of variable mappings <var>:<ref_var>', metavar='',
+                        nargs='+', action=VariableMappingsParseAction)
     parser.add_argument('-r', '--reference_file', help='An optional file containing the reference data', metavar='')
     return parser.parse_args(arguments)
 
+
 def ref_stddev(statistics):
     return np.max(list(map(lambda x: x.get('ref_stddev'), statistics)))
+
 
 def create_zip(target_files, config, file_handler, parsed_args):
     files_to_remove = []
@@ -100,6 +103,7 @@ def create_zip(target_files, config, file_handler, parsed_args):
     zipfile.close()
     for file in files_to_remove:
         os.remove(file)
+
 
 def log_warning(msg, category, filename, lineno, file=None, line=None):
     msg = msg.args[0].replace('Warning: converting a masked element to nan.', 'converting a masked element to nan')
@@ -122,7 +126,8 @@ def setup_logging(config):
 
 def main():
     parsed_args = parse_arguments(sys.argv[1:])
-    config = Configuration(properties_file_name=parsed_args.config, target_dir=parsed_args.output_dir, target_prefix=parsed_args.prefix)
+    config = Configuration(properties_file_name=parsed_args.config, target_dir=parsed_args.output_dir,
+                           target_prefix=parsed_args.prefix)
     file_handler = setup_logging(config)
     if parsed_args.reference_file is not None:
         data = Data(parsed_args.path, parsed_args.reference_file, config.max_cache_size)
@@ -146,53 +151,39 @@ def main():
     collected_statistics = []
     scatter_plot_files = []
     target_files = []
+    scatter_plots = {}
 
     for (model_name, ref_name) in parsed_args.variable_mappings:
         unit = data.unit(model_name)
         is_gridded = len(data.get_reference_dimensions(ref_name)) > 1
         if is_gridded:
-            logging.debug('Reading gridded ref-variable %s' % ref_name)
-            model_values = data.read_model(model_name)
-            reference_values = data.read_reference(ref_name)
-
-            logging.debug('Computing slices of gridded ref-variable %s' % ref_name)
-            model_values_slices, ref_values_slices = data.get_slices(model_name, ref_name)
-
-            # todo - move slicing to data object, so that memory issues can all be handled there
-
-            logging.debug('Slicing gridded ref-variable %s' % ref_name)
-            sliced_model_values = model_values[model_values_slices]
-            sliced_ref_values = reference_values[ref_values_slices]
-
-            logging.debug('Harmonising gridded ref-variable %s with model variable %s' % (ref_name, model_name))
-            reference_values, model_values = Utils.harmonise(sliced_ref_values, sliced_model_values)
+            reference_values, model_values = data.get_values(ref_name, model_name)
+            logging.info(str(len(model_values)))
 
             matchup_count += ma.count(reference_values)
         else:
             reference_values, model_values = Utils.extract_values(matchups, data, ref_name, model_name)
             reference_values, model_values = Utils.harmonise(reference_values, model_values)
+            logging.debug('Compressing ref-variable %s' % ref_name)
+            reference_values = reference_values.compressed()
+            logging.debug('Compressing model-variable %s' % model_name)
+            model_values = model_values.compressed()
 
-        logging.debug('Compressing gridded ref-variable %s' % ref_name)
-        reference_values = reference_values.compressed()
-
-        logging.debug('Compressing model-variable %s' % model_name)
-        model_values = model_values.compressed()
-
-        if config.write_scatter_plots:
-            scatter_plot = output.scatter_plot(ref_name, model_name, reference_values, model_values, data.unit(model_name))
-            logging.debug('Having computed scatter plot for ref-variable %s' % ref_name)
-            scatter_target = '%s/scatter-%s-%s.png' % (parsed_args.output_dir, model_name, ref_name)
-            scatter_plot_files.append(scatter_target)
-            target_files.append(scatter_target)
-            output.write_scatter_plot(scatter_plot, scatter_target)
-            logging.info('Scatter plot written to \'%s\'' % scatter_target)
-
+        logging.info('Calculating statistics for \'%s\' with \'%s\'' % (model_name, ref_name))
         stats = Processor.calculate_statistics(model_name, ref_name, reference_values, model_values, unit, config)
         collected_statistics.append(stats)
-        logging.info('Calculated statistics for \'%s\' with \'%s\'' % (model_name, ref_name))
+
+        if config.write_scatter_plots:
+            axis_min = min(stats['min'], stats['ref_min'])
+            axis_max = max(stats['p90'], stats['ref_p90'])
+            logging.debug('Creating scatter plot for \'%s\' and \'%s\'' % (model_name, ref_name))
+            scatter_plots[model_name + ref_name] = output.scatter_plot(ref_name, model_name, reference_values,
+                                                                       model_values,
+                                                                       axis_min, axis_max, data.unit(model_name))
 
     if not os.name == 'nt':
-        logging.debug('Memory after statistics have been computed: %s' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+        logging.debug(
+            'Memory after statistics have been computed: %s' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
 
     if config.write_csv:
         for (model_name, ref_name), stats in zip(parsed_args.variable_mappings, collected_statistics):
@@ -215,14 +206,13 @@ def main():
                 target_files.append(written_taylor_diagram)
                 taylor_target_files.append(written_taylor_diagram)
 
-    # scatter_plot_files = []
-    # if config.write_scatter_plots:
-    #     for (model_name, ref_name) in parsed_args.variable_mappings:
-    #         scatter_target = '%s/scatter-%s-%s.png' % (parsed_args.output_dir, model_name, ref_name)
-    #         scatter_plot_files.append(scatter_target)
-    #         target_files.append(scatter_target)
-    #         output.write_scatter_plot(scatter_plots[model_name + ref_name], scatter_target)
-            # logging.info('Scatter plot written to \'%s\'' % scatter_target)
+    if config.write_scatter_plots:
+        for (model_name, ref_name) in parsed_args.variable_mappings:
+            scatter_target = '%s/scatter-%s-%s.png' % (parsed_args.output_dir, model_name, ref_name)
+            scatter_plot_files.append(scatter_target)
+            target_files.append(scatter_target)
+            output.write_scatter_plot(scatter_plots[model_name + ref_name], scatter_target)
+            logging.info('Scatter plot written to \'%s\'' % scatter_target)
 
     target_diagram_file = None
     if config.write_target_diagram:
@@ -238,7 +228,8 @@ def main():
         css = path + 'styleset.css'
         xsl_target = '%s/%s' % (parsed_args.output_dir, os.path.basename(xsl))
         css_target = '%s/%s' % (parsed_args.output_dir, os.path.basename(css))
-        output.xhtml(collected_statistics, matchup_count, matchups, data, xml_target_file, taylor_target_files, target_diagram_file, scatter_plot_files)
+        output.xhtml(collected_statistics, matchup_count, matchups, data, xml_target_file, taylor_target_files,
+                     target_diagram_file, scatter_plot_files)
         logging.info('XHTML report written to \'%s\'' % xml_target_file)
         shutil.copy(xsl, parsed_args.output_dir)
         logging.info('XHTML support file written to \'%s/%s\'' % (parsed_args.output_dir, 'analysis-summary.xsl'))
@@ -252,6 +243,7 @@ def main():
         create_zip(target_files, config, file_handler, parsed_args)
 
     logging.info('End of process')
+
 
 if __name__ == '__main__':
     main()

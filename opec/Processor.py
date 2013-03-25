@@ -13,7 +13,6 @@
 # with this program; if not, see http://www.gnu.org/licenses/gpl.html
 
 import numpy as np
-import numpy.ma as ma
 import scipy.stats.mstats as mstats
 from opec.Configuration import get_default_config
 
@@ -23,7 +22,7 @@ def mean(values):
 
 
 def stddev(values, ddof):
-    return ma.std(values, ddof=ddof)
+    return np.std(values, ddof=ddof)
 
 
 def percentiles(values, alphap, betap):
@@ -31,7 +30,7 @@ def percentiles(values, alphap, betap):
 
 
 def minmax(values):
-    return [ma.min(values), ma.max(values)]
+    return [np.min(values), np.max(values)]
 
 
 def rmse(reference_values, values):
@@ -39,58 +38,58 @@ def rmse(reference_values, values):
     according to MEECE D2.7 User guide and report outlining validation methodology
     """
     squared_errors = (values - reference_values) ** 2
-    return ma.sqrt(ma.mean(squared_errors))
+    return np.sqrt(np.mean(squared_errors))
 
 
 def normalised_rmse(reference_values, values, ddof, correlation):
     """
     according to "Diagrams for coupled hydrodynamic-ecosystem model skill assessment", Joliff et. al. 2009
     """
-    normalised_stddev = ma.std(values, ddof=ddof) / ma.std(reference_values, ddof=ddof)
-    return ma.sqrt(1 + normalised_stddev**2 - 2 * normalised_stddev * correlation)
+    normalised_stddev = np.std(values, ddof=ddof) / np.std(reference_values, ddof=ddof)
+    return np.sqrt(1 + normalised_stddev**2 - 2 * normalised_stddev * correlation)
 
 
 def bias(reference_values, values):
     """
     according to http://en.wikipedia.org/wiki/Bias_of_an_estimator
     """
-    return ma.mean(reference_values) - ma.mean(values)
+    return np.mean(reference_values) - np.mean(values)
 
 
 def unbiased_rmse(reference_values, values):
-    squared_differences = ((values - ma.mean(values)) - (reference_values - ma.mean(reference_values))) ** 2
-    squared_differences /= ma.count(values)
-    return ma.sqrt(ma.sum(squared_differences))
+    squared_differences = ((values - np.mean(values)) - (reference_values - np.mean(reference_values))) ** 2
+    squared_differences /= len(values)
+    return np.sqrt(np.sum(squared_differences))
 
 
 def correlation(reference_values, values):
-    if len(ma.unique(reference_values)) == 1 or len(ma.unique(values)) == 1:
+    if len(np.unique(reference_values)) == 1 or len(np.unique(values)) == 1:
         return np.nan # if all reference or model values are equal, no sensible correlation coefficient can be computed.
-    return ma.corrcoef(values.ravel(), reference_values.ravel())[0, 1]
+    return np.corrcoef(values, reference_values)[0, 1]
 
 
 def percentage_model_bias(reference_values, model_values):
     """
     according to MEECE D2.7 User guide and report outlining validation methodology
     """
-    return ma.sum(reference_values - model_values) * 100 / ma.sum(reference_values)
+    return np.sum(reference_values - model_values) * 100 / np.sum(reference_values)
 
 
 def reliability_index(reference_values, model_values):
     """
     according to MEECE D2.7 User guide and report outlining validation methodology
     """
-    n = 1 / ma.count(reference_values)
-    return ma.exp(ma.sqrt(n * ma.sum(ma.power(ma.log10(reference_values / model_values), 2))))
+    n = 1 / len(reference_values)
+    return np.exp(np.sqrt(n * np.sum(np.power(np.log10(reference_values / model_values), 2))))
 
 
 def model_efficiency(reference_values, model_values):
     """
     Nash-Sutcliffe model efficiency according to MEECE D2.7 User guide and report outlining validation methodology
     """
-    if len(ma.unique(reference_values)) == 1:
+    if len(np.unique(reference_values)) == 1:
         return np.nan # if all reference values are equal, no sensible model efficiency can be computed.
-    return 1 - ma.sum(ma.power(reference_values - model_values, 2)) / ma.sum(ma.power(reference_values - np.mean(reference_values), 2))
+    return 1 - np.sum(np.power(reference_values - model_values, 2)) / np.sum(np.power(reference_values - np.mean(reference_values), 2))
 
 
 def calculate_statistics(model_name=None, ref_name=None, reference_values=None, model_values=None, unit=None, config=None):

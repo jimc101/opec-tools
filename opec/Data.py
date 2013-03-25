@@ -15,13 +15,9 @@ import functools
 import logging
 import sys
 import os
+import numpy.ma as ma
 
 from opec import Utils
-
-
-if not os.name == 'nt':
-    import resource
-
 from opec.NetCDFFacade import NetCDFFacade
 
 class Data(object):
@@ -36,15 +32,18 @@ class Data(object):
         self.cached_list = []
         self.current_memory = 0
 
+
     def model_vars(self):
         if not hasattr(self, 'model_variables'):
             self.model_variables = self.__model_file.get_model_variables()
         return self.model_variables
 
+
     def close(self):
         self.__model_file.close()
         if self.is_ref_data_split():
             self.__reference_file.close()
+
 
     def ref_vars(self):
         if hasattr(self, 'reference_variables'):
@@ -55,8 +54,10 @@ class Data(object):
         self.reference_variables = reference_variables
         return reference_variables
 
+
     def has_model_dimension(self, dimension_name):
         return self.__model_file.has_model_dimension(dimension_name)
+
 
     def reference_coordinate_variables(self):
         variables = self.__model_file.get_ref_coordinate_variables()
@@ -64,22 +65,28 @@ class Data(object):
             variables.extend(self.__reference_file.get_ref_coordinate_variables())
         return variables
 
+
     def model_dim_size(self, dim_name):
         return self.dim_size(self.__model_file, dim_name)
+
 
     def ref_dim_size(self, dim_name):
         if self.is_ref_data_split():
             return self.dim_size(self.__reference_file, dim_name)
         return self.dim_size(self.__model_file, dim_name)
 
+
     def dim_size(self, ncfile, dim_name):
         return ncfile.get_dim_size(dim_name)
+
 
     def __dimension_string(self, ncfile, variable_name):
         return ncfile.get_dimension_string(variable_name)
 
+
     def is_ref_data_split(self):
         return hasattr(self, '_Data__reference_file')
+
 
     def reference_records_count(self, dimension_profile):
         ref_vars = self.ref_vars()
@@ -101,12 +108,14 @@ class Data(object):
                 dim_size += temp
         return dim_size
 
+
     def get_reference_dimensions(self, variable_name=None):
         if self.is_ref_data_split():
             ncfile = self.__reference_file
         else:
             ncfile = self.__model_file
         return ncfile.get_dimensions(variable_name)
+
 
     def get_model_dimensions(self, variable_name=None):
         if not hasattr(self, 'model_dimensions'):
@@ -115,34 +124,43 @@ class Data(object):
             self.model_dimensions[variable_name] = self.__model_file.get_dimensions(variable_name)
         return self.model_dimensions[variable_name]
 
+
     def read_model(self, variable_name, origin=None):
         return self.__read(self.__model_file, variable_name, origin)
+
 
     def read_reference(self, variable_name, origin=None):
         ncfile = self.__reference_file if self.is_ref_data_split() else self.__model_file
         return self.__read(ncfile, variable_name, origin)
 
+
+    def ensure_memory(self, variable_size):
+        while self.max_cache_size <= self.current_memory + variable_size and len(self.cached_list) > 0:
+            first_in_cache = self.cached_list.pop(0)
+            logging.debug('Deleting variable \'%s\' from cache.' % first_in_cache)
+            self.__delattr__(first_in_cache)
+            self.current_memory -= self.compute_variable_size(first_in_cache)
+        if not os.name == 'nt':
+            logging.debug('Memory in use after \'ensure_memory\' called: %.2f MB' % (mem() / 1024))
+
+
     def __read(self, ncfile, variable_name, origin=None):
         variable_size = self.compute_variable_size(variable_name)
         if not self.__is_cached(variable_name):
-            while self.max_cache_size <= self.current_memory + variable_size:
-                first_in_cache = self.cached_list.pop(0)
-                logging.debug('Deleting variable \'%s\' from cache.' % first_in_cache)
-                self.__delattr__(first_in_cache)
-                self.current_memory -= self.compute_variable_size(first_in_cache)
+            self.ensure_memory(variable_size)
         if not self.__is_cached(variable_name):
             logging.debug('Reading variable \'%s\' fully into cache.' % variable_name)
             if not os.name == 'nt':
-                logging.debug('Memory in use before reading variable %s fully into cache: %.2f MB' % (variable_name, resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024))
+                logging.debug('Memory in use before reading variable %s fully into cache: %.2f MB' % (variable_name, mem() / 1024))
             variable = ncfile.get_variable(variable_name)
             self.__setattr__(variable_name, variable[:])
             self.__current_storage.add(variable_name)
             self.cached_list.append(variable_name)
             self.current_memory += self.compute_variable_size(variable_name)
             if not os.name == 'nt':
-                logging.debug('Memory in use after reading variable %s fully into cache: %.2f MB' % (variable_name, resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024))
+                logging.debug('Memory in use after reading variable %s fully into cache: %.2f MB' % (variable_name, mem() / 1024))
         if origin is None:
-            return self.__getattribute__(variable_name)
+            return ma.array(self.__getattribute__(variable_name))
 
         return self.get_data(origin, variable_name)
 
@@ -196,9 +214,7 @@ class Data(object):
             variable = self.__reference_file.get_variable(variable_name)
         if variable is None:
             raise ValueError('No variable found with name \'%s\'' % variable_name)
-        num_entries = functools.reduce(lambda x, y: x * y, variable.shape)
-        byte_size = num_entries * variable.dtype.itemsize
-        return byte_size / (1024 * 1024)
+        return compute_array_size(variable.shape, variable.dtype.itemsize)
 
 
     def has_one_dim_ref_var(self):
@@ -206,6 +222,26 @@ class Data(object):
             if len(self.get_reference_dimensions(var)) == 1:
                 return True
         return False
+
+
+    def get_values(self, ref_name, model_name):
+        model_values_slices, ref_values_slices = self.get_slices(model_name, ref_name)
+
+        model_values = self.read_model(model_name)[model_values_slices]
+        reference_values = self.read_reference(ref_name)[ref_values_slices]
+        reference_values.mask = reference_values.mask | model_values.mask
+        model_values.mask = reference_values.mask | model_values.mask
+
+        logging.debug('Compressing ref-variable %s' % ref_name)
+        self.ensure_memory(compute_array_size(reference_values.shape, reference_values.dtype.itemsize))
+        reference_values = reference_values.compressed()
+
+        logging.debug('Compressing model variable %s' % model_name)
+        self.ensure_memory(compute_array_size(model_values.shape, model_values.dtype.itemsize))
+        model_values = model_values.compressed()
+        self.ensure_memory(compute_array_size(model_values.shape * 2, model_values.dtype.itemsize))
+
+        return reference_values, model_values
 
 
     def get_slices(self, model_name, ref_name):
@@ -270,3 +306,13 @@ class Data(object):
                 index = loop_index
 
         return index
+
+
+def compute_array_size(shape, itemsize):
+    num_entries = functools.reduce(lambda x, y: x * y, shape)
+    byte_size = num_entries * itemsize
+    return byte_size / (1024 * 1024)
+
+
+def mem():
+    return int(os.popen('ps -p %d -o rss | tail -1' % os.getpid()).read())
