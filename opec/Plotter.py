@@ -28,6 +28,8 @@ import mpl_toolkits.axisartist.floating_axes as FA
 import mpl_toolkits.axisartist.grid_finder as GF
 import matplotlib as mpl
 import matplotlib.ticker
+from matplotlib.cm import jet as jet
+from matplotlib.cm import ScalarMappable as ScalarMappable
 
 from opec.Configuration import get_default_config
 
@@ -55,7 +57,7 @@ def create_taylor_diagrams(statistics, config=None):
                 if v == 0.0 or np.isnan(v):
                     logging.warning('Unable to create Taylor diagram from statistics.')
                     logging.debug('Statistics: %s' % current_statistics)
-                    return None
+                    continue
 
             figure = plt.figure()
             diagram = TaylorDiagram(figure, ref, config.show_negative_corrcoeff, config.show_legends, max_stddev)
@@ -161,13 +163,7 @@ class ScatterPlot(Diagram):
         logging.debug('Creating scatter plot...')
 
         (H, xedges, yedges) = np.histogram2d(x_data, y_data, bins=(500, 500), range=[[axis_min, axis_max], [axis_min, axis_max]])
-        # x_bin_sizes = (xedges[1:] - xedges[:-1]).reshape((1, 100))
-        # y_bin_sizes = (yedges[1:] - yedges[:-1]).reshape((100, 1))
-
         extent = [axis_min, axis_max, axis_min, axis_max]
-
-        from matplotlib.cm import jet as jet
-        from matplotlib.cm import ScalarMappable as ScalarMappable
 
         self.ax.imshow(H, extent=extent, interpolation='None', cmap=jet)
         mappable = ScalarMappable()
@@ -375,8 +371,8 @@ class TaylorDiagram(Diagram):
         # Add reference points
         # [0] = x-value
         # stddev = y-value
-        for name, stddev, unit in self.ref:
-            dataset = self.ax.plot([0], stddev, '%so' % self.get_color())[0]
+        for name, ref_stddev, unit in self.ref:
+            dataset = self.ax.plot([0], ref_stddev, '%so' % self.get_color())[0]
             if hasattr(self, 'sample_names'):
                 self.sample_points.append(dataset)
                 self.sample_names.append(create_sample_name(name, unit))
@@ -387,27 +383,30 @@ class TaylorDiagram(Diagram):
         # Add stddev contours
         t = np.linspace(0, x_max, num=50)
         for name, ref_stddev, unit in self.ref:
-            r = np.zeros_like(t) + ref_stddev # 50 times the stddev
-            self.ax.plot(t, r, 'k--', label='_', linewidth=0.5)
+            if not np.isnan(ref_stddev):
+                r = np.zeros_like(t) + ref_stddev # 50 times the stddev
+                self.ax.plot(t, r, 'k--', label='_', linewidth=0.5)
 
         # Add rmse contours
         rs, ts = np.meshgrid(np.linspace(0, y_axis_range[1], num=50),
                              np.linspace(0, x_max, num=50))
 
         for name, ref_stddev, unit in self.ref:
-            # Unfortunately, I don't understand the next line AT ALL,
-            # it's copied from http://matplotlib.1069221.n5.nabble.com/Taylor-diagram-2nd-take-td28070.html
-            # but it leads to the right results (contours of the centered pattern RMS), so I keep it
-            rmse = np.sqrt(ref_stddev ** 2 + rs ** 2 - 2 * ref_stddev * rs * np.cos(ts))
+            if not np.isnan(ref_stddev):
+                # Unfortunately, I don't understand the next line AT ALL,
+                # it's copied from http://matplotlib.1069221.n5.nabble.com/Taylor-diagram-2nd-take-td28070.html
+                # but it leads to the right results (contours of the centered pattern RMS), so I keep it
+                rmse = np.sqrt(ref_stddev ** 2 + rs ** 2 - 2 * ref_stddev * rs * np.cos(ts))
 
-            colors = ('#7F0000', '#6F0000', '#5F0000', '#4F0000', '#3F0000', '#2F0000', '#1F0000', '#0F0000')
-            rmse_contour = self.ax.contour(ts, rs, rmse, 8, linewidths=0.5, colors=colors)
+                colors = ('#7F0000', '#6F0000', '#5F0000', '#4F0000', '#3F0000', '#2F0000', '#1F0000', '#0F0000')
+                rmse_contour = self.ax.contour(ts, rs, rmse, 8, linewidths=0.5, colors=colors)
 
-            plt.clabel(rmse_contour, inline=1, fmt='%1.2f', fontsize=8)
+                plt.clabel(rmse_contour, inline=1, fmt='%1.2f', fontsize=8)
 
 
     def get_angle(self, corrcoeff):
         return np.arccos(corrcoeff)
+
 
     def plot_sample(self, corrcoeff, model_stddev, model_name=None, unit=None, *args, **kwargs):
         """Add model sample to the Taylor diagram. args and kwargs are

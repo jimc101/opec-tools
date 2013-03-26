@@ -158,8 +158,6 @@ def main():
         is_gridded = len(data.get_reference_dimensions(ref_name)) > 1
         if is_gridded:
             reference_values, model_values = data.get_values(ref_name, model_name)
-            logging.info(str(len(model_values)))
-
             matchup_count += ma.count(reference_values)
         else:
             reference_values, model_values = Utils.extract_values(matchups, data, ref_name, model_name)
@@ -176,7 +174,7 @@ def main():
         if config.write_scatter_plots:
             axis_min = min(stats['min'], stats['ref_min'])
             axis_max = max(stats['p90'], stats['ref_p90'])
-            logging.debug('Creating scatter plot for \'%s\' and \'%s\'' % (model_name, ref_name))
+            logging.info('Creating scatter plot for \'%s\' and \'%s\'' % (model_name, ref_name))
             scatter_plots[model_name + ref_name] = output.scatter_plot(ref_name, model_name, reference_values,
                                                                        model_values,
                                                                        axis_min, axis_max, data.unit(model_name))
@@ -191,9 +189,10 @@ def main():
             target_files.append(csv_target_file)
             output.csv(stats, model_name, ref_name, matchup_count, matchups=matchups, target_file=csv_target_file)
             logging.info('CSV output written to \'%s\'' % csv_target_file)
-            matchup_filename = '%s_matchups.csv' % os.path.splitext(csv_target_file)[0]
-            logging.info('Matchups written to \'%s\'' % matchup_filename)
-            target_files.append(matchup_filename)
+            if matchups is not None:
+                matchup_filename = '%s_matchups.csv' % os.path.splitext(csv_target_file)[0]
+                logging.info('Matchups written to \'%s\'' % matchup_filename)
+                target_files.append(matchup_filename)
 
     taylor_target_files = []
     if config.write_taylor_diagrams:
