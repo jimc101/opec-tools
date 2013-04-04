@@ -176,7 +176,7 @@ def main():
             axis_max = max(stats['p90'], stats['ref_p90'])
             logging.info('Creating scatter plot for \'%s\' and \'%s\'' % (model_name, ref_name))
             scatter_plots[model_name + ref_name] = output.scatter_plot(model_name, ref_name, model_values,
-                                                                       reference_values,  axis_min, axis_max,
+                                                                       reference_values,  None, axis_min, axis_max,
                                                                        data.unit(model_name))
 
     if not os.name == 'nt':
