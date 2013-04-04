@@ -70,11 +70,11 @@ benchmarking.write_csv(stats3, 'chl', 'chl_ref', valid_matchups, data, './chl_st
 taylor_files = benchmarking.taylor_diagrams(stats3, data, './chl_stats_taylor.png')
 target_file = benchmarking.target_diagram(stats3, data, './chl_stats_target.png')
 
-# write a scatter plot of the matchups
-scatter_file = benchmarking.scatter_plot('chl', 'chl_ref', model_data, reference_data, data, target_file='./chl_scatter.png', unit='mg/m^3')
+# write a density plot of the matchups
+density_file = benchmarking.density_plot('chl', 'chl_ref', model_data, reference_data, data, target_file='./chl_density.png', unit='mg/m^3')
 
 # write an XHTML-report from stats3
-benchmarking.write_xhtml_report([stats3], valid_matchups, data, './chl_report.xml', ['./chl_stats_taylor.png'], './chl_stats_target.png', ['./chl_scatter.png'])
+benchmarking.write_xhtml_report([stats3], valid_matchups, data, './chl_report.xml', ['./chl_stats_taylor.png'], './chl_stats_target.png', ['./chl_density.png'])
 
 # Following: examples using custom configurations
 

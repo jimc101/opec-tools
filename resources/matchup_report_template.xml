@@ -114,11 +114,11 @@ with this program; if not, see http://www.gnu.org/licenses/gpl.html -->
     <targetDiagram>${target_diagram_file}</targetDiagram>
 % endif
 
-% if scatter_plot_files:
-    % for scatter_plot in scatter_plot_files:
-        <scatterPlots>
-            <scatterPlot>${scatter_plot}</scatterPlot>
-        </scatterPlots>
+% if density_plot_files:
+    % for density_plot in density_plot_files:
+        <densityPlots>
+            <densityPlot>${density_plot}</densityPlot>
+        </densityPlots>
     % endfor
 % endif
 

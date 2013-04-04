@@ -265,16 +265,16 @@ with this program; if not, see http://www.gnu.org/licenses/gpl.html-->
                     </div>
                 </xsl:if>
 
-                <xsl:if test="/analysisSummary/scatterPlots">
-                    <h3>Scatter Plot(s)
-                        <a class="hide" href="JavaScript:doMenu('scatter');" id="id_scatter">[hide]</a>
+                <xsl:if test="/analysisSummary/densityPlots">
+                    <h3>Density Plot(s)
+                        <a class="hide" href="JavaScript:doMenu('density');" id="id_density">[hide]</a>
                     </h3>
 
-                    <div display="block" id="scatter">
-                        <xsl:for-each select="analysisSummary/scatterPlots">
+                    <div display="block" id="density">
+                        <xsl:for-each select="analysisSummary/densityPlots">
                             <img class="smaller">
                                 <xsl:attribute name="src">
-                                    <xsl:value-of select="scatterPlot"/>
+                                    <xsl:value-of select="densityPlot"/>
                                 </xsl:attribute>
                             </img>
                             <br/>

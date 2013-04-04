@@ -98,9 +98,9 @@ def create_target_diagram(statistics, config=None):
 
     return diagram
 
-def create_scatter_plot(ref_name, model_name, unit=None):
+def create_density_plot(ref_name, model_name, unit=None):
     figure = plt.figure()
-    diagram = ScatterPlot(figure, ref_name, model_name, unit)
+    diagram = DensityPlot(figure, ref_name, model_name, unit)
     diagram.setup_axes()
     return diagram
 
@@ -133,7 +133,7 @@ class Diagram(object):
             self.colors = ['r', 'g', 'b', 'm', 'y', 'c']
         return self.colors.pop(0)
 
-class ScatterPlot(Diagram):
+class DensityPlot(Diagram):
 
     def __init__(self, figure, ref_name, model_name, unit=None):
         self.fig = figure
@@ -154,7 +154,7 @@ class ScatterPlot(Diagram):
 
 
     def update_title(self, matchup_count):
-        plt.title('Scatter plot of %s and %s\nNumber of considered matchups: %s' % (self.model_name, self.ref_name, matchup_count))
+        plt.title('Density plot of %s and %s\nNumber of considered matchups: %s' % (self.model_name, self.ref_name, matchup_count))
 
 
     def draw_regression_line(self, x_data, y_data):
@@ -166,7 +166,7 @@ class ScatterPlot(Diagram):
 
 
     def set_data(self, x_data, y_data, axis_min, axis_max, matchup_count):
-        logging.debug('Creating scatter plot...')
+        logging.debug('Creating density plot...')
 
         (H, xedges, yedges) = np.histogram2d(x_data, y_data, bins=(500, 500), range=[[axis_min, axis_max], [axis_min, axis_max]])
         extent = [axis_min, axis_max, axis_min, axis_max]
@@ -176,7 +176,7 @@ class ScatterPlot(Diagram):
         mappable.set_array(H)
         self.fig.colorbar(mappable, ax=self.ax)
 
-        # plt.scatter(x_data, y_data)
+        # plt.density(x_data, y_data)
 
         logging.debug('...success!')
         self.update_title(matchup_count)

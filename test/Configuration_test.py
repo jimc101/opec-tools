@@ -19,6 +19,7 @@ from opec.Configuration import Configuration
 
 class Configuration_test(unittest.TestCase):
 
+
     def test_initialisation(self):
         c = Configuration(alpha=5, ddof=2, show_legends=False, write_taylor_diagrams=False)
         self.assertEqual(5, c.alpha)
@@ -37,7 +38,8 @@ class Configuration_test(unittest.TestCase):
         self.assertEqual(None, c.log_file)
         self.assertEqual(True, c.write_csv)
         self.assertEqual(True, c.write_xhtml)
-        self.assertEqual(True, c.write_scatter_plots)
+        self.assertEqual(True, c.write_density_plots)
+
 
     def test_initialisation_by_file(self):
         test_config = os.path.dirname(os.path.realpath(__file__)) + "/../resources/test.properties"
@@ -58,16 +60,20 @@ class Configuration_test(unittest.TestCase):
         self.assertEqual(False, c.write_csv)
         self.assertEqual(False, c.write_xhtml)
 
+
     def test_wrong_log_level(self):
         self.assertRaises(RuntimeError, lambda: Configuration(log_level='LOG_EVERYTHING_PLEASE'))
+
 
     def test_disabled_log_level(self):
         c = Configuration(log_level='DISABLED')
         self.assertEqual(100, c.log_level)
 
+
     def test_log_file(self):
         c = Configuration(log_file='somewhere_to_log_into')
         self.assertEqual('somewhere_to_log_into', c.log_file)
+
 
     def test_split_up_criteria(self):
         c = Configuration(split_diagrams='nu')
@@ -86,6 +92,7 @@ class Configuration_test(unittest.TestCase):
         self.assertRaises(ValueError, lambda: Configuration(split_diagrams='cow'))
         self.assertRaises(ValueError, lambda: Configuration(split_diagrams='p'))
         self.assertRaises(ValueError, lambda: Configuration(split_diagrams='ssuv'))
+
 
     def test_max_bounds_for_target_diagram(self):
         c = Configuration()

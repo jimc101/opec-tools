@@ -30,7 +30,7 @@ class Configuration(object):
                  log_level=None, log_file=None, zip=None, show_negative_corrcoeff=None,
                  show_legends=None, target_dir=None, target_prefix=None, include_header=None, separator=None,
                  properties_file_name=None, write_taylor_diagrams=None, write_xhtml=None,
-                 write_csv=None, write_scatter_plots=None, split_diagrams=None, write_target_diagram=None,
+                 write_csv=None, write_density_plots=None, split_diagrams=None, write_target_diagram=None,
                  target_diagram_bounds=None, normalise_target_diagram=None, utilise_stddev_difference=None,
                  max_cache_size=None):
         """
@@ -63,7 +63,7 @@ class Configuration(object):
         self.__set(write_taylor_diagrams, 'opec.output.plot.taylor.write_taylor_diagrams', bool_conv)
         self.__set(write_xhtml, 'opec.output.xhtml.write_xhtml', bool_conv)
         self.__set(write_csv, 'opec.output.csv.write_csv', bool_conv)
-        self.__set(write_scatter_plots, 'opec.output.plot.scatter.write_scatter_plots', bool_conv)
+        self.__set(write_density_plots, 'opec.output.plot.density.write_density_plots', bool_conv)
         self.__set(split_diagrams, 'opec.output.plot.taylor.split_diagrams', split_diagrams_conv('u'), 'opec.output.plot.split_on_unit')
         self.__set(split_diagrams, 'opec.output.plot.taylor.split_diagrams', split_diagrams_conv('n'), 'opec.output.plot.split_on_name')
         self.__set(write_target_diagram, 'opec.output.plot.target.write_target_diagram', bool_conv)
@@ -170,8 +170,8 @@ class Configuration(object):
         return self.__dict['opec.output.xhtml.write_xhtml']
 
 
-    def __write_scatter_plots(self):
-        return self.__dict['opec.output.plot.scatter.write_scatter_plots']
+    def __write_density_plots(self):
+        return self.__dict['opec.output.plot.density.write_density_plots']
 
 
     def __split_on_unit(self):
@@ -219,7 +219,7 @@ class Configuration(object):
     write_taylor_diagrams = property(__write_taylor_diagrams)
     write_csv = property(__write_csv)
     write_xhtml = property(__write_xhtml)
-    write_scatter_plots = property(__write_scatter_plots)
+    write_density_plots = property(__write_density_plots)
     split_on_unit = property(__split_on_unit)
     split_on_name = property(__split_on_name)
     write_target_diagram = property(__write_target_diagram)

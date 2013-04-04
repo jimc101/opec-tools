@@ -4,7 +4,7 @@
 test_output.csv
 resources/target_test*
 resources/taylor_test*.png
-resources/scatter_test*.png
+resources/density_test*.png
 resources/matchup_report.xml
 resources/matchup_report.xsl
 dist
@@ -12,3 +12,4 @@ build
 opec.egg-info
 MANIFEST
 resources/ogs_test*
+debug.properties

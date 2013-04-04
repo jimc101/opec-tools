@@ -194,13 +194,13 @@ class Output(object):
         file.close()
 
 
-    def xhtml(self, statistics_list, matchup_count, matchups, data, target_file, taylor_target_files=None, target_diagram_file=None, scatter_plot_files=None):
+    def xhtml(self, statistics_list, matchup_count, matchups, data, target_file, taylor_target_files=None, target_diagram_file=None, density_plot_files=None):
         filename = os.path.dirname(os.path.realpath(__file__)) + '/../resources/matchup_report_template.xml'
         template = Template(filename=filename)
         buf = StringIO()
 
         taylor_target_files = Utils.ensure_list(taylor_target_files)
-        scatter_plot_files = Utils.ensure_list(scatter_plot_files)
+        density_plot_files = Utils.ensure_list(density_plot_files)
 
         all_relative_stats = []
         all_model_stats = []
@@ -222,7 +222,7 @@ class Output(object):
                 ref_pair[key.replace('ref_', '')] = format_statistic(stats, key)
             all_ref_stats.append((stats['ref_name'], ref_pair))
 
-        scatter_plot_files = get_basenames(scatter_plot_files)
+        density_plot_files = get_basenames(density_plot_files)
         taylor_target_files = get_basenames(taylor_target_files)
         target_diagram_file = os.path.basename(target_diagram_file) if target_diagram_file is not None else None
 
@@ -246,7 +246,7 @@ class Output(object):
             taylor_target_files=taylor_target_files,
             write_target_diagram=self.config.write_target_diagram,
             target_diagram_file=target_diagram_file,
-            scatter_plot_files=scatter_plot_files)
+            density_plot_files=density_plot_files)
         template.render_context(ctx)
         xml = buf.getvalue()
 
@@ -270,23 +270,23 @@ class Output(object):
         return result, diagrams
 
 
-    def scatter_plot(self, model_name, ref_name, model_values, ref_values, target_file=None, axis_min=None, axis_max=None, unit=None):
+    def density_plot(self, model_name, ref_name, model_values, ref_values, target_file=None, axis_min=None, axis_max=None, unit=None):
         if axis_min is None:
             axis_min = min(np.min(ref_values), np.min(model_values))
         if axis_max is None:
             axis_max = max(np.max(ref_values), np.max(model_values))
 
-        scatter_plot = Plotter.create_scatter_plot(ref_name, model_name, unit)
-        scatter_plot.set_data(ref_values, model_values, axis_min, axis_max, ref_values.size)
+        density_plot = Plotter.create_density_plot(ref_name, model_name, unit)
+        density_plot.set_data(ref_values, model_values, axis_min, axis_max, ref_values.size)
 
         if target_file is not None:
-            self.write_scatter_plot(scatter_plot, target_file)
+            self.write_density_plot(density_plot, target_file)
 
-        return scatter_plot
+        return density_plot
 
 
-    def write_scatter_plot(self, scatter_plot, target_file):
-        scatter_plot.write(target_file)
+    def write_density_plot(self, density_plot, target_file):
+        density_plot.write(target_file)
 
 
     def target_diagram(self, statistics, target_file=None):

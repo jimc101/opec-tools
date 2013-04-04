@@ -149,9 +149,9 @@ def main():
 
     matchup_count = 0 if matchups is None else len(matchups)
     collected_statistics = []
-    scatter_plot_files = []
+    density_plot_files = []
     target_files = []
-    scatter_plots = {}
+    density_plots = {}
 
     for (model_name, ref_name) in parsed_args.variable_mappings:
         unit = data.unit(model_name)
@@ -171,11 +171,11 @@ def main():
         stats = Processor.calculate_statistics(model_values, reference_values, model_name, ref_name, unit, config)
         collected_statistics.append(stats)
 
-        if config.write_scatter_plots:
+        if config.write_density_plots:
             axis_min = min(stats['min'], stats['ref_min'])
             axis_max = max(stats['p90'], stats['ref_p90'])
-            logging.info('Creating scatter plot for \'%s\' and \'%s\'' % (model_name, ref_name))
-            scatter_plots[model_name + ref_name] = output.scatter_plot(model_name, ref_name, model_values,
+            logging.info('Creating density plot for \'%s\' and \'%s\'' % (model_name, ref_name))
+            density_plots[model_name + ref_name] = output.density_plot(model_name, ref_name, model_values,
                                                                        reference_values,  None, axis_min, axis_max,
                                                                        data.unit(model_name))
 
@@ -205,13 +205,13 @@ def main():
                 target_files.append(written_taylor_diagram)
                 taylor_target_files.append(written_taylor_diagram)
 
-    if config.write_scatter_plots:
+    if config.write_density_plots:
         for (model_name, ref_name) in parsed_args.variable_mappings:
-            scatter_target = '%s/scatter-%s-%s.png' % (parsed_args.output_dir, model_name, ref_name)
-            scatter_plot_files.append(scatter_target)
-            target_files.append(scatter_target)
-            output.write_scatter_plot(scatter_plots[model_name + ref_name], scatter_target)
-            logging.info('Scatter plot written to \'%s\'' % scatter_target)
+            density_target = '%s/density-%s-%s.png' % (parsed_args.output_dir, model_name, ref_name)
+            density_plot_files.append(density_target)
+            target_files.append(density_target)
+            output.write_density_plot(density_plots[model_name + ref_name], density_target)
+            logging.info('Density plot written to \'%s\'' % density_target)
 
     target_diagram_file = None
     if config.write_target_diagram:
@@ -228,7 +228,7 @@ def main():
         xsl_target = '%s/%s' % (parsed_args.output_dir, os.path.basename(xsl))
         css_target = '%s/%s' % (parsed_args.output_dir, os.path.basename(css))
         output.xhtml(collected_statistics, matchup_count, matchups, data, xml_target_file, taylor_target_files,
-                     target_diagram_file, scatter_plot_files)
+                     target_diagram_file, density_plot_files)
         logging.info('XHTML report written to \'%s\'' % xml_target_file)
         shutil.copy(xsl, parsed_args.output_dir)
         logging.info('XHTML support file written to \'%s/%s\'' % (parsed_args.output_dir, 'analysis-summary.xsl'))

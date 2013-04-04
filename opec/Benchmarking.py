@@ -169,9 +169,9 @@ def target_diagram(statistics, data, target_file=None, config=None):
     return op.target_diagram(statistics, target_file)
 
 
-def scatter_plot(model_name, ref_name, model_values, ref_values, data, axis_min=None, axis_max=None, target_file=None, unit=None, config=None):
+def density_plot(model_name, ref_name, model_values, ref_values, data, axis_min=None, axis_max=None, target_file=None, unit=None, config=None):
     """
-    Creates the scatter plot for the given matchups and variables and possible writes it to the given target file.
+    Creates the density plot for the given matchups and variables and possible writes it to the given target file.
     @param model_name: the name of the model variable.
     @param ref_name: the name of the reference variable.
     @param model_name: the name of the model variable.
@@ -179,13 +179,13 @@ def scatter_plot(model_name, ref_name, model_values, ref_values, data, axis_min=
     @param data: the input data object.
     @param target_file: the optional target diagram file. If None, nothing will be written.
     @param config: the optional configuration.
-    @return: the scatter plot.
+    @return: the density plot.
     """
     op = Output(data, config=config)
-    return op.scatter_plot(model_name, ref_name, model_values, ref_values, target_file, axis_min, axis_max, unit)
+    return op.density_plot(model_name, ref_name, model_values, ref_values, target_file, axis_min, axis_max, unit)
 
 
-def write_xhtml_report(statistics_list, matchups, data, target_file, taylor_target_files=None, target_diagram_file=None, scatter_plot_files=None, config=None):
+def write_xhtml_report(statistics_list, matchups, data, target_file, taylor_target_files=None, target_diagram_file=None, density_plot_files=None, config=None):
     """
     Writes the xhtml report to the given target file.
     @param statistics_list: the list of statistics to mention in the report.
@@ -193,9 +193,9 @@ def write_xhtml_report(statistics_list, matchups, data, target_file, taylor_targ
     @param target_file: the target xhtml file.
     @param taylor_target_files: the optional paths to the taylor diagrams.
     @param target_diagram_file: the optional paths to the target diagram.
-    @param scatter_plot_files: the optional paths to the scatter plots.
+    @param density_plot_files: the optional paths to the density plots.
     @param config: the optional configuration.
     @return: None.
     """
     op = Output(data, config=config)
-    op.xhtml(statistics_list, len(matchups), matchups, data, target_file, taylor_target_files, target_diagram_file, scatter_plot_files)
+    op.xhtml(statistics_list, len(matchups), matchups, data, target_file, taylor_target_files, target_diagram_file, density_plot_files)
