@@ -30,6 +30,7 @@ import matplotlib as mpl
 import matplotlib.ticker
 from matplotlib.cm import jet as jet
 from matplotlib.cm import ScalarMappable as ScalarMappable
+from opec import Utils
 
 from opec.Configuration import get_default_config
 
@@ -39,6 +40,8 @@ if not os.name == 'nt':
 def create_taylor_diagrams(statistics, config=None):
     if config is None:
         config = get_default_config()
+
+    statistics = Utils.ensure_list(statistics)
 
     statistics_by_name_and_unit = sort_statistics_by_name_and_unit(config, statistics)
     diagrams = []
@@ -76,6 +79,9 @@ def create_target_diagram(statistics, config=None):
     figure = plt.figure()
     if config is None:
         config = get_default_config()
+
+    statistics = Utils.ensure_list(statistics)
+
     diagram = TargetDiagram(figure, config.normalise_target_diagram, config.show_legends, config.utilise_stddev_difference)
 
     diagram.setup_axes()

@@ -20,7 +20,7 @@ import numpy as np
 from mako.runtime import Context
 from mako.template import Template
 
-from opec import Plotter
+from opec import Plotter, Utils
 from opec.Configuration import get_default_config
 
 
@@ -199,6 +199,9 @@ class Output(object):
         template = Template(filename=filename)
         buf = StringIO()
 
+        taylor_target_files = Utils.ensure_list(taylor_target_files)
+        scatter_plot_files = Utils.ensure_list(scatter_plot_files)
+
         all_relative_stats = []
         all_model_stats = []
         all_ref_stats = []
@@ -267,9 +270,18 @@ class Output(object):
         return result, diagrams
 
 
-    def scatter_plot(self, ref_name, model_name, ref_data, model_data, axis_min, axis_max, unit=None):
+    def scatter_plot(self, model_name, ref_name, model_values, ref_values, target_file=None, axis_min=None, axis_max=None, unit=None):
+        if axis_min is None:
+            axis_min = min(np.min(ref_values), np.min(model_values))
+        if axis_max is None:
+            axis_max = max(np.max(ref_values), np.max(model_values))
+
         scatter_plot = Plotter.create_scatter_plot(ref_name, model_name, unit)
-        scatter_plot.set_data(ref_data, model_data, axis_min, axis_max, ref_data.size)
+        scatter_plot.set_data(ref_values, model_values, axis_min, axis_max, ref_values.size)
+
+        if target_file is not None:
+            self.write_scatter_plot(scatter_plot, target_file)
+
         return scatter_plot
 
 

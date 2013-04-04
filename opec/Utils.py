@@ -75,3 +75,9 @@ def create_test_file():
     d.variables['sst'][:] = random.rand(500, 4, 200, 400) + 1
     d.variables['sst_ref'][:] = random.rand(500, 4, 200, 400) * 0.5 + 1
     d.close()
+
+
+def ensure_list(var=None):
+    if var is not None and not type(var) == list:
+        var = [var]
+    return var

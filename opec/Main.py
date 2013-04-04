@@ -168,16 +168,16 @@ def main():
             model_values = model_values.compressed()
 
         logging.info('Calculating statistics for \'%s\' with \'%s\'' % (model_name, ref_name))
-        stats = Processor.calculate_statistics(model_name, ref_name, reference_values, model_values, unit, config)
+        stats = Processor.calculate_statistics(model_values, reference_values, model_name, ref_name, unit, config)
         collected_statistics.append(stats)
 
         if config.write_scatter_plots:
             axis_min = min(stats['min'], stats['ref_min'])
             axis_max = max(stats['p90'], stats['ref_p90'])
             logging.info('Creating scatter plot for \'%s\' and \'%s\'' % (model_name, ref_name))
-            scatter_plots[model_name + ref_name] = output.scatter_plot(ref_name, model_name, reference_values,
-                                                                       model_values,
-                                                                       axis_min, axis_max, data.unit(model_name))
+            scatter_plots[model_name + ref_name] = output.scatter_plot(model_name, ref_name, model_values,
+                                                                       reference_values,  axis_min, axis_max,
+                                                                       data.unit(model_name))
 
     if not os.name == 'nt':
         logging.debug(

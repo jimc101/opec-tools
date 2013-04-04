@@ -92,7 +92,7 @@ def model_efficiency(reference_values, model_values):
     return 1 - np.sum(np.power(reference_values - model_values, 2)) / np.sum(np.power(reference_values - np.mean(reference_values), 2))
 
 
-def calculate_statistics(model_name=None, ref_name=None, reference_values=None, model_values=None, unit=None, config=None):
+def calculate_statistics(model_values, reference_values, model_name=None, ref_name=None, unit=None, config=None):
     """Calculate the statistics for the given reference and model arrays.
     It is recommended to provide model_name and ref_name in order to allow for meaningful output.
     """
