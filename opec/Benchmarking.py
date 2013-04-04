@@ -27,6 +27,7 @@ def load(filename, ref_filename=None, config=None):
     """
     return Data(filename, ref_filename, config.max_cache_size)
 
+
 def create_config(filename):
     """
     Returns a configuration according to the properties file.
@@ -34,6 +35,7 @@ def create_config(filename):
     @return: an object of type 'Configuration'.
     """
     return Configuration(properties_file_name=filename)
+
 
 def calculate_statistics(model_name, ref_name, data, config=None):
     """
@@ -49,6 +51,7 @@ def calculate_statistics(model_name, ref_name, data, config=None):
     matchups = me.find_all_matchups()
     return calculate_statistics_from_matchups(matchups, model_name, ref_name, config=None)
 
+
 def calculate_statistics_from_matchups(matchups, model_name, ref_name, config=None):
     """
     Calculates the statistics for the given matchups and model and reference variable. Calculation will be
@@ -60,6 +63,7 @@ def calculate_statistics_from_matchups(matchups, model_name, ref_name, config=No
     @return: a dictionary of statistics.
     """
     return Processor.calculate_statistics(matchups, model_name, ref_name, config=config)
+
 
 def calculate_statistics_from_values(model_values, ref_values, config=None):
     """
@@ -73,6 +77,7 @@ def calculate_statistics_from_values(model_values, ref_values, config=None):
     """
     return Processor.calculate_statistics(model_values=model_values, reference_values=ref_values, config=config)
 
+
 def get_matchups(data, config=None):
     """
     Returns all matchups in the given dataset.
@@ -82,6 +87,7 @@ def get_matchups(data, config=None):
     """
     me = MatchupEngine(data, config)
     return me.find_all_matchups()
+
 
 def extract_values(model_name, ref_name, data, config=None):
     """
@@ -96,6 +102,7 @@ def extract_values(model_name, ref_name, data, config=None):
     ma = get_matchups(data, config)
     return extract_values_from_matchups(ma, model_name, ref_name)
 
+
 def extract_values_from_matchups(matchups, model_name, ref_name):
     """
     Returns the reference values and the model values for the given variables in the given matchups.
@@ -105,6 +112,7 @@ def extract_values_from_matchups(matchups, model_name, ref_name):
     @return: two numpy arrays: reference_values, model_values
     """
     return Processor.extract_values(matchups, ref_name, model_name)
+
 
 def write_csv(statistics, model_name, ref_name, matchups, target_file=None, config=None):
     """
@@ -120,6 +128,7 @@ def write_csv(statistics, model_name, ref_name, matchups, target_file=None, conf
     op = Output(config=config)
     op.csv(statistics, model_name, ref_name, matchups, target_file)
 
+
 def taylor_diagrams(statistics, target_file=None, config=None):
     """
     Creates the taylor diagrams derived from the statistics and possibly writes them to the given target file.
@@ -132,6 +141,7 @@ def taylor_diagrams(statistics, target_file=None, config=None):
     t, diagrams = op.taylor(statistics, target_file)
     return diagrams
 
+
 def target_diagram(statistics, target_file=None, config=None):
     """
     Creates the target diagram derived from the statistics and possibly writes it to the given target file.
@@ -142,6 +152,7 @@ def target_diagram(statistics, target_file=None, config=None):
     """
     op = Output(config=config)
     return op.target_diagram(statistics, target_file)
+
 
 def scatter_plot(matchups, model_name, ref_name, unit=None, target_file=None, config=None):
     """
@@ -156,6 +167,7 @@ def scatter_plot(matchups, model_name, ref_name, unit=None, target_file=None, co
     """
     op = Output(config=config)
     return op.scatter_plot(matchups, ref_name, model_name, target_file, unit)
+
 
 def write_xhtml_report(statistics_list, matchups, target_file, taylor_target_files=None, target_diagram_file=None, scatter_plot_files=None, config=None):
     """
