@@ -168,20 +168,21 @@ class DensityPlot(Diagram):
     def set_data(self, x_data, y_data, axis_min, axis_max, matchup_count):
         logging.debug('Creating density plot...')
 
-        (H, xedges, yedges) = np.histogram2d(x_data, y_data, bins=(500, 500), range=[[axis_min, axis_max], [axis_min, axis_max]])
+        bin_count = 200
+        (H, xedges, yedges) = np.histogram2d(x_data, y_data, bins=(bin_count, bin_count), range=[[axis_min, axis_max], [axis_min, axis_max]])
         extent = [axis_min, axis_max, axis_min, axis_max]
 
-        self.ax.imshow(H, extent=extent, interpolation='None', cmap=jet)
-        mappable = ScalarMappable()
+        cmap = 'spectral_r'
+        self.ax.imshow(H, extent=extent, interpolation='None', cmap=cmap)
+        mappable = ScalarMappable(cmap=cmap)
         mappable.set_array(H)
-        self.fig.colorbar(mappable, ax=self.ax)
-
-        # plt.density(x_data, y_data)
+        scale = np.array(np.linspace(np.min(H), np.max(H), 12), dtype=int)
+        cb = self.fig.colorbar(mappable, ax=self.ax)
+        cb.set_ticks(scale)
+        cb.set_ticklabels(scale)
 
         logging.debug('...success!')
         self.update_title(matchup_count)
-        # self.update_ranges(x_data, y_data)
-        # self.draw_regression_line(x_data, y_data)
 
 
     def update_ranges(self, x_data, y_data):
