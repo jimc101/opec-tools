@@ -28,7 +28,6 @@ import mpl_toolkits.axisartist.floating_axes as FA
 import mpl_toolkits.axisartist.grid_finder as GF
 import matplotlib as mpl
 import matplotlib.ticker
-from matplotlib.cm import jet as jet
 from matplotlib.cm import ScalarMappable as ScalarMappable
 from opec import Utils
 
