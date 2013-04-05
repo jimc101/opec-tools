@@ -15,9 +15,9 @@
 import logging
 from math import fabs, floor
 
-from opec.Configuration import get_default_config
-from opec.Matchup import Matchup
-from opec.ReferenceRecordsFinder import ReferenceRecordsFinder
+from opec.configuration import get_default_config
+from opec.matchup import Matchup
+from opec.reference_records_finder import ReferenceRecordsFinder
 
 
 class MatchupEngine(object):

@@ -11,7 +11,7 @@
 #
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, see http://www.gnu.org/licenses/gpl.html
-from opec.Utils import retrieve_origin
+from opec.utils import retrieve_origin
 
 class Matchup(object):
 

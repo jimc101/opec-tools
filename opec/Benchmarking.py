@@ -12,11 +12,11 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, see http://www.gnu.org/licenses/gpl.html
 
-from opec import Processor, Utils
-from opec.Configuration import Configuration
-from opec.Data import Data
-from opec.MatchupEngine import MatchupEngine
-from opec.Output import Output
+from opec import processor, utils
+from opec.configuration import Configuration
+from opec.data import Data
+from opec.matchup_engine import MatchupEngine
+from opec.output import Output
 
 def load(filename, ref_filename=None, config=None):
     """
@@ -56,7 +56,7 @@ def calculate_statistics(model_name, ref_name, data, config=None):
     if is_gridded:
         reference_values, model_values = data.get_values(ref_name, model_name)
         unit = data.unit(model_name)
-        return Processor.calculate_statistics(model_values, reference_values, model_name, ref_name, unit, config)
+        return processor.calculate_statistics(model_values, reference_values, model_name, ref_name, unit, config)
 
     me = MatchupEngine(data, config)
     matchups = me.find_all_matchups()
@@ -76,7 +76,7 @@ def calculate_statistics_from_matchups(matchups, model_name, ref_name, data, con
     """
     reference_values, model_values = extract_values_from_matchups(matchups, data, model_name, ref_name)
 
-    return Processor.calculate_statistics(model_values, reference_values, model_name, ref_name, config=config)
+    return processor.calculate_statistics(model_values, reference_values, model_name, ref_name, config=config)
 
 
 def calculate_statistics_from_values(model_values, ref_values, config=None):
@@ -89,7 +89,7 @@ def calculate_statistics_from_values(model_values, ref_values, config=None):
     @param config: the optional configuration.
     @return: a dictionary of statistics.
     """
-    return Processor.calculate_statistics(model_values, ref_values, config=config)
+    return processor.calculate_statistics(model_values, ref_values, config=config)
 
 
 def get_matchups(data, config=None):
@@ -125,7 +125,7 @@ def extract_values_from_matchups(matchups, data, model_name, ref_name):
     @param ref_name: the name of the reference variable.
     @return: two numpy arrays: reference_values, model_values
     """
-    return Utils.extract_values(matchups, data, ref_name, model_name)
+    return utils.extract_values(matchups, data, ref_name, model_name)
 
 
 def write_csv(statistics, model_name, ref_name, matchups, data, target_file=None, config=None):
@@ -169,7 +169,7 @@ def target_diagram(statistics, data, target_file=None, config=None):
     return op.target_diagram(statistics, target_file)
 
 
-def density_plot(model_name, ref_name, model_values, ref_values, data, axis_min=None, axis_max=None, target_file=None, unit=None, config=None):
+def density_plot(model_name, ref_name, model_values, ref_values, data, axis_min=None, axis_max=None, target_file=None, unit=None, log_scaled=None, config=None):
     """
     Creates the density plot for the given matchups and variables and possible writes it to the given target file.
     @param model_name: the name of the model variable.
@@ -182,11 +182,11 @@ def density_plot(model_name, ref_name, model_values, ref_values, data, axis_min=
     @return: the density plot.
     """
     op = Output(data, config=config)
-    if config is None:
-        bin_count = 200
+    if log_scaled is not None:
+        log_scaled = False
     else:
-        bin_count = config.density_plot_bin_count
-    return op.density_plot(model_name, ref_name, model_values, ref_values, bin_count, target_file, axis_min, axis_max, unit)
+        log_scaled = config.density_plot_log_scaled
+    return op.density_plot(model_name, ref_name, model_values, ref_values, log_scaled, target_file, axis_min, axis_max, unit)
 
 
 def write_xhtml_report(statistics_list, matchups, data, target_file, taylor_target_files=None, target_diagram_file=None, density_plot_files=None, config=None):

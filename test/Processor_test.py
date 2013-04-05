@@ -17,12 +17,12 @@ import os
 
 import numpy as np
 import numpy.ma as ma
-from opec import Utils
+from opec import utils
 
-from opec.Processor import calculate_statistics
-from opec.Configuration import Configuration
-from opec.MatchupEngine import MatchupEngine
-from opec.Data import Data
+from opec.processor import calculate_statistics
+from opec.configuration import Configuration
+from opec.matchup_engine import MatchupEngine
+from opec.data import Data
 
 class Processor_test(TestCase):
 
@@ -72,7 +72,7 @@ class Processor_test(TestCase):
     def test_compute_statistics_with_masked_values(self):
         model_values = ma.array(np.arange(1.0, 5.0, 1), mask=np.array([False, False, True, False])) # [1, 2, --, 4]
         ref_values = ma.array([1.1, 2.2, 2.9, 3.7])
-        ref_values, model_values = Utils.harmonise(ref_values, model_values)
+        ref_values, model_values = utils.harmonise(ref_values, model_values)
         ref_values = ref_values.compressed()
         model_values = model_values.compressed()
         stats = calculate_statistics(model_values=model_values, reference_values=ref_values, config=self.config, model_name='kate', ref_name='ref')

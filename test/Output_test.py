@@ -15,19 +15,19 @@
 from datetime import datetime
 from unittest import TestCase
 import unittest
-from opec import Processor
-from opec.Matchup import Matchup
-from opec.Output import Output
-from opec.Configuration import Configuration
+from opec import processor
+from opec.matchup import Matchup
+from opec.output import Output
+from opec.configuration import Configuration
 import os.path as path
 import os as os
-from opec.ReferenceRecordsFinder import ReferenceRecord
+from opec.reference_records_finder import ReferenceRecord
 
 class Output_test(TestCase):
 
     def setUp(self):
         self.config = Configuration(1, 1, 0, 12, 1234, 0.234)
-        self.stats = Processor.calculate_statistics([11, 9, 11.2, 10.5], [10, 10, 10, 10], 'chl', 'chl_ref', config=self.config)
+        self.stats = processor.calculate_statistics([11, 9, 11.2, 10.5], [10, 10, 10, 10], 'chl', 'chl_ref', config=self.config)
         path = os.path.dirname(os.path.realpath(__file__)) + '/../'
         self.temp_filename = path + 'resources/test_output.csv'
         self.xml_target_file = path + 'resources/matchup_report.xml'
@@ -115,6 +115,6 @@ class Output_test(TestCase):
         matchup_2 = Matchup([0, 0, 0, 1], [300020, 0.54, 56.1, 5.7], ReferenceRecord(1, 5.8, 57.2, 300400, 0.12))
         matchups = [matchup_1, matchup_2]
 
-        second_stats = Processor.calculate_statistics([2.2, 3.8, 4.4, 9.2], [2, 3, 4, 3], 'sst', 'sst_ref', config=self.config)
+        second_stats = processor.calculate_statistics([2.2, 3.8, 4.4, 9.2], [2, 3, 4, 3], 'sst', 'sst_ref', config=self.config)
 
         output.xhtml((self.stats, second_stats), matchups, self.xml_target_file)

@@ -13,7 +13,7 @@
 # with this program; if not, see http://www.gnu.org/licenses/gpl.html
 
 import unittest
-from opec.Main import parse_arguments
+from opec.main import parse_arguments
 
 class Main_test(unittest.TestCase):
 

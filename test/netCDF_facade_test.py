@@ -17,7 +17,7 @@ import unittest
 from numpy.core.numeric import array
 from numpy.testing.utils import assert_array_equal
 from numpy import nan
-from opec.NetCDFFacade import NetCDFFacade
+from opec.netCDF_facade import NetCDFFacade
 
 class NetCDFFacade_test(unittest.TestCase):
 

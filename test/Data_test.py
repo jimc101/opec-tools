@@ -19,7 +19,7 @@ import os
 import numpy as np
 from numpy.testing import assert_array_equal
 
-from opec.Data import Data
+from opec.data import Data
 
 
 class Data_test(unittest.TestCase):

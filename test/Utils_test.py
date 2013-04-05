@@ -16,10 +16,10 @@ import unittest
 import numpy as np
 import numpy.ma as ma
 import numpy.testing as test
-from opec import Utils
-from opec.Matchup import Matchup
-from opec.ReferenceRecordsFinder import ReferenceRecord
-from opec.Utils import harmonise
+from opec import utils
+from opec.matchup import Matchup
+from opec.reference_records_finder import ReferenceRecord
+from opec.utils import harmonise
 
 class Utils_test(unittest.TestCase):
 
@@ -47,7 +47,7 @@ class Utils_test(unittest.TestCase):
                     self.second_time_mod = True
                     return 0.1111
 
-        ref, model = Utils.extract_values(matchups, DataMock(), 'chl_ref', 'chl')
+        ref, model = utils.extract_values(matchups, DataMock(), 'chl_ref', 'chl')
         test.assert_almost_equal(ref, np.ma.array([np.nan, 0.2], mask=[True, False]))
         test.assert_almost_equal(model, np.ma.array([0.1111, 0.2111], mask=[False, False]))
 
@@ -97,5 +97,5 @@ class Utils_test(unittest.TestCase):
 
     def test_create_masked_array(self):
         values = np.arange(160000000).reshape((500, 4, 200, 400))
-        masked_array = Utils.create_masked_array(values)
+        masked_array = utils.create_masked_array(values)
         self.assertEqual(values.shape, masked_array.shape)

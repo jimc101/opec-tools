@@ -15,12 +15,12 @@
 from unittest import TestCase
 import unittest
 import numpy.testing as np
-from opec.MatchupEngine import normalise
-from opec.Configuration import Configuration
-from opec.MatchupEngine import MatchupEngine
-from opec.Data import Data
+from opec.matchup_engine import normalise
+from opec.configuration import Configuration
+from opec.matchup_engine import MatchupEngine
+from opec.data import Data
 import os
-from opec.ReferenceRecordsFinder import ReferenceRecord, find_ref_coordinate_names
+from opec.reference_records_finder import ReferenceRecord, find_ref_coordinate_names
 
 class MatchupEngine_test(TestCase):
 

@@ -14,8 +14,8 @@
 import os
 
 from unittest import TestCase
-from opec.Data import Data
-from opec.ReferenceRecordsFinder import ReferenceRecordsFinder
+from opec.data import Data
+from opec.reference_records_finder import ReferenceRecordsFinder
 
 class ReferenceRecordsFinder_test(TestCase):
 

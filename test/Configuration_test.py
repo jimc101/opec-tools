@@ -15,7 +15,7 @@
 import logging
 import os
 import unittest
-from opec.Configuration import Configuration
+from opec.configuration import Configuration
 
 class Configuration_test(unittest.TestCase):
 

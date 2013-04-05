@@ -24,11 +24,11 @@ import os
 import numpy as np
 import numpy.ma as ma
 
-from opec import Processor, get_logging_formatter, Utils
-from opec.Configuration import Configuration
-from opec.MatchupEngine import MatchupEngine
-from opec.Data import Data
-from opec.Output import Output
+from opec import processor, get_logging_formatter, utils
+from opec.configuration import Configuration
+from opec.matchup_engine import MatchupEngine
+from opec.data import Data
+from opec.output import Output
 
 if not os.name == 'nt':
     import resource
@@ -160,15 +160,15 @@ def main():
             reference_values, model_values = data.get_values(ref_name, model_name)
             matchup_count += ma.count(reference_values)
         else:
-            reference_values, model_values = Utils.extract_values(matchups, data, ref_name, model_name)
-            reference_values, model_values = Utils.harmonise(reference_values, model_values)
+            reference_values, model_values = utils.extract_values(matchups, data, ref_name, model_name)
+            reference_values, model_values = utils.harmonise(reference_values, model_values)
             logging.debug('Compressing ref-variable %s' % ref_name)
             reference_values = reference_values.compressed()
             logging.debug('Compressing model-variable %s' % model_name)
             model_values = model_values.compressed()
 
         logging.info('Calculating statistics for \'%s\' with \'%s\'' % (model_name, ref_name))
-        stats = Processor.calculate_statistics(model_values, reference_values, model_name, ref_name, unit, config)
+        stats = processor.calculate_statistics(model_values, reference_values, model_name, ref_name, unit, config)
         collected_statistics.append(stats)
 
         if config.write_density_plots:

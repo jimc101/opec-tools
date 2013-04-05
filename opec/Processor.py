@@ -14,7 +14,7 @@
 
 import numpy as np
 import scipy.stats.mstats as mstats
-from opec.Configuration import get_default_config
+from opec.configuration import get_default_config
 
 
 def mean(values):

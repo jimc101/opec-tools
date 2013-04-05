@@ -17,8 +17,8 @@ import sys
 import os
 import numpy.ma as ma
 
-from opec import Utils
-from opec.NetCDFFacade import NetCDFFacade
+from opec import utils
+from opec.netCDF_facade import NetCDFFacade
 
 class Data(object):
 
@@ -200,11 +200,11 @@ class Data(object):
         is_not_in_model_file = self.__model_file.get_variable(variable_name) is None
         if is_not_in_model_file and is_not_in_ref_file:
             raise ValueError('Variable \'%s\' not found.' % variable_name)
-        model_unit = Utils.get_unit(self.__model_file, variable_name)
+        model_unit = utils.get_unit(self.__model_file, variable_name)
         if model_unit:
             return model_unit
-        if self.is_ref_data_split() and Utils.get_unit(self.__reference_file, variable_name):
-            return Utils.get_unit(self.__reference_file, variable_name)
+        if self.is_ref_data_split() and utils.get_unit(self.__reference_file, variable_name):
+            return utils.get_unit(self.__reference_file, variable_name)
         return None
 
 

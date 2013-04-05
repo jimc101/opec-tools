@@ -20,8 +20,8 @@ import numpy as np
 from mako.runtime import Context
 from mako.template import Template
 
-from opec import Plotter, Utils
-from opec.Configuration import get_default_config
+from opec import plotter, utils
+from opec.configuration import get_default_config
 
 
 def rename(string):
@@ -199,8 +199,8 @@ class Output(object):
         template = Template(filename=filename)
         buf = StringIO()
 
-        taylor_target_files = Utils.ensure_list(taylor_target_files)
-        density_plot_files = Utils.ensure_list(density_plot_files)
+        taylor_target_files = utils.ensure_list(taylor_target_files)
+        density_plot_files = utils.ensure_list(density_plot_files)
 
         all_relative_stats = []
         all_model_stats = []
@@ -259,7 +259,7 @@ class Output(object):
 
 
     def taylor(self, statistics, target_file=None):
-        diagrams = Plotter.create_taylor_diagrams(statistics, config=self.config)
+        diagrams = plotter.create_taylor_diagrams(statistics, config=self.config)
         result = []
         if target_file is not None:
             for i, diagram in enumerate(diagrams):
@@ -276,7 +276,7 @@ class Output(object):
         if axis_max is None:
             axis_max = max(np.max(ref_values), np.max(model_values))
 
-        density_plot = Plotter.create_density_plot(ref_name, model_name, unit)
+        density_plot = plotter.create_density_plot(ref_name, model_name, unit)
         density_plot.set_data(ref_values, model_values, axis_min, axis_max, ref_values.size, bin_count)
 
         if target_file is not None:
@@ -290,7 +290,7 @@ class Output(object):
 
 
     def target_diagram(self, statistics, target_file=None):
-        target_diagram = Plotter.create_target_diagram(statistics, self.config)
+        target_diagram = plotter.create_target_diagram(statistics, self.config)
         if target_file is not None:
             target_diagram.write(target_file)
         return target_diagram
