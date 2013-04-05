@@ -176,7 +176,7 @@ def main():
             axis_max = max(stats['p90'], stats['ref_p90'])
             logging.info('Creating density plot for \'%s\' and \'%s\'' % (model_name, ref_name))
             density_plots[model_name + ref_name] = output.density_plot(model_name, ref_name, model_values,
-                                                                       reference_values, config.density_plot_bin_count,
+                                                                       reference_values, config.density_plot_log_scaled,
                                                                        None, axis_min, axis_max, data.unit(model_name))
 
     if not os.name == 'nt':

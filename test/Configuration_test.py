@@ -140,7 +140,7 @@ class Configuration_test(unittest.TestCase):
 
     def test_density_plot_bin_count(self):
         c = Configuration()
-        self.assertEqual(200, c.density_plot_bin_count)
+        self.assertEqual(False, c.density_plot_log_scaled)
 
-        c = Configuration(density_plot_bin_count=500)
-        self.assertEqual(500, c.density_plot_bin_count)
+        c = Configuration(density_plot_log_scaled=True)
+        self.assertEqual(True, c.density_plot_log_scaled)
