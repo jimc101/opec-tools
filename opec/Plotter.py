@@ -164,10 +164,9 @@ class DensityPlot(Diagram):
         plt.axes().add_line(line)
 
 
-    def set_data(self, x_data, y_data, axis_min, axis_max, matchup_count):
+    def set_data(self, x_data, y_data, axis_min, axis_max, matchup_count, bin_count):
         logging.debug('Creating density plot...')
 
-        bin_count = 200
         (H, xedges, yedges) = np.histogram2d(x_data, y_data, bins=(bin_count, bin_count), range=[[axis_min, axis_max], [axis_min, axis_max]])
         extent = [axis_min, axis_max, axis_min, axis_max]
 

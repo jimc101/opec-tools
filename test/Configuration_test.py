@@ -135,3 +135,12 @@ class Configuration_test(unittest.TestCase):
 
         c = Configuration(max_cache_size=15)
         self.assertEqual(15, c.max_cache_size)
+
+
+
+    def test_density_plot_bin_count(self):
+        c = Configuration()
+        self.assertEqual(200, c.density_plot_bin_count)
+
+        c = Configuration(density_plot_bin_count=500)
+        self.assertEqual(500, c.density_plot_bin_count)

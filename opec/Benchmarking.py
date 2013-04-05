@@ -182,7 +182,11 @@ def density_plot(model_name, ref_name, model_values, ref_values, data, axis_min=
     @return: the density plot.
     """
     op = Output(data, config=config)
-    return op.density_plot(model_name, ref_name, model_values, ref_values, target_file, axis_min, axis_max, unit)
+    if config is None:
+        bin_count = 200
+    else:
+        bin_count = config.density_plot_bin_count
+    return op.density_plot(model_name, ref_name, model_values, ref_values, bin_count, target_file, axis_min, axis_max, unit)
 
 
 def write_xhtml_report(statistics_list, matchups, data, target_file, taylor_target_files=None, target_diagram_file=None, density_plot_files=None, config=None):

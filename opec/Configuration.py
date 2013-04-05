@@ -32,7 +32,7 @@ class Configuration(object):
                  properties_file_name=None, write_taylor_diagrams=None, write_xhtml=None,
                  write_csv=None, write_density_plots=None, split_diagrams=None, write_target_diagram=None,
                  target_diagram_bounds=None, normalise_target_diagram=None, utilise_stddev_difference=None,
-                 max_cache_size=None):
+                 max_cache_size=None, density_plot_bin_count=None):
         """
         Priority:
         1) what is passed as parameter
@@ -64,6 +64,7 @@ class Configuration(object):
         self.__set(write_xhtml, 'opec.output.xhtml.write_xhtml', bool_conv)
         self.__set(write_csv, 'opec.output.csv.write_csv', bool_conv)
         self.__set(write_density_plots, 'opec.output.plot.density.write_density_plots', bool_conv)
+        self.__set(density_plot_bin_count, 'opec.output.plot.density.bin_count', int)
         self.__set(split_diagrams, 'opec.output.plot.taylor.split_diagrams', split_diagrams_conv('u'), 'opec.output.plot.split_on_unit')
         self.__set(split_diagrams, 'opec.output.plot.taylor.split_diagrams', split_diagrams_conv('n'), 'opec.output.plot.split_on_name')
         self.__set(write_target_diagram, 'opec.output.plot.target.write_target_diagram', bool_conv)
@@ -202,6 +203,10 @@ class Configuration(object):
         return self.__dict['opec.general.max_cache_size']
 
 
+    def __density_plot_bin_count(self):
+        return self.__dict['opec.output.plot.density.bin_count']
+
+
     alpha = property(__alpha)
     beta = property(__beta)
     ddof = property(__ddof)
@@ -219,6 +224,7 @@ class Configuration(object):
     write_taylor_diagrams = property(__write_taylor_diagrams)
     write_csv = property(__write_csv)
     write_xhtml = property(__write_xhtml)
+    density_plot_bin_count = property(__density_plot_bin_count)
     write_density_plots = property(__write_density_plots)
     split_on_unit = property(__split_on_unit)
     split_on_name = property(__split_on_name)
