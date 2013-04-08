@@ -148,7 +148,7 @@ def main():
         logging.debug('Memory after matchups have been found: %s' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
 
     matchup_count = 0 if matchups is None else len(matchups)
-    collected_statistics = []
+    collected_statistics = {}
     density_plot_files = []
     target_files = []
     density_plots = {}
@@ -169,7 +169,7 @@ def main():
 
         logging.info('Calculating statistics for \'%s\' with \'%s\'' % (model_name, ref_name))
         stats = processor.calculate_statistics(model_values, reference_values, model_name, ref_name, unit, config)
-        collected_statistics.append(stats)
+        collected_statistics[(model_name, ref_name)] = stats
 
         if config.write_density_plots:
             axis_min = min(stats['min'], stats['ref_min'])
@@ -184,20 +184,19 @@ def main():
             'Memory after statistics have been computed: %s' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
 
     if config.write_csv:
-        for (model_name, ref_name), stats in zip(parsed_args.variable_mappings, collected_statistics):
-            csv_target_file = '%s/%s%s_statistics.csv' % (parsed_args.output_dir, config.target_prefix, model_name)
-            target_files.append(csv_target_file)
-            output.csv(stats, model_name, ref_name, matchup_count, matchups=matchups, target_file=csv_target_file)
-            logging.info('CSV output written to \'%s\'' % csv_target_file)
-            if matchups is not None:
-                matchup_filename = '%s_matchups.csv' % os.path.splitext(csv_target_file)[0]
-                logging.info('Matchups written to \'%s\'' % matchup_filename)
-                target_files.append(matchup_filename)
+        csv_target_file = '%s/%sstatistics.csv' % (parsed_args.output_dir, config.target_prefix)
+        target_files.append(csv_target_file)
+        output.csv(parsed_args.variable_mappings, collected_statistics, matchup_count, matchups=matchups, target_file=csv_target_file)
+        logging.info('CSV output written to \'%s\'' % csv_target_file)
+        if matchups is not None:
+            matchup_filename = '%s_matchups.csv' % os.path.splitext(csv_target_file)[0]
+            logging.info('Matchups written to \'%s\'' % matchup_filename)
+            target_files.append(matchup_filename)
 
     taylor_target_files = []
     if config.write_taylor_diagrams:
         taylor_target_file = '%s/%staylor.png' % (parsed_args.output_dir, config.target_prefix)
-        written_taylor_diagrams, d = output.taylor(collected_statistics, taylor_target_file)
+        written_taylor_diagrams, d = output.taylor(list(collected_statistics.values()), taylor_target_file)
         del d
         if written_taylor_diagrams:
             for written_taylor_diagram in written_taylor_diagrams:
@@ -216,7 +215,7 @@ def main():
     target_diagram_file = None
     if config.write_target_diagram:
         target_diagram_file = '%s/%starget.png' % (parsed_args.output_dir, config.target_prefix)
-        output.target_diagram(collected_statistics, target_diagram_file)
+        output.target_diagram(list(collected_statistics.values()), target_diagram_file)
         logging.info('Target diagram written to \'%s\'' % target_diagram_file)
         target_files.append(target_diagram_file)
 
@@ -227,7 +226,7 @@ def main():
         css = path + 'styleset.css'
         xsl_target = '%s/%s' % (parsed_args.output_dir, os.path.basename(xsl))
         css_target = '%s/%s' % (parsed_args.output_dir, os.path.basename(css))
-        output.xhtml(collected_statistics, matchup_count, matchups, data, xml_target_file, taylor_target_files,
+        output.xhtml(list(collected_statistics.values()), matchup_count, matchups, data, xml_target_file, taylor_target_files,
                      target_diagram_file, density_plot_files)
         logging.info('XHTML report written to \'%s\'' % xml_target_file)
         shutil.copy(xsl, parsed_args.output_dir)

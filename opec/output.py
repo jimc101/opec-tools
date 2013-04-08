@@ -51,40 +51,57 @@ def get_basenames(files):
 
 class Output(object):
 
-    def __init__(self, data, **kwargs):
+    def __init__(self, data=None, source_file=None, config=None):
         """Constructs a new instance of Output.
 
         Keyword arguments:
+            data -- the data object
             config -- the configuration the processors and matchup engine have been run with (optional)
             source_file -- a reference to the file the benchmarks were computed on (optional)
         """
-        self.config = kwargs['config'] if 'config' in kwargs.keys() and kwargs[
-                                                                        'config'] is not None else get_default_config()
-        self.source_file = kwargs['source_file'] if 'source_file' in kwargs.keys() else None
+        self.config = config if config is not None else get_default_config()
+        self.source_file = source_file
         self.separator = self.config.separator
         self.data = data
 
 
-    def csv(self, statistics, variable_name, ref_variable_name, matchup_count, matchups=None, target_file=None):
+    def csv(self, variable_mappings, collected_statistics, matchup_count, matchups=None, target_file=None):
         """
         Outputs the statistics to CSV.
         """
-
-        if variable_name is None:
-            raise ValueError('Missing parameter \'variable_name\'')
-        if ref_variable_name is None:
-            raise ValueError('Missing parameter \'ref_variable_name\'')
 
         include_header = self.config.include_header
 
         lines = []
         if include_header:
             self.__write_header(lines, matchup_count)
-        lines.append('\n'.join(self.__reference_statistics(statistics, variable_name, ref_variable_name)))
-        lines.append('')
-        lines.append('\n'.join(self.__single_statistics(statistics, variable_name, False)))
-        lines.append('')
-        lines.append('\n'.join(self.__single_statistics(statistics, ref_variable_name, True)))
+
+        self.reference_statistics_column_names = ['rmse', 'unbiased_rmse', 'bias', 'pbias', 'corrcoeff', 'reliability_index', 'model_efficiency']
+        self.basic_model_statistics_column_names = []
+        self.basic_ref_statistics_column_names = []
+        self.column_index_map = {}
+        self.basic_stat_names = ['min', 'max', 'mean', 'stddev', 'median', 'p90', 'p95']
+        col_index = 2 + len(self.reference_statistics_column_names)
+        for (model_name, _) in variable_mappings:
+            if model_name not in self.column_index_map:
+                self.basic_model_statistics_column_names.extend([model_name + '_' + n for n in self.basic_stat_names])
+                self.column_index_map[model_name] = col_index
+                col_index += len(self.basic_stat_names)
+
+        for (_, ref_name) in variable_mappings:
+            if 'ref_' + ref_name not in self.column_index_map:
+                self.basic_ref_statistics_column_names.extend(['ref_' + ref_name + '_' + n for n in self.basic_stat_names])
+                self.column_index_map['ref_' + ref_name] = col_index
+                col_index += len(self.basic_stat_names)
+
+        column_names = ['model_variable', 'reference_variable']
+        column_names.extend(self.reference_statistics_column_names)
+        column_names.extend(self.basic_model_statistics_column_names)
+        column_names.extend(self.basic_ref_statistics_column_names)
+
+        lines.append(self.separator.join(column_names))
+        for (model_name, ref_name) in variable_mappings:
+            lines.append(self.__create_record(model_name, ref_name, collected_statistics[(model_name, ref_name)]))
 
         if target_file is not None:
             self.__write_lines_to_file(target_file, lines)
@@ -270,14 +287,14 @@ class Output(object):
         return result, diagrams
 
 
-    def density_plot(self, model_name, ref_name, model_values, ref_values, bin_count, target_file=None, axis_min=None, axis_max=None, unit=None):
+    def density_plot(self, model_name, ref_name, model_values, ref_values, log_scaled, target_file=None, axis_min=None, axis_max=None, unit=None):
         if axis_min is None:
             axis_min = min(np.min(ref_values), np.min(model_values))
         if axis_max is None:
             axis_max = max(np.max(ref_values), np.max(model_values))
 
         density_plot = plotter.create_density_plot(ref_name, model_name, unit)
-        density_plot.set_data(ref_values, model_values, axis_min, axis_max, ref_values.size, bin_count)
+        density_plot.set_data(ref_values, model_values, axis_min, axis_max, ref_values.size, log_scaled)
 
         if target_file is not None:
             self.write_density_plot(density_plot, target_file)
@@ -294,3 +311,29 @@ class Output(object):
         if target_file is not None:
             target_diagram.write(target_file)
         return target_diagram
+
+
+    def __create_record(self, model_name, ref_name, stats):
+        reference_stats = [format_statistic(stats, name) for name in self.reference_statistics_column_names]
+        column_index = 0
+        record = self.separator.join((model_name, ref_name))
+        column_index += 2
+        record += self.separator
+        record += self.separator.join(reference_stats)
+        record += self.separator
+        column_index += len(reference_stats)
+        while column_index < self.column_index_map[model_name]:
+            record += self.separator
+            column_index += 1
+        basic_model_stats = [format_statistic(stats, name) for name in self.reference_statistics_column_names]
+        record += self.separator.join(basic_model_stats)
+        column_index += len(basic_model_stats)
+        record += self.separator
+
+        while column_index < self.column_index_map['ref_' + ref_name]:
+            record += self.separator
+            column_index += 1
+        basic_ref_stats = [format_statistic(stats, name) for name in self.basic_stat_names]
+        record += self.separator.join(basic_ref_stats)
+
+        return record

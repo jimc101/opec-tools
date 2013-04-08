@@ -131,9 +131,9 @@ def extract_values_from_matchups(matchups, data, model_name, ref_name):
 def write_csv(statistics, model_name, ref_name, matchups, data, target_file=None, config=None):
     """
     Returns the given statistics as CSV string; writes this string if target_file is provided.
-    @param statistics: a dictionary containing all statistics.
     @param model_name: the model variable name.
     @param ref_name: the reference variable name.
+    @param statistics: a dictionary containing all statistics.
     @param matchups: the matchups.
     @param data: the input data file.
     @param target_file: the optional target file; if not None, result string will be written to that file.
@@ -141,7 +141,7 @@ def write_csv(statistics, model_name, ref_name, matchups, data, target_file=None
     @return: the given statistics as CSV string.
     """
     op = Output(data, config=config)
-    op.csv(statistics, model_name, ref_name, len(matchups), matchups, target_file)
+    op.csv([(model_name, ref_name)], {(model_name, ref_name): statistics}, len(matchups), matchups=matchups, target_file=target_file)
 
 
 def taylor_diagrams(statistics, data, target_file=None, config=None):
@@ -182,10 +182,10 @@ def density_plot(model_name, ref_name, model_values, ref_values, data, axis_min=
     @return: the density plot.
     """
     op = Output(data, config=config)
-    if log_scaled is not None:
-        log_scaled = False
-    else:
+    if log_scaled is None and config is not None:
         log_scaled = config.density_plot_log_scaled
+    elif log_scaled is None:
+        log_scaled = False
     return op.density_plot(model_name, ref_name, model_values, ref_values, log_scaled, target_file, axis_min, axis_max, unit)
 
 
