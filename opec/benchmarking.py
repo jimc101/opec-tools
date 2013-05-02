@@ -140,11 +140,11 @@ def write_csv(statistics, model_name, ref_name, matchups, data, target_file=None
     @param config: the optional configuration.
     @return: the given statistics as CSV string.
     """
-    op = Output(data, config=config)
-    op.csv([(model_name, ref_name)], {(model_name, ref_name): statistics}, len(matchups), matchups=matchups, target_file=target_file)
+    op = Output(config=config)
+    op.csv(data, [(model_name, ref_name)], {(model_name, ref_name): statistics}, len(matchups), matchups=matchups, target_file=target_file)
 
 
-def taylor_diagrams(statistics, data, target_file=None, config=None):
+def taylor_diagrams(statistics, target_file=None, config=None):
     """
     Creates the taylor diagrams derived from the statistics and possibly writes them to the given target file.
     @param statistics: an iterable of statistics to write taylor diagrams for.
@@ -152,12 +152,12 @@ def taylor_diagrams(statistics, data, target_file=None, config=None):
     @param config: the optional configuration.
     @return: a list of the taylor diagrams.
     """
-    op = Output(data, config=config)
+    op = Output(config=config)
     t, diagrams = op.taylor(statistics, target_file)
     return diagrams
 
 
-def target_diagram(statistics, data, target_file=None, config=None):
+def target_diagram(statistics, target_file=None, config=None):
     """
     Creates the target diagram derived from the statistics and possibly writes it to the given target file.
     @param statistics: An iterable of statistics to write the target diagram for.
@@ -165,23 +165,22 @@ def target_diagram(statistics, data, target_file=None, config=None):
     @param config: the optional configuration.
     @return: the target diagram.
     """
-    op = Output(data, config=config)
+    op = Output(config=config)
     return op.target_diagram(statistics, target_file)
 
 
-def density_plot(model_name, ref_name, model_values, ref_values, data, axis_min=None, axis_max=None, target_file=None, unit=None, log_scaled=None, config=None):
+def density_plot(model_name, ref_name, model_values, ref_values, axis_min=None, axis_max=None, target_file=None, unit=None, log_scaled=None, config=None):
     """
     Creates the density plot for the given matchups and variables and possible writes it to the given target file.
     @param model_name: the name of the model variable.
     @param ref_name: the name of the reference variable.
     @param model_name: the name of the model variable.
     @param ref_name: the name of the reference variable.
-    @param data: the input data object.
     @param target_file: the optional target diagram file. If None, nothing will be written.
     @param config: the optional configuration.
     @return: the density plot.
     """
-    op = Output(data, config=config)
+    op = Output(config=config)
     if log_scaled is None and config is not None:
         log_scaled = config.density_plot_log_scaled
     elif log_scaled is None:
@@ -201,5 +200,5 @@ def write_xhtml_report(statistics_list, matchups, data, target_file, taylor_targ
     @param config: the optional configuration.
     @return: None.
     """
-    op = Output(data, config=config)
+    op = Output(config=config)
     op.xhtml(statistics_list, len(matchups), matchups, data, target_file, taylor_target_files, target_diagram_file, density_plot_files)

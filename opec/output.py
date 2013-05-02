@@ -51,7 +51,7 @@ def get_basenames(files):
 
 class Output(object):
 
-    def __init__(self, source_file=None, config=None):
+    def __init__(self, config=None):
         """Constructs a new instance of Output.
 
         Keyword arguments:
@@ -60,11 +60,10 @@ class Output(object):
             source_file -- a reference to the file the benchmarks were computed on (optional)
         """
         self.config = config if config is not None else get_default_config()
-        self.source_file = source_file
         self.separator = self.config.separator
 
 
-    def csv(self, data, variable_mappings, collected_statistics, matchup_count, matchups=None, target_file=None):
+    def csv(self, data, variable_mappings, collected_statistics, matchup_count, matchups=None, source_file=None, target_file=None):
         """
         Outputs the statistics to CSV.
         """
@@ -73,7 +72,7 @@ class Output(object):
 
         lines = []
         if include_header:
-            self.__write_header(lines, matchup_count)
+            self.__write_header(lines, matchup_count, source_file)
 
         self.reference_statistics_column_names = ['rmse', 'unbiased_rmse', 'bias', 'pbias', 'corrcoeff', 'reliability_index', 'model_efficiency']
         self.basic_model_statistics_column_names = []
@@ -112,8 +111,8 @@ class Output(object):
         return '\n'.join(lines)
 
 
-    def __write_header(self, lines, matchup_count):
-        source = '' if self.source_file is None else ' of file \'{}\''.format(self.source_file)
+    def __write_header(self, lines, matchup_count, source_file):
+        source = '' if source_file is None else ' of file \'{}\''.format(source_file)
         lines.append('##############################################################')
         lines.append('#')
         lines.append('# Benchmarking results' + source)

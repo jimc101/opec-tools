@@ -134,7 +134,7 @@ def main():
     else:
         data = Data(parsed_args.path, max_cache_size=config.max_cache_size)
 
-    output = Output(data, config=config, source_file=parsed_args.path)
+    output = Output(config=config)
 
     matchups = None
     if data.has_one_dim_ref_var():
@@ -186,7 +186,7 @@ def main():
     if config.write_csv:
         csv_target_file = '%s/%sstatistics.csv' % (parsed_args.output_dir, config.target_prefix)
         target_files.append(csv_target_file)
-        output.csv(parsed_args.variable_mappings, collected_statistics, matchup_count, matchups=matchups, target_file=csv_target_file)
+        output.csv(data, parsed_args.variable_mappings, collected_statistics, matchup_count, matchups=matchups, source_file=parsed_args.path, target_file=csv_target_file)
         logging.info('CSV output written to \'%s\'' % csv_target_file)
         if matchups is not None:
             matchup_filename = '%s_matchups.csv' % os.path.splitext(csv_target_file)[0]
