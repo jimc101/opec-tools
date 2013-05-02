@@ -17,7 +17,7 @@ This document describes how to install and use the OPEC Benchmarking Tool
 
 INSTALLATION
 
-Prerequisites for building:
+Prerequisites for installing:
 
 - Python 3.2 interpreter
 - numpy 1.6.2
