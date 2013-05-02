@@ -51,7 +51,7 @@ def get_basenames(files):
 
 class Output(object):
 
-    def __init__(self, data=None, source_file=None, config=None):
+    def __init__(self, source_file=None, config=None):
         """Constructs a new instance of Output.
 
         Keyword arguments:
@@ -62,10 +62,9 @@ class Output(object):
         self.config = config if config is not None else get_default_config()
         self.source_file = source_file
         self.separator = self.config.separator
-        self.data = data
 
 
-    def csv(self, variable_mappings, collected_statistics, matchup_count, matchups=None, target_file=None):
+    def csv(self, data, variable_mappings, collected_statistics, matchup_count, matchups=None, target_file=None):
         """
         Outputs the statistics to CSV.
         """
@@ -106,7 +105,7 @@ class Output(object):
         if target_file is not None:
             self.__write_lines_to_file(target_file, lines)
             if matchups is not None:
-                matchup_lines = self.__matchup_infos(matchups)
+                matchup_lines = self.__matchup_infos(matchups, data)
                 matchup_filename = '%s_matchups.csv' % os.path.splitext(target_file)[0]
                 self.__write_lines_to_file(matchup_filename, matchup_lines)
 
@@ -165,7 +164,7 @@ class Output(object):
         return lines
 
 
-    def __matchup_infos(self, matchups):
+    def __matchup_infos(self, matchups, data):
         header = []
         header.append('Matchup #')
         header.append('reference_time')
@@ -176,8 +175,8 @@ class Output(object):
         header.append('model_depth')
         header.append('model_lat')
         header.append('model_lon')
-        ref_vars = self.data.ref_vars()
-        model_vars = self.data.model_vars()
+        ref_vars = data.ref_vars()
+        model_vars = data.model_vars()
         header.extend(ref_vars)
         header.extend(model_vars)
 
@@ -194,9 +193,9 @@ class Output(object):
             line.append(str(matchup.spacetime_position[2]))
             line.append(str(matchup.spacetime_position[3]))
             for var in ref_vars:
-                line.append(str(matchup.get_ref_value(var, self.data)))
+                line.append(str(matchup.get_ref_value(var, data)))
             for var in model_vars:
-                line.append(str(matchup.get_model_value(var, self.data)))
+                line.append(str(matchup.get_model_value(var, data)))
             lines.append(self.config.separator.join(line))
         return lines
 
