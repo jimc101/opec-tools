@@ -7,7 +7,6 @@ resources/taylor_test*.png
 resources/density_test*.png
 resources/matchup_report.xml
 resources/matchup_report.xsl
-dist
 build
 opec.egg-info
 MANIFEST

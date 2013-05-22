@@ -34,11 +34,11 @@ The software has been tested both on a Windows 64bit machine and a Linux-64bit m
 
 After the environment is set up correctly, install the benchmarking tool using easy_install:
 
->>> easy_install opec-0.1-py3.2.egg
+>>> easy_install opec-1.0-py3.2.egg
 
 Afterwards, it is recommended to run all unit-level tests in order to verify the installation:
 
->>> nosetests --quiet /usr/local/lib/python3.2/site-packages/opec-0.1-py3.2.egg/test/*
+>>> nosetests --quiet /usr/local/lib/python3.2/site-packages/opec-1.0-py3.2.egg/test/*
 
 This needs the nose package (http://pypi.python.org/pypi/nose/) to be installed.
 
