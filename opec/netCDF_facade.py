@@ -186,5 +186,5 @@ class NetCDFFacade(object):
 
 
     def attribute(self, var_name, attribute_name):
-        is_reference_attribute = self.get_variable_attribute(var_name, attribute_name)
-        return is_reference_attribute
+        variable_attribute = self.get_variable_attribute(var_name, attribute_name)
+        return variable_attribute

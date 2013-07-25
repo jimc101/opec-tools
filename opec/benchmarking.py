@@ -60,6 +60,9 @@ def calculate_statistics(model_name, ref_name, data, config=None):
 
     me = MatchupEngine(data, config)
     matchups = me.find_all_matchups()
+    if len(matchups) == 0:
+        print("No matchups found; maybe allow higher maximum time delta.")
+        return
     return calculate_statistics_from_matchups(matchups, model_name, ref_name, data, config=None)
 
 
@@ -126,7 +129,6 @@ def extract_values_from_matchups(matchups, data, model_name, ref_name):
     @return: two numpy arrays: reference_values, model_values
     """
     return utils.extract_values(matchups, data, ref_name, model_name)
-
 
 def write_csv(statistics, model_name, ref_name, matchups, data, target_file=None, config=None):
     """

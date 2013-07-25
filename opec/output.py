@@ -57,7 +57,6 @@ class Output(object):
         Keyword arguments:
             data -- the data object
             config -- the configuration the processors and matchup engine have been run with (optional)
-            source_file -- a reference to the file the benchmarks were computed on (optional)
         """
         self.config = config if config is not None else get_default_config()
         self.separator = self.config.separator
