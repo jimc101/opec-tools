@@ -25,10 +25,31 @@ Prerequisites for installing:
 - netCDF4-python >= 1.0.2
 - mako 0.7.3
 - matplotlib 1.2.0
-- distribute >= 0.6.35
 
 This software has been developed on basis of the Windows 64bit-versions of the packages above. The latest
 versions of these packages can be obtained from http://www.lfd.uci.edu/~gohlke/pythonlibs/.
+
+INSTALLATION ON LINUX
+
+- ensure packages libssl-dev and libbz2-dev are installed on your machine
+- download and install Python 3.2 from http://www.python.org/download/releases/3.2/
+- install setuptools: https://pypi.python.org/pypi/setuptools/0.9.8#unix-based-systems-including-mac-os-x
+- install pip: http://www.pip-installer.org/en/latest/installing.html
+- for each of the packages listed above, run pip install <package_name>==<version>, with e.g. <package_name> = numpy
+  and <version> = 1.6.2
+- scipy has some requirements, too; make sure the following packages are installed
+    - libamd2.2.0
+    - libblas3gf
+    - libc6
+    - libgcc1
+    - libgfortran3
+    - liblapack3gf
+    - libumfpack5.4.0
+    - libstdc++6
+    - build-essential
+    - gfortran
+    - libatlas-base-dev
+    - python-all-dev
 
 The software has been tested both on a Windows 64bit machine and a Linux-64bit machine.
 
