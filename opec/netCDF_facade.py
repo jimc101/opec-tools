@@ -175,8 +175,9 @@ class NetCDFFacade(object):
             return ref_coordinate_variables
         ref_variable = self.get_reference_variables()[0]
         dimension_string = self.get_dimension_string(ref_variable)
+        dimensions = dimension_string.split(' ')
         for var in self.data_set.variables:
-            if self.get_dimension_string(var) in dimension_string and self.is_coordinate_variable(self.data_set.variables[var]):
+            if self.get_dimension_string(var) in dimensions and self.is_coordinate_variable(self.data_set.variables[var]):
                 ref_coordinate_variables.append(var)
         return ref_coordinate_variables
 
