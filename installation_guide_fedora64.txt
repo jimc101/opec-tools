@@ -1,0 +1,108 @@
+The following installation guide is a contribution of Dr. James Clark of PML, Plymouth.
+
+Installing opec-tools in linux (Fedora)
+---------------------------------------
+
+1) Grab a copy of opec-tools from git hub. E.g.
+
+$ mkdir -p $HOME/git
+$ cd $HOME/git
+$ git clone https://github.com/bcdev/opec-tools.git
+
+which will create a local copy of the repo under $HOME/git/opec-tools
+
+
+2) Set up a new virtual environment
+
+Using virtualenvwrapper (see http://virtualenvwrapper.readthedocs.org/en/latest/index.html) create a new virtual environment for opec-tools.
+
+$ mkvirtualenv --python=/usr/bin/python3 --no-site-packages opec-tools
+
+This creates a new virtual environment opec-tools in $HOME/virtual_envs, which is the directory I created for holding virtual environments.
+
+
+3) Install python packages required by opec-tools.
+
+These are (copied from the opec-tools how_to):
+
+- Python 3.2 interpreter
+- numpy 1.6.2
+- scipy 0.11.0
+- netCDF4-python >= 1.0.2
+- mako 0.7.3
+- matplotlib 1.2.0
+- distribute >= 0.6.35
+
+The distribute package, listed as being required in the opec-tools how-to, has been merged back in with setuptools, which is automatically installed when you set up the new virtual environment (unless you specified otherwise). Installation appears to work with the latest version of setuptools, so there doesn't appear to be any need to go back to using distribute. The new environment has already been set up to use python3, so this is okay.
+
+As scipy requires numpy to be installed first, we cannot (I think) simply use a requirements file. So we install them one by one, thus:
+
+(opec-tools)$ pip install ipython==1.0.0
+(opec-tools)$ pip install cython==0.19.1
+(opec-tools)$ pip install Mako==0.8.1
+(opec-tools)$ pip install Nose==1.3.0
+(opec-tools)$ pip install numpy==1.6.2
+(opec-tools)$ pip install scipy==0.11.0
+(opec-tools)$ pip install matplotlib==1.2.0
+(opec-tools)$ pip install netCDF4==1.0.2
+
+Here I also installed ipython for working interactively, Nose (required for running opec tests), version 0.8.1 of Mako
+(as running nosetests on opec tests failed with the earlier release), and cython (which is an optional dependency listed
+for netCDF4-python). If this worked, proceed to step 4 and install opec-tools. If it failed, keep reading ...
+
+I found the installation of the latest version of each package (especially numpy) easier on my 64bit linux desktop
+running fedora 17, so if you have trouble, one option is to try this (simply leaving off the specified version number
+will cause pip to default to the latest version of each package). When I did this, nosetests ran successfully. However,
+strictly speaking, the package is only guaranteed to work when the above dependencies are satisfied. Thus it is
+preferable to use these.
+
+One possible source of installation errors is if various dependencies are not met (for example, if a particular
+package/library is not installed on your machine). If this happens, examine the $HOME/.pip/pip.log file, which should
+tell you what wasn't found, then use your package manager (e.g. yum) to install the missing packages and try again. For
+example, a standard numpy install uses the atlas and blas libraries (from atlas, atlas-dev[el], blas, blas-dev[el]), and
+its installation may fail if these are not found.
+
+A second potential problem with the installation of numpy relates to the choice of fortran compiler (see numpy
+INSTALL.txt). Both numpy and scipy must be built with the same fortran compiler as was used to build the
+blas/lapack/atlas libraries. Thus if these were built with g77, you must use g77 when building numpy and scipy. If they
+were built with gfortran, you must use gfortran to build numpy and scipy. In numpy 1.6.2, the default fortran compiler
+is g77. This was changed to gfortran in numpy version 1.7.0.
+
+It is possible to check which fortran compiler was used to build the atlas/blas/lapack libraries, by checking which
+libraries they are linked against. Using ldd, " ... if libg2c.so is a dependency, this means that g77 has been used. If
+libgfortran.so is a dependency, gfortran has been used. If both are dependencies, this means both have been used, which
+is almost always a very bad idea."
+
+If these libraries were built with gfortran, you will need to specify the gfortran compiler when installing numpy 1.6.2
+using pip:
+
+(opec-tools)$ pip install --install-option="build" --install-option="--fcompiler=gnu95" numpy==1.6.2
+
+There is a chance that this may still go wrong. In this case, you can try installing from source, and saving the package
+into your site-packages directory within your opec-tools virtual environment (e.g.
+$python setup.py build --fcompiler=gnu95
+). Finally, if this fails, try adopting a later version of numpy (1.7.x) as suggested above, as the installation
+procedure appears to have been improved in later releases.
+
+If all went well, your installed package list should now look something like this:
+
+(opec-tools)$ pip list
+Cython (0.19.1)
+ipython (1.0.0)
+Mako (0.8.1)
+matplotlib (1.2.0)
+netCDF4 (1.0.2)
+nose (1.3.0)
+numpy (1.6.2)
+pip (1.4.1)
+scipy (0.11.0)
+setuptools (0.9.8)
+wsgiref (0.1.2)
+
+4) Install opec-tools
+
+In your new virtual environment, it should now be possible to follow the installation guide provided with opec-tools.
+
+5) Run opec-tools
+
+For an example of using the tool, see interactive_demo.txt, which ships with the opec-tools package.
