@@ -306,6 +306,7 @@ with this program; if not, see http://www.gnu.org/licenses/gpl.html-->
                         </tr>
 
                         <xsl:for-each select="analysisSummary/matchups/matchup">
+                            <xsl:variable name="record_number" select="recordNumber"/>
                             <tr>
                                 <td>
                                     <xsl:value-of select="recordNumber"/>
@@ -335,9 +336,10 @@ with this program; if not, see http://www.gnu.org/licenses/gpl.html-->
                                     <xsl:value-of select="reference_lon"/>
                                 </td>
 
-                                <xsl:for-each select="property">
+                                <xsl:for-each select="/analysisSummary/matchups/variables/var">
+                                    <xsl:variable name="var_name" select="text()"/>
                                     <td>
-                                        <xsl:value-of select="value"/>
+                                        <xsl:value-of select="/analysisSummary/matchupValues/*[name()=$var_name]/*[name()=concat('m', $record_number)]/text()" />
                                     </td>
                                 </xsl:for-each>
 

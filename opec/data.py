@@ -27,7 +27,6 @@ class Data(object):
             self.__reference_file = NetCDFFacade(ref_file_name)
         if model_file_name is not None:
             self.__model_file = NetCDFFacade(model_file_name)
-        self.__current_storage = set()
         self.max_cache_size = max_cache_size if max_cache_size is not None else sys.maxsize
         self.cached_list = []
         self.current_memory = 0
@@ -134,12 +133,22 @@ class Data(object):
         return self.__read(ncfile, variable_name, origin)
 
 
+    def find_item_to_delete(self):
+        self.cached_list = sorted(self.cached_list, key=self.compute_variable_size, reverse=True)
+        return self.cached_list.pop(0)
+
+
+    def get_current_cache_size(self):
+        return sum([self.compute_variable_size(variable_name) for variable_name in self.cached_list])
+
+
     def ensure_memory(self, variable_size):
-        while self.max_cache_size <= self.current_memory + variable_size and len(self.cached_list) > 0:
-            first_in_cache = self.cached_list.pop(0)
-            logging.debug('Deleting variable \'%s\' from cache.' % first_in_cache)
-            self.__delattr__(first_in_cache)
-            self.current_memory -= self.compute_variable_size(first_in_cache)
+        will_cache_overflow = self.max_cache_size <= self.current_memory + variable_size
+        while will_cache_overflow and len(self.cached_list) > 0 and self.get_current_cache_size() > variable_size:
+            var_to_delete = self.find_item_to_delete()
+            self.current_memory -= self.compute_variable_size(var_to_delete)
+            logging.debug('Deleting variable \'%s\' from cache.' % var_to_delete)
+            self.__delattr__(var_to_delete)
         if not os.name == 'nt':
             logging.debug('Memory in use after \'ensure_memory\' called: %.2f MB' % (mem() / 1024))
 
@@ -148,13 +157,12 @@ class Data(object):
         variable_size = self.compute_variable_size(variable_name)
         if not self.__is_cached(variable_name):
             self.ensure_memory(variable_size)
-        if not self.__is_cached(variable_name):
             logging.debug('Reading variable \'%s\' fully into cache.' % variable_name)
             if not os.name == 'nt':
                 logging.debug('Memory in use before reading variable %s fully into cache: %.2f MB' % (variable_name, mem() / 1024))
             variable = ncfile.get_variable(variable_name)
             self.__setattr__(variable_name, variable[:])
-            self.__current_storage.add(variable_name)
+            # self.__current_storage.add(variable_name)
             self.cached_list.append(variable_name)
             self.current_memory += self.compute_variable_size(variable_name)
             if not os.name == 'nt':
@@ -174,7 +182,7 @@ class Data(object):
 
 
     def __is_cached(self, variable_name):
-        return variable_name in self.__current_storage
+        return variable_name in self.cached_list
 
 
     def __find_model_variable_name(self, possible_names, standard_name):
@@ -233,13 +241,10 @@ class Data(object):
         model_values.mask = reference_values.mask | model_values.mask
 
         logging.debug('Compressing ref-variable %s' % ref_name)
-        self.ensure_memory(compute_array_size(reference_values.shape, reference_values.dtype.itemsize))
         reference_values = reference_values.compressed()
 
         logging.debug('Compressing model variable %s' % model_name)
-        self.ensure_memory(compute_array_size(model_values.shape, model_values.dtype.itemsize))
         model_values = model_values.compressed()
-        self.ensure_memory(compute_array_size(model_values.shape * 2, model_values.dtype.itemsize))
 
         return reference_values, model_values
 

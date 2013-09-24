@@ -190,11 +190,19 @@ class Output(object):
             line.append(str(matchup.spacetime_position[1]))
             line.append(str(matchup.spacetime_position[2]))
             line.append(str(matchup.spacetime_position[3]))
-            for var in ref_vars:
-                line.append(str(matchup.get_ref_value(var, data)))
-            for var in model_vars:
-                line.append(str(matchup.get_model_value(var, data)))
             lines.append(self.config.separator.join(line))
+
+        # writing matchups column-wise in order to not be forced to read data multiple times
+        for var in ref_vars:
+            for i, matchup in enumerate(matchups):
+                lines[i + 1] += self.config.separator
+                lines[i + 1] += str(matchup.get_ref_value(var, data))
+
+        for var in model_vars:
+            for i, matchup in enumerate(matchups):
+                lines[i + 1] += self.config.separator
+                lines[i + 1] += str(matchup.get_model_value(var, data))
+
         return lines
 
 

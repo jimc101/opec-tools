@@ -150,21 +150,27 @@ with this program; if not, see http://www.gnu.org/licenses/gpl.html -->
             <reference_depth>${matchup.reference_record.depth}</reference_depth>
             <reference_lat>${matchup.reference_record.lat}</reference_lat>
             <reference_lon>${matchup.reference_record.lon}</reference_lon>
-            % for var in reference_vars:
-            <property>
-                <name>${var}</name>
-                <value>${matchup.get_ref_value(var, data)}</value>
-            </property>
-            % endfor
-            % for var in model_vars:
-            <property>
-                <name>${var}</name>
-                <value>${matchup.get_model_value(var, data)}</value>
-            </property>
-            % endfor
         </matchup>
         % endfor
     </matchups>
-% endif
+
+    <matchupValues>
+        % for var in reference_vars:
+        <${var}>
+            % for matchup in matchups:
+                <m${matchup.reference_record.record_number}>${matchup.get_ref_value(var, data)}</m${matchup.reference_record.record_number}>
+            % endfor
+        </${var}>
+        % endfor
+        % for var in model_vars:
+        <${var}>
+            % for matchup in matchups:
+            <m${matchup.reference_record.record_number}>${matchup.get_model_value(var, data)}</m${matchup.reference_record.record_number}>
+            % endfor
+        </${var}>
+        % endfor
+    </matchupValues>
+
+    % endif
 
 </analysisSummary>
