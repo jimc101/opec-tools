@@ -26,13 +26,13 @@ def add_section_header(properties_file, header_name):
 
 class Configuration(object):
 
-    def __init__(self, alpha=None, beta=None, ddof=None, time_delta=None, depth_delta=None,
+    def __init__(self, alpha=None, beta=None, ddof=None, use_absolute_standard_deviation=None, time_delta=None, depth_delta=None,
                  log_level=None, log_file=None, zip=None, show_negative_corrcoeff=None,
                  show_legends=None, target_dir=None, target_prefix=None, include_header=None, separator=None,
                  properties_file_name=None, write_taylor_diagrams=None, write_xhtml=None,
                  write_csv=None, write_density_plots=None, split_diagrams=None, write_target_diagram=None,
                  target_diagram_bounds=None, normalise_target_diagram=None, utilise_stddev_difference=None,
-                 max_cache_size=None, density_plot_log_scaled=None):
+                 max_cache_size=None, density_plot_log_scaled=None, remove_empty_matchups=None):
         """
         Priority:
         1) what is passed as parameter
@@ -49,6 +49,7 @@ class Configuration(object):
         self.__set(alpha, 'opec.algo.percentile.alpha', float)
         self.__set(beta, 'opec.algo.percentile.beta', float)
         self.__set(ddof, 'opec.algo.stddev.ddof', int)
+        self.__set(use_absolute_standard_deviation, 'opec.algo.stddev.absolute', bool_conv)
         self.__set(time_delta, 'opec.matchup.time_delta', int)
         self.__set(depth_delta, 'opec.matchup.depth_delta', float)
         self.__set(log_level, 'opec.general.log_level', log_level_conv)
@@ -72,6 +73,7 @@ class Configuration(object):
         self.__set(normalise_target_diagram, 'opec.output.plot.target.normalise_target_diagram', bool_conv)
         self.__set(utilise_stddev_difference, 'opec.output.plot.target.utilise_stddev_difference', bool_conv)
         self.__set(max_cache_size, 'opec.general.max_cache_size', int)
+        self.__set(remove_empty_matchups, 'opec.output.remove_empty_matchups', bool_conv)
 
 
     def __set(self, value, name, converter, target_name=None):
@@ -113,6 +115,10 @@ class Configuration(object):
 
     def __ddof(self):
         return self.__dict['opec.algo.stddev.ddof']
+
+
+    def __use_absolute_standard_deviation(self):
+        return self.__dict['opec.algo.stddev.absolute']
 
 
     def __time_delta(self):
@@ -207,9 +213,14 @@ class Configuration(object):
         return self.__dict['opec.output.plot.density.log_scaled']
 
 
+    def __remove_empty_matchups(self):
+        return self.__dict['opec.output.remove_empty_matchups']
+
+
     alpha = property(__alpha)
     beta = property(__beta)
     ddof = property(__ddof)
+    use_absolute_standard_deviation = property(__use_absolute_standard_deviation)
     time_delta = property(__time_delta)
     depth_delta = property(__depth_delta)
     log_level = property(__log_level)
@@ -233,6 +244,7 @@ class Configuration(object):
     normalise_target_diagram = property(__normalise_target_diagram)
     utilise_stddev_difference = property(__utilise_stddev_difference)
     max_cache_size = property(__max_cache_size)
+    remove_empty_matchups = property(__remove_empty_matchups)
 
 
 def get_default_config():
