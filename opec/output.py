@@ -330,7 +330,7 @@ class Output(object):
         while column_index < self.column_index_map[model_name]:
             record += self.separator
             column_index += 1
-        basic_model_stats = [format_statistic(stats, name) for name in self.reference_statistics_column_names]
+        basic_model_stats = [format_statistic(stats, name[len(model_name) + 1:]) for name in self.basic_model_statistics_column_names]
         record += self.separator.join(basic_model_stats)
         column_index += len(basic_model_stats)
         record += self.separator
