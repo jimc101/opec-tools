@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='opec',
-    version='1.0',
+    version='1.1',
     description='The Benchmarking Tool of the EU Operational Ecology project, OpEc',
     author='Thomas Storm',
     author_email='thomas.storm@brockmann-consult.de',
