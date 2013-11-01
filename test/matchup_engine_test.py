@@ -28,23 +28,28 @@ class MatchupEngine_test(TestCase):
         self.path = os.path.dirname(os.path.realpath(__file__)) + '/../'
         self.data = Data(self.path + 'resources/test.nc')
 
+
     def tearDown(self):
         self.data.close()
+
 
     def test_find_pixel_positions_small_max_delta(self):
         me = MatchupEngine(self.data, Configuration())
         pixel_position = me.find_matchup_position(55, 6.0)
         np.assert_array_almost_equal((1, 0, 5.8, 55.2), pixel_position)
 
+
     def test_find_pixel_positions_huge_max_delta(self):
         me = MatchupEngine(self.data, Configuration())
         pixel_position = me.find_matchup_position(55, 6.0)
         np.assert_array_almost_equal((1, 0, 5.8, 55.2), pixel_position)
 
+
     def test_find_time_positions_huge_delta(self):
         me = MatchupEngine(self.data, Configuration(time_delta=100000))
         time_position = me.find_matchup_times(1261440250)[0]
         np.assert_array_almost_equal((0, 1261440000), time_position)
+
 
     def test_find_time_positions_small_delta(self):
         me = MatchupEngine(self.data, Configuration(time_delta=6))
@@ -67,6 +72,7 @@ class MatchupEngine_test(TestCase):
         self.assertAlmostEqual(1.1111, matchup.get_model_value('sst', self.data), 5)
         self.assertAlmostEqual(0.1, matchup.get_ref_value('chl_ref', self.data), 5)
 
+
     def test_find_matchups_single(self):
         reference_record = ReferenceRecord(0, 55.20123, 6.30048, 1261447205, 0.0020015)
         config = Configuration(time_delta=10, depth_delta=0.0001)
@@ -79,6 +85,7 @@ class MatchupEngine_test(TestCase):
         self.assertAlmostEqual(6.30048, matchup.reference_record.lon)
         self.assertAlmostEqual(1261447205, matchup.reference_record.time)
         self.assertAlmostEqual(0.0020015, matchup.reference_record.depth)
+
 
     def test_find_matchups_single_no_depth(self):
         data = Data(self.path + 'resources/test_without_depth.nc')
@@ -95,6 +102,7 @@ class MatchupEngine_test(TestCase):
         self.assertAlmostEqual(1261447205, matchup.reference_record.time)
         self.assertIsNone(matchup.reference_record.depth)
 
+
     def test_find_ref_coordinate_names(self):
         ref_coord_variable_names = ['lat_ref', 'ref_lon', 'reftime']
         lat, lon, time, depth = find_ref_coordinate_names(ref_coord_variable_names)
@@ -102,6 +110,7 @@ class MatchupEngine_test(TestCase):
         self.assertEqual('ref_lon', lon)
         self.assertEqual('reftime', time)
         self.assertEqual(None, depth)
+
 
     def test_find_all_matchups(self):
         me = MatchupEngine(self.data, Configuration())
@@ -115,12 +124,23 @@ class MatchupEngine_test(TestCase):
         self.assertEqual(1261440250, matchup.reference_record.time)
         self.assertAlmostEqual(0.0012, matchup.reference_record.depth, 5)
 
+
     def test_normalise(self):
         self.assertEqual(type(3), type(normalise(2.5, 3)))
         self.assertEqual(3, normalise(10.5, 3))
         self.assertEqual(1, normalise(0.5, 10))
         self.assertEqual(3, normalise(2.500001, 10))
         self.assertEqual(2, normalise(2.499999, 10))
+
+
+    def test_remove_empty_matchups(self):
+        data = Data(self.path + 'resources/test_single_model_fill_values.nc')
+        me = MatchupEngine(data)
+        matchups = me.find_all_matchups()
+        self.assertEqual(3, len(matchups))
+        matchups = me.remove_empty_matchups(matchups)
+        self.assertEqual(2, len(matchups))
+
 
     @unittest.skip('shall not run in production environment')
     def test_find_matchups_with_gridded_reference_variable(self):

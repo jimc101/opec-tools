@@ -137,10 +137,25 @@ class Configuration_test(unittest.TestCase):
         self.assertEqual(15, c.max_cache_size)
 
 
-
     def test_density_plot_bin_count(self):
         c = Configuration()
-        self.assertEqual(False, c.density_plot_log_scaled)
+        self.assertFalse(c.density_plot_log_scaled)
 
         c = Configuration(density_plot_log_scaled=True)
-        self.assertEqual(True, c.density_plot_log_scaled)
+        self.assertTrue(c.density_plot_log_scaled)
+
+
+    def test_use_absolute_standard_deviation(self):
+        c = Configuration()
+        self.assertFalse(c.use_absolute_standard_deviation)
+
+        c = Configuration(use_absolute_standard_deviation=True)
+        self.assertTrue(c.use_absolute_standard_deviation)
+
+
+    def test_remove_empty_matchups(self):
+        c = Configuration()
+        self.assertTrue(c.remove_empty_matchups)
+
+        c = Configuration(remove_empty_matchups=False)
+        self.assertFalse(c.remove_empty_matchups)

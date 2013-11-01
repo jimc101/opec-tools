@@ -19,6 +19,8 @@ from opec.configuration import get_default_config
 from opec.matchup import Matchup
 from opec.reference_records_finder import ReferenceRecordsFinder
 
+import numpy as np
+
 
 class MatchupEngine(object):
 
@@ -26,6 +28,7 @@ class MatchupEngine(object):
         self.data = data
         self.config = configuration if configuration is not None else get_default_config()
         self.pixel_sizes = {}
+
 
     def find_all_matchups(self):
         rrf = ReferenceRecordsFinder(self.data)
@@ -43,6 +46,7 @@ class MatchupEngine(object):
 
         logging.debug('Found %s matchups' % len(all_matchups))
         return all_matchups
+
 
     def find_matchups(self, reference_record):
         matchup_position = self.find_matchup_position(reference_record.lat, reference_record.lon)
@@ -64,6 +68,7 @@ class MatchupEngine(object):
 
         return matchups
 
+
     def __find_position(self, dimension, target_value):
         dim_size = self.data.model_dim_size(dimension)
         if dimension in self.pixel_sizes:
@@ -72,6 +77,7 @@ class MatchupEngine(object):
             self.__prepare_lat_lon_data()
             pixel_size = self.data.__getattribute__(dimension)[1] - self.data.__getattribute__(dimension)[0]
         return normalise((target_value - self.data.__getattribute__(dimension)[0]) / pixel_size, dim_size - 1)
+
 
     def find_matchup_position(self, ref_lat, ref_lon):
         lon_variable_name = self.data.find_model_longitude_variable_name()
@@ -85,15 +91,19 @@ class MatchupEngine(object):
 
         return (pixel_x, pixel_y, current_lon, current_lat)
 
+
     def __prepare_lat_lon_data(self):
         self.data.read_model(self.data.find_model_latitude_variable_name())
         self.data.read_model(self.data.find_model_longitude_variable_name())
 
+
     def find_matchup_times(self, ref_time):
         return self.__find_matchup_index(ref_time, 'time', self.config.time_delta)
 
+
     def __find_matchup_depths(self, ref_depth):
         return self.__find_matchup_index(ref_depth, 'depth', self.config.depth_delta)
+
 
     def __find_matchup_index(self, ref_value, name, delta):
         if not self.data.has_model_dimension(name):
@@ -105,6 +115,7 @@ class MatchupEngine(object):
             return [matchup_index]
         else:
             return []
+
 
     def get_all_indices(self, coordinate_variable_name):
         if not hasattr(self, 'indices'):
@@ -121,6 +132,7 @@ class MatchupEngine(object):
         self.indices[coordinate_variable_name] = indices
         return indices
 
+
     def __find_matchup_index_in_model_data(self, dimension, ref, max_delta):
         self.data.read_model(dimension)
         dimension_data = self.data.__getattribute__(dimension)
@@ -134,6 +146,17 @@ class MatchupEngine(object):
                 matchup_index = index, d
             index += 1
         return matchup_index
+
+
+    def remove_empty_matchups(self, matchups):
+        cleaned_matchups = []
+        for m in matchups:
+            for model_name in self.data.model_vars():
+                value = m.get_model_value(model_name, self.data)
+                if not np.ma.is_masked(value):
+                    cleaned_matchups.append(m)
+                    break
+        return cleaned_matchups
 
 
 def normalise(n, max):
