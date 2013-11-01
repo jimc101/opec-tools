@@ -106,6 +106,18 @@ def get_matchups(data, config=None):
     return me.find_all_matchups()
 
 
+def remove_matchups_with_empty_model_data(data, config, matchups):
+    """
+    Returns all matchups from the list that have at least one valid model data entry.
+    @param data: the source data file.
+    @param config: the optional configuration.
+    @param matchups: the matchups to filter.
+    @return: the filtered matchups.
+    """
+    me = MatchupEngine(data, config)
+    return me.remove_empty_matchups(matchups)
+
+
 def extract_values(model_name, ref_name, data, config=None):
     """
     Extracts the matchups for the given data and returns the reference values and the model values for the given
