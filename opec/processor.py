@@ -53,7 +53,7 @@ def bias(reference_values, values):
     """
     according to http://en.wikipedia.org/wiki/Bias_of_an_estimator
     """
-    return np.mean(reference_values) - np.mean(values)
+    return np.mean(values) - np.mean(reference_values)
 
 
 def unbiased_rmse(reference_values, values):
