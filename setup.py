@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='opec',
-    version='1.1',
+    version='1.1-SNAPSHOT',
     description='The Benchmarking Tool of the EU Operational Ecology project, OpEc',
     author='Thomas Storm',
     author_email='thomas.storm@brockmann-consult.de',
@@ -15,7 +15,7 @@ setup(name='opec',
                                'resources/test_with_two_ref_vars.nc',
                                'resources/test_without_depth.nc',
                                'resources/test_including_fill_values.nc',
-                               'resources/ogs_test_smaller.nc.nc',
+                               'resources/ogs_test_smaller.nc',
                                'resources/test.properties',
                                'resources/analysis-summary.xsl',
                                'resources/matchup_report_template.xml',
