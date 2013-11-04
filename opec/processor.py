@@ -120,6 +120,7 @@ def calculate_statistics(model_values, reference_values, model_name=None, ref_na
     stats['ref_mean'] = mean(reference_values)
     stats['stddev'] = stddev(model_values, config.ddof)
     stats['ref_stddev'] = stddev(reference_values, config.ddof)
+    stats['standardised_stddev'] = stats['stddev'] / stats['ref_stddev']
     stats['median'] = model_percentiles[0]
     stats['ref_median'] = ref_percentiles[0]
     stats['p90'] = model_percentiles[1]

@@ -50,10 +50,12 @@ def create_taylor_diagrams(statistics, config=None):
             current_statistics = statistics_by_name_and_unit[name][current_unit]
 
             ref_stddevs = list(map(lambda x: x.get('ref_stddev'), current_statistics))
+            model_stddevs = list(map(lambda x: x.get('stddev'), current_statistics)) if config.use_absolute_standard_deviation else list(map(lambda x: x.get('standardised_stddev'), current_statistics))
             ref_names = list(map(lambda x: x.get('ref_name'), current_statistics))
             units = list(map(lambda x: x.get('unit'), current_statistics))
-            ref = tuple(zip(ref_names, ref_stddevs, units))
-            max_stddev = max(ref_stddevs) * 1.5
+            correlations = list(map(lambda x: x.get('corrcoeff'), current_statistics))
+            ref = tuple(zip(ref_names, ref_stddevs, units, model_stddevs, correlations))
+            max_stddev = max(ref_stddevs + model_stddevs) * 1.5
 
             for v in ref_stddevs:
                 if v == 0.0 or np.isnan(v):
@@ -62,12 +64,13 @@ def create_taylor_diagrams(statistics, config=None):
                     continue
 
             figure = plt.figure()
-            diagram = TaylorDiagram(figure, ref, config.show_negative_corrcoeff, config.show_legends, max_stddev)
+            diagram = TaylorDiagram(figure, ref, config.show_negative_corrcoeff, config.use_absolute_standard_deviation, config.show_legends, max_stddev)
 
             diagram.setup_axes()
             for stats in current_statistics:
                 model_name = stats['model_name'] if 'model_name' in stats else None
-                diagram.plot_sample(stats['corrcoeff'], stats['stddev'], model_name, stats['unit'])
+                stddev = stats['stddev'] if config.use_absolute_standard_deviation else stats['standardised_stddev']
+                diagram.plot_sample(stats['corrcoeff'], stddev, model_name, stats['unit'])
 
             diagram.update_legend()
             diagrams.append(diagram)
@@ -304,11 +307,12 @@ class TaylorDiagram(Diagram):
     http://matplotlib.1069221.n5.nabble.com/Taylor-diagram-2nd-take-td28070.html
     """
 
-    def __init__(self, figure, ref, show_negative_corrcoeff, show_legend, max_stddev):
+    def __init__(self, figure, ref, show_negative_corrcoeff, use_absolute_stddev, show_legend, max_stddev):
         self.fig = figure
         self.show_negative_corrcoeff = show_negative_corrcoeff
         self.show_legend = show_legend
         self.max_stddev = max_stddev
+        self.use_absolute_stddev = use_absolute_stddev
         self.ref = ref
 
     def setup_axes(self):
@@ -377,7 +381,7 @@ class TaylorDiagram(Diagram):
         # Add reference points
         # [0] = x-value
         # stddev = y-value
-        for name, ref_stddev, unit in self.ref:
+        for name, ref_stddev, unit, model_stddev, correlation in self.ref:
             dataset = self.ax.plot([0], ref_stddev, '%so' % self.get_color())[0]
             if hasattr(self, 'sample_names'):
                 self.sample_points.append(dataset)
@@ -388,7 +392,7 @@ class TaylorDiagram(Diagram):
 
         # Add stddev contours
         t = np.linspace(0, x_max, num=50)
-        for name, ref_stddev, unit in self.ref:
+        for name, ref_stddev, unit, model_stddev, correlation in self.ref:
             if not np.isnan(ref_stddev):
                 r = np.zeros_like(t) + ref_stddev # 50 times the stddev
                 self.ax.plot(t, r, 'k--', label='_', linewidth=0.5)
@@ -397,12 +401,16 @@ class TaylorDiagram(Diagram):
         rs, ts = np.meshgrid(np.linspace(0, y_axis_range[1], num=50),
                              np.linspace(0, x_max, num=50))
 
-        for name, ref_stddev, unit in self.ref:
+        for name, ref_stddev, unit, model_stddev, correlation in self.ref:
             if not np.isnan(ref_stddev):
                 # Unfortunately, I don't understand the next line AT ALL,
                 # it's copied from http://matplotlib.1069221.n5.nabble.com/Taylor-diagram-2nd-take-td28070.html
                 # but it leads to the right results (contours of the centered pattern RMS), so I keep it
-                rmse = np.sqrt(ref_stddev ** 2 + rs ** 2 - 2 * ref_stddev * rs * np.cos(ts))
+
+                if self.use_absolute_stddev:
+                    rmse = np.sqrt(ref_stddev ** 2 + rs ** 2 - 2 * ref_stddev * rs * np.cos(ts))
+                else:
+                    rmse = np.sqrt(1 + model_stddev ** 2  + rs ** 2 - 2 * model_stddev * rs * np.cos(ts) * correlation)
 
                 colors = ('#7F0000', '#6F0000', '#5F0000', '#4F0000', '#3F0000', '#2F0000', '#1F0000', '#0F0000')
                 rmse_contour = self.ax.contour(ts, rs, rmse, 8, linewidths=0.5, colors=colors)
@@ -414,7 +422,7 @@ class TaylorDiagram(Diagram):
         return np.arccos(corrcoeff)
 
 
-    def plot_sample(self, corrcoeff, model_stddev, model_name=None, unit=None, *args, **kwargs):
+    def plot_sample(self, corrcoeff, stddev, model_name=None, unit=None, *args, **kwargs):
         """Add model sample to the Taylor diagram. args and kwargs are
         directly propagated to the plot command."""
 
@@ -422,7 +430,7 @@ class TaylorDiagram(Diagram):
             args = ['%sh' % self.get_color()]
 
         theta = self.get_angle(corrcoeff)
-        radius = model_stddev
+        radius = stddev
         v = self.ax.plot(theta, radius, *args, **kwargs)
         self.sample_points.append(v[0])
         sample_name = create_sample_name(model_name, unit)

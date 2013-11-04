@@ -49,7 +49,6 @@ class Configuration(object):
         self.__set(alpha, 'opec.algo.percentile.alpha', float)
         self.__set(beta, 'opec.algo.percentile.beta', float)
         self.__set(ddof, 'opec.algo.stddev.ddof', int)
-        self.__set(use_absolute_standard_deviation, 'opec.algo.stddev.absolute', bool_conv)
         self.__set(time_delta, 'opec.matchup.time_delta', int)
         self.__set(depth_delta, 'opec.matchup.depth_delta', float)
         self.__set(log_level, 'opec.general.log_level', log_level_conv)
@@ -64,6 +63,7 @@ class Configuration(object):
         self.__set(write_taylor_diagrams, 'opec.output.plot.taylor.write_taylor_diagrams', bool_conv)
         self.__set(write_xhtml, 'opec.output.xhtml.write_xhtml', bool_conv)
         self.__set(write_csv, 'opec.output.csv.write_csv', bool_conv)
+        self.__set(use_absolute_standard_deviation, 'opec.output.plot.absolute_stddev', bool_conv)
         self.__set(write_density_plots, 'opec.output.plot.density.write_density_plots', bool_conv)
         self.__set(density_plot_log_scaled, 'opec.output.plot.density.log_scaled', bool_conv)
         self.__set(split_diagrams, 'opec.output.plot.taylor.split_diagrams', split_diagrams_conv('u'), 'opec.output.plot.split_on_unit')
@@ -118,7 +118,7 @@ class Configuration(object):
 
 
     def __use_absolute_standard_deviation(self):
-        return self.__dict['opec.algo.stddev.absolute']
+        return self.__dict['opec.output.plot.absolute_stddev']
 
 
     def __time_delta(self):
