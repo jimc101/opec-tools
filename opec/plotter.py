@@ -50,7 +50,7 @@ def create_taylor_diagrams(statistics, config=None):
             current_statistics = statistics_by_name_and_unit[name][current_unit]
 
             ref_stddevs = list(map(lambda x: x.get('ref_stddev'), current_statistics))
-            model_stddevs = list(map(lambda x: x.get('stddev'), current_statistics)) if config.use_absolute_standard_deviation else list(map(lambda x: x.get('standardised_stddev'), current_statistics))
+            model_stddevs = list(map(lambda x: x.get('stddev'), current_statistics)) if config.use_absolute_standard_deviation else list(map(lambda x: x.get('normalised_stddev'), current_statistics))
             ref_names = list(map(lambda x: x.get('ref_name'), current_statistics))
             units = list(map(lambda x: x.get('unit'), current_statistics))
             correlations = list(map(lambda x: x.get('corrcoeff'), current_statistics))
@@ -69,7 +69,7 @@ def create_taylor_diagrams(statistics, config=None):
             diagram.setup_axes()
             for stats in current_statistics:
                 model_name = stats['model_name'] if 'model_name' in stats else None
-                stddev = stats['stddev'] if config.use_absolute_standard_deviation else stats['standardised_stddev']
+                stddev = stats['stddev'] if config.use_absolute_standard_deviation else stats['normalised_stddev']
                 diagram.plot_sample(stats['corrcoeff'], stddev, model_name, stats['unit'])
 
             diagram.update_legend()
