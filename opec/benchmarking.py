@@ -63,10 +63,11 @@ def calculate_statistics(model_name, ref_name, data, config=None):
     if len(matchups) == 0:
         print("No matchups found; maybe allow higher maximum time delta.")
         return
-    return calculate_statistics_from_matchups(matchups, model_name, ref_name, data, config=None)
+    unit = data.unit(model_name)
+    return calculate_statistics_from_matchups(matchups, model_name, ref_name, data, unit, config=None)
 
 
-def calculate_statistics_from_matchups(matchups, model_name, ref_name, data, config=None):
+def calculate_statistics_from_matchups(matchups, model_name, ref_name, data, unit=None, config=None):
     """
     Calculates the statistics for the given matchups and model and reference variable. Calculation will be
     performed according to the provided configuration.
@@ -79,10 +80,10 @@ def calculate_statistics_from_matchups(matchups, model_name, ref_name, data, con
     """
     reference_values, model_values = extract_values_from_matchups(matchups, data, model_name, ref_name)
 
-    return processor.calculate_statistics(model_values, reference_values, model_name, ref_name, config=config)
+    return processor.calculate_statistics(model_values, reference_values, model_name, ref_name, unit=unit, config=config)
 
 
-def calculate_statistics_from_values(model_values, ref_values, config=None):
+def calculate_statistics_from_values(model_values, ref_values, model_name=None, ref_name=None, unit=None, config=None):
     """
     Calculates the statistics for two given numpy arrays; the first is considered the model data, the second is
     considered the reference data. Calculation will be performed according to the provided configuration. Note that the
@@ -92,7 +93,7 @@ def calculate_statistics_from_values(model_values, ref_values, config=None):
     @param config: the optional configuration.
     @return: a dictionary of statistics.
     """
-    return processor.calculate_statistics(model_values, ref_values, config=config)
+    return processor.calculate_statistics(model_values, ref_values, model_name, ref_name, unit, config=config)
 
 
 def get_matchups(data, config=None):

@@ -117,18 +117,23 @@ class Diagram(object):
             return True
         return False
 
+
     def write(self, target_file):
         self.fig.savefig(target_file)
+
 
     def show(self):
         plt.show(self.fig)
 
+
     def get_figure(self):
         return self.fig
+
 
     def update_legend(self):
         if self.show_legend:
             self.fig.legend(self.sample_points, self.sample_names, numpoints=1, prop=dict(size='small'), loc='upper right')
+
 
     def get_color(self):
         if not hasattr(self, 'colors') or not self.colors:
