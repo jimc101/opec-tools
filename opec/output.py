@@ -338,7 +338,7 @@ class Output(object):
         while column_index < self.column_index_map['ref_' + ref_name]:
             record += self.separator
             column_index += 1
-        basic_ref_stats = [format_statistic(stats, name) for name in self.basic_stat_names]
+        basic_ref_stats = [format_statistic(stats, 'ref_' + name[4 + len(ref_name) + 1:]) for name in self.basic_ref_statistics_column_names]
         record += self.separator.join(basic_ref_stats)
 
         return record
