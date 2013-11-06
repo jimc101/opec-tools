@@ -60,6 +60,8 @@ def calculate_statistics(model_name, ref_name, data, config=None):
 
     me = MatchupEngine(data, config)
     matchups = me.find_all_matchups()
+    if config.remove_empty_matchups():
+        matchups = me.remove_empty_matchups(matchups)
     if len(matchups) == 0:
         print("No matchups found; maybe allow higher maximum time delta.")
         return
