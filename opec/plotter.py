@@ -389,10 +389,10 @@ class TaylorDiagram(Diagram):
             dataset = self.ax.plot([0], ref_stddev, '%so' % self.get_color())[0]
             if hasattr(self, 'sample_names'):
                 self.sample_points.append(dataset)
-                self.sample_names.append(create_sample_name(name, unit))
+                self.sample_names.append(create_sample_name(name, unit, self.use_absolute_stddev))
             else:
                 self.sample_points = [dataset]
-                self.sample_names = [create_sample_name(name, unit)]
+                self.sample_names = [create_sample_name(name, unit, self.use_absolute_stddev)]
 
         # Add stddev contours
         t = np.linspace(0, x_max, num=50)
@@ -434,7 +434,7 @@ class TaylorDiagram(Diagram):
         radius = stddev
         v = self.ax.plot(theta, radius, *args, **kwargs)
         self.sample_points.append(v[0])
-        sample_name = create_sample_name(model_name, unit)
+        sample_name = create_sample_name(model_name, unit, self.use_absolute_stddev)
         self.sample_names.append(sample_name)
 
 
@@ -448,13 +448,15 @@ class CenteredFormatter(mpl.ticker.ScalarFormatter):
         else:
             return mpl.ticker.ScalarFormatter.__call__(self, value, pos)
 
-def create_sample_name(model_name, unit):
+def create_sample_name(model_name, unit, use_absolute_stddev=True):
     if model_name is not None:
         sample_name = model_name
     else:
         sample_name = 'Model value'
     if unit is not None:
         sample_name = sample_name + ' (%s)' % unit
+    if not use_absolute_stddev:
+        sample_name = sample_name + ' (norm.)'
     return sample_name
 
 
