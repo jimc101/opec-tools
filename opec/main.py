@@ -143,6 +143,8 @@ def main():
         if not matchups:
             logging.warning('No matchups found. System will exit.')
             exit(0)
+        if config.remove_empty_matchups:
+            matchups = me.remove_empty_matchups(matchups)
 
     if not os.name == 'nt':
         logging.debug('Memory after matchups have been found: %s' % resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)

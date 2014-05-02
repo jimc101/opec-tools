@@ -20,14 +20,18 @@ class Matchup(object):
         self.__spacetime_position = spacetime_position
         self.__reference_record = reference_record
 
+
     def get_cell_position(self):
         return self.__cell_position
+
 
     def get_spacetime_position(self):
         return self.__spacetime_position
 
+
     def get_reference_record(self):
         return self.__reference_record
+
 
     def get_ref_value(self, variable_name, data):
         reference_dimensions = data.get_reference_dimensions(variable_name)
@@ -42,14 +46,17 @@ class Matchup(object):
             origin = list(retrieve_origin(cell_position_copy))
             return data.read_reference(variable_name, origin)
 
+
     def get_model_value(self, variable_name, data):
         origin = list(retrieve_origin(self.cell_position))
         return data.read_model(variable_name, origin)
 
-    cell_position = property(get_cell_position)
-    spacetime_position = property(get_spacetime_position)
-    reference_record = property(get_reference_record)
 
     def __str__(self):
         return ', '.join('%s: %s' % (k.replace('_Matchup__', ''), vars(self)[k]) for k in vars(self))
+
+
+    cell_position = property(get_cell_position)
+    spacetime_position = property(get_spacetime_position)
+    reference_record = property(get_reference_record)
 

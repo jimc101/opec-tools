@@ -73,7 +73,7 @@ class Output(object):
         if include_header:
             self.__write_header(lines, matchup_count, source_file)
 
-        self.reference_statistics_column_names = ['rmse', 'unbiased_rmse', 'bias', 'pbias', 'corrcoeff', 'reliability_index', 'model_efficiency']
+        self.reference_statistics_column_names = ['rmse', 'unbiased_rmse', 'normalised_rmse', 'bias', 'pbias', 'corrcoeff', 'reliability_index', 'model_efficiency', 'normalised_stddev']
         self.basic_model_statistics_column_names = []
         self.basic_ref_statistics_column_names = []
         self.column_index_map = {}
@@ -229,7 +229,7 @@ class Output(object):
         all_ref_stats = []
         for stats in statistics_list:
             pair_statistics = {}
-            for key in ('rmse', 'unbiased_rmse', 'bias', 'pbias', 'corrcoeff', 'reliability_index', 'model_efficiency'):
+            for key in ('rmse', 'unbiased_rmse', 'normalised_rmse', 'bias', 'pbias', 'corrcoeff', 'reliability_index', 'model_efficiency', 'normalised_stddev'):
                 pair_statistics[key] = format_statistic(stats, key)
             pair = (stats['model_name'], stats['ref_name'], pair_statistics)
             all_relative_stats.append(pair)
@@ -330,7 +330,7 @@ class Output(object):
         while column_index < self.column_index_map[model_name]:
             record += self.separator
             column_index += 1
-        basic_model_stats = [format_statistic(stats, name) for name in self.reference_statistics_column_names]
+        basic_model_stats = [format_statistic(stats, name[len(model_name) + 1:]) for name in self.basic_model_statistics_column_names]
         record += self.separator.join(basic_model_stats)
         column_index += len(basic_model_stats)
         record += self.separator
@@ -338,7 +338,7 @@ class Output(object):
         while column_index < self.column_index_map['ref_' + ref_name]:
             record += self.separator
             column_index += 1
-        basic_ref_stats = [format_statistic(stats, name) for name in self.basic_stat_names]
+        basic_ref_stats = [format_statistic(stats, 'ref_' + name[4 + len(ref_name) + 1:]) for name in self.basic_ref_statistics_column_names]
         record += self.separator.join(basic_ref_stats)
 
         return record

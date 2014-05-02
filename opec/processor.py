@@ -53,7 +53,7 @@ def bias(reference_values, values):
     """
     according to http://en.wikipedia.org/wiki/Bias_of_an_estimator
     """
-    return np.mean(reference_values) - np.mean(values)
+    return np.mean(values) - np.mean(reference_values)
 
 
 def unbiased_rmse(reference_values, values):
@@ -120,6 +120,7 @@ def calculate_statistics(model_values, reference_values, model_name=None, ref_na
     stats['ref_mean'] = mean(reference_values)
     stats['stddev'] = stddev(model_values, config.ddof)
     stats['ref_stddev'] = stddev(reference_values, config.ddof)
+    stats['normalised_stddev'] = stats['stddev'] / stats['ref_stddev']
     stats['median'] = model_percentiles[0]
     stats['ref_median'] = ref_percentiles[0]
     stats['p90'] = model_percentiles[1]

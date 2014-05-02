@@ -49,11 +49,12 @@ def create_taylor_diagrams(statistics, config=None):
         for current_unit in statistics_by_name_and_unit[name].keys():
             current_statistics = statistics_by_name_and_unit[name][current_unit]
 
-            ref_stddevs = list(map(lambda x: x.get('ref_stddev'), current_statistics))
             ref_names = list(map(lambda x: x.get('ref_name'), current_statistics))
+            ref_stddevs = list(map(lambda x: x.get('ref_stddev'), current_statistics)) if config.use_absolute_standard_deviation else list(np.ones(len(current_statistics)))
             units = list(map(lambda x: x.get('unit'), current_statistics))
             ref = tuple(zip(ref_names, ref_stddevs, units))
-            max_stddev = max(ref_stddevs) * 1.5
+            model_stddevs = list(map(lambda x: x.get('stddev'), current_statistics)) if config.use_absolute_standard_deviation else list(map(lambda x: x.get('normalised_stddev'), current_statistics))
+            max_stddev = max(ref_stddevs + model_stddevs) * 1.5
 
             for v in ref_stddevs:
                 if v == 0.0 or np.isnan(v):
@@ -62,12 +63,13 @@ def create_taylor_diagrams(statistics, config=None):
                     continue
 
             figure = plt.figure()
-            diagram = TaylorDiagram(figure, ref, config.show_negative_corrcoeff, config.show_legends, max_stddev)
+            diagram = TaylorDiagram(figure, ref, config.show_negative_corrcoeff, config.use_absolute_standard_deviation, config.show_legends, max_stddev)
 
             diagram.setup_axes()
             for stats in current_statistics:
                 model_name = stats['model_name'] if 'model_name' in stats else None
-                diagram.plot_sample(stats['corrcoeff'], stats['stddev'], model_name, stats['unit'])
+                stddev = stats['stddev'] if config.use_absolute_standard_deviation else stats['normalised_stddev']
+                diagram.plot_sample(stats['corrcoeff'], stddev, model_name, stats['unit'])
 
             diagram.update_legend()
             diagrams.append(diagram)
@@ -114,18 +116,23 @@ class Diagram(object):
             return True
         return False
 
+
     def write(self, target_file):
         self.fig.savefig(target_file)
+
 
     def show(self):
         plt.show(self.fig)
 
+
     def get_figure(self):
         return self.fig
+
 
     def update_legend(self):
         if self.show_legend:
             self.fig.legend(self.sample_points, self.sample_names, numpoints=1, prop=dict(size='small'), loc='upper right')
+
 
     def get_color(self):
         if not hasattr(self, 'colors') or not self.colors:
@@ -304,11 +311,12 @@ class TaylorDiagram(Diagram):
     http://matplotlib.1069221.n5.nabble.com/Taylor-diagram-2nd-take-td28070.html
     """
 
-    def __init__(self, figure, ref, show_negative_corrcoeff, show_legend, max_stddev):
+    def __init__(self, figure, ref, show_negative_corrcoeff, use_absolute_stddev, show_legend, max_stddev):
         self.fig = figure
         self.show_negative_corrcoeff = show_negative_corrcoeff
         self.show_legend = show_legend
         self.max_stddev = max_stddev
+        self.use_absolute_stddev = use_absolute_stddev
         self.ref = ref
 
     def setup_axes(self):
@@ -381,10 +389,10 @@ class TaylorDiagram(Diagram):
             dataset = self.ax.plot([0], ref_stddev, '%so' % self.get_color())[0]
             if hasattr(self, 'sample_names'):
                 self.sample_points.append(dataset)
-                self.sample_names.append(create_sample_name(name, unit))
+                self.sample_names.append(create_sample_name(name, unit, self.use_absolute_stddev))
             else:
                 self.sample_points = [dataset]
-                self.sample_names = [create_sample_name(name, unit)]
+                self.sample_names = [create_sample_name(name, unit, self.use_absolute_stddev)]
 
         # Add stddev contours
         t = np.linspace(0, x_max, num=50)
@@ -402,6 +410,7 @@ class TaylorDiagram(Diagram):
                 # Unfortunately, I don't understand the next line AT ALL,
                 # it's copied from http://matplotlib.1069221.n5.nabble.com/Taylor-diagram-2nd-take-td28070.html
                 # but it leads to the right results (contours of the centered pattern RMS), so I keep it
+
                 rmse = np.sqrt(ref_stddev ** 2 + rs ** 2 - 2 * ref_stddev * rs * np.cos(ts))
 
                 colors = ('#7F0000', '#6F0000', '#5F0000', '#4F0000', '#3F0000', '#2F0000', '#1F0000', '#0F0000')
@@ -414,7 +423,7 @@ class TaylorDiagram(Diagram):
         return np.arccos(corrcoeff)
 
 
-    def plot_sample(self, corrcoeff, model_stddev, model_name=None, unit=None, *args, **kwargs):
+    def plot_sample(self, corrcoeff, stddev, model_name=None, unit=None, *args, **kwargs):
         """Add model sample to the Taylor diagram. args and kwargs are
         directly propagated to the plot command."""
 
@@ -422,10 +431,10 @@ class TaylorDiagram(Diagram):
             args = ['%sh' % self.get_color()]
 
         theta = self.get_angle(corrcoeff)
-        radius = model_stddev
+        radius = stddev
         v = self.ax.plot(theta, radius, *args, **kwargs)
         self.sample_points.append(v[0])
-        sample_name = create_sample_name(model_name, unit)
+        sample_name = create_sample_name(model_name, unit, self.use_absolute_stddev)
         self.sample_names.append(sample_name)
 
 
@@ -439,13 +448,15 @@ class CenteredFormatter(mpl.ticker.ScalarFormatter):
         else:
             return mpl.ticker.ScalarFormatter.__call__(self, value, pos)
 
-def create_sample_name(model_name, unit):
+def create_sample_name(model_name, unit, use_absolute_stddev=True):
     if model_name is not None:
         sample_name = model_name
     else:
         sample_name = 'Model value'
     if unit is not None:
         sample_name = sample_name + ' (%s)' % unit
+    if not use_absolute_stddev:
+        sample_name = sample_name + ' (norm.)'
     return sample_name
 
 
