@@ -14,6 +14,7 @@
 
 from opec import processor, utils
 from opec.configuration import Configuration
+from opec.configuration import get_default_config
 from opec.data import Data
 from opec.matchup_engine import MatchupEngine
 from opec.output import Output
@@ -51,6 +52,9 @@ def calculate_statistics(model_name, ref_name, data, config=None):
     @param config: the optional configuration.
     @return: a dictionary of statistics.
     """
+
+    if config is None:
+        config = get_default_config()
 
     is_gridded = len(data.get_reference_dimensions(ref_name)) > 1
     if is_gridded:
