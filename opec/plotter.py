@@ -136,7 +136,8 @@ class Diagram(object):
 
     def get_color(self):
         if not hasattr(self, 'colors') or not self.colors:
-            self.colors = ['r', 'g', 'b', 'm', 'y', 'c']
+            self.colors = ['#000000', '#FF0000', '#00FF00', '#0000FF', '#FFFF00', 
+                           '#00FFFF', '#FF00FF', '#C0C0C0', '#780000', '#009966']
         return self.colors.pop(0)
 
 class DensityPlot(Diagram):
@@ -259,7 +260,7 @@ class TargetDiagram(Diagram):
         self.x.append(x)
         self.y.append(y)
 
-        data_value = self.ax.plot(x, y, '%sh' % self.get_color(), markersize=6)
+        data_value = self.ax.plot(x, y, 'o',color=self.get_color(), markersize=6)
         if hasattr(self, 'sample_names'):
             self.sample_points.append(data_value[0])
             self.sample_names.append(name)
@@ -386,7 +387,7 @@ class TaylorDiagram(Diagram):
         # [0] = x-value
         # stddev = y-value
         for name, ref_stddev, unit in self.ref:
-            dataset = self.ax.plot([0], ref_stddev, '%so' % self.get_color())[0]
+            dataset = self.ax.plot([0], ref_stddev, 'o', color=self.get_color())[0]
             if hasattr(self, 'sample_names'):
                 self.sample_points.append(dataset)
                 self.sample_names.append(create_sample_name(name, unit, self.use_absolute_stddev))
@@ -427,12 +428,9 @@ class TaylorDiagram(Diagram):
         """Add model sample to the Taylor diagram. args and kwargs are
         directly propagated to the plot command."""
 
-        if not args:
-            args = ['%sh' % self.get_color()]
-
         theta = self.get_angle(corrcoeff)
         radius = stddev
-        v = self.ax.plot(theta, radius, *args, **kwargs)
+        v = self.ax.plot(theta, radius, 'o', color=self.get_color(), *args, **kwargs)
         self.sample_points.append(v[0])
         sample_name = create_sample_name(model_name, unit, self.use_absolute_stddev)
         self.sample_names.append(sample_name)
