@@ -14,13 +14,16 @@
 
 from unittest import TestCase
 import unittest
+import os
+
 import numpy.testing as np
+
 from opec.matchup_engine import normalise
 from opec.configuration import Configuration
 from opec.matchup_engine import MatchupEngine
 from opec.data import Data
-import os
 from opec.reference_records_finder import ReferenceRecord, find_ref_coordinate_names
+
 
 class MatchupEngine_test(TestCase):
 
@@ -35,13 +38,13 @@ class MatchupEngine_test(TestCase):
 
     def test_find_pixel_positions_small_max_delta(self):
         me = MatchupEngine(self.data, Configuration())
-        pixel_position = me.find_matchup_position(55, 6.0)
+        pixel_position = me.find_matchup_position(55.8, 6.0)
         np.assert_array_almost_equal((1, 0, 5.8, 55.2), pixel_position)
 
 
     def test_find_pixel_positions_huge_max_delta(self):
         me = MatchupEngine(self.data, Configuration())
-        pixel_position = me.find_matchup_position(55, 6.0)
+        pixel_position = me.find_matchup_position(55.8, 6.0)
         np.assert_array_almost_equal((1, 0, 5.8, 55.2), pixel_position)
 
 
@@ -58,13 +61,13 @@ class MatchupEngine_test(TestCase):
 
 
     def test_find_matchup(self):
-        reference_record = ReferenceRecord(0, 55.1, 5.5, 1261440252, 0.0012)
+        reference_record = ReferenceRecord(0, 55.3, 5.5, 1261440252, 0.0012)
         me = MatchupEngine(self.data, Configuration())
         matchups = me.find_matchups(reference_record)
         self.assertEqual(1, len(matchups))
         matchup = matchups[0]
         self.assertIsNotNone(matchup)
-        self.assertEqual(55.1, matchup.reference_record.lat)
+        self.assertEqual(55.3, matchup.reference_record.lat)
         self.assertEqual(5.5, matchup.reference_record.lon)
         self.assertEqual(1261440252, matchup.reference_record.time)
         self.assertEqual(0.0012, matchup.reference_record.depth)
@@ -140,6 +143,13 @@ class MatchupEngine_test(TestCase):
         self.assertEqual(3, len(matchups))
         matchups = me.remove_empty_matchups(matchups)
         self.assertEqual(2, len(matchups))
+
+
+    def test_exclude_reference_records_with_out_of_bounds_lats(self):
+        reference_record = ReferenceRecord(0, 54.1, 5.5, 1261440252, 0.0012)
+        me = MatchupEngine(self.data, Configuration())
+        matchups = me.find_matchups(reference_record)
+        self.assertEqual(0, len(matchups))
 
 
     @unittest.skip('shall not run in production environment')

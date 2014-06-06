@@ -15,11 +15,11 @@
 import logging
 from math import fabs, floor
 
+import numpy as np
+
 from opec.configuration import get_default_config
 from opec.matchup import Matchup
 from opec.reference_records_finder import ReferenceRecordsFinder
-
-import numpy as np
 
 
 class MatchupEngine(object):
@@ -54,17 +54,18 @@ class MatchupEngine(object):
         matchup_depths = self.__find_matchup_depths(reference_record.depth)
 
         matchups = []
-        for matchup_time in matchup_times:
-            for matchup_depth in matchup_depths:
-                cell_position = [matchup_time[0]] # first dimension: time
-                spacetime_position = [matchup_time[1]] # first dimension: time
-                cell_position.append(matchup_depth[0]) # second dimension: depth
-                spacetime_position.append(matchup_depth[1]) # second dimension: depth
-                cell_position.append(matchup_position[1]) # third dimension: lat
-                spacetime_position.append(matchup_position[3]) # third dimension: lat
-                cell_position.append(matchup_position[0]) # fourth dimension: lon
-                spacetime_position.append(matchup_position[2]) # fourth dimension: lon
-                matchups.append(Matchup(cell_position, spacetime_position, reference_record))
+        if matchup_position is not None:
+            for matchup_time in matchup_times:
+                for matchup_depth in matchup_depths:
+                    cell_position = [matchup_time[0]] # first dimension: time
+                    spacetime_position = [matchup_time[1]] # first dimension: time
+                    cell_position.append(matchup_depth[0]) # second dimension: depth
+                    spacetime_position.append(matchup_depth[1]) # second dimension: depth
+                    cell_position.append(matchup_position[1]) # third dimension: lat
+                    spacetime_position.append(matchup_position[3]) # third dimension: lat
+                    cell_position.append(matchup_position[0]) # fourth dimension: lon
+                    spacetime_position.append(matchup_position[2]) # fourth dimension: lon
+                    matchups.append(Matchup(cell_position, spacetime_position, reference_record))
 
         return matchups
 
@@ -76,7 +77,10 @@ class MatchupEngine(object):
         else:
             self.__prepare_lat_lon_data()
             pixel_size = self.data.__getattribute__(dimension)[1] - self.data.__getattribute__(dimension)[0]
-        return normalise((target_value - self.data.__getattribute__(dimension)[0]) / pixel_size, dim_size - 1)
+        index = target_value - self.data.__getattribute__(dimension)[0]
+        if index < 0:
+            return None
+        return normalise(index / pixel_size, dim_size - 1)
 
 
     def find_matchup_position(self, ref_lat, ref_lon):
@@ -85,6 +89,9 @@ class MatchupEngine(object):
 
         pixel_x = self.__find_position(lon_variable_name, ref_lon)
         pixel_y = self.__find_position(lat_variable_name, ref_lat)
+
+        if pixel_x is None or pixel_y is None:
+            return None
 
         current_lon = self.data.__getattribute__(lon_variable_name)[pixel_x]
         current_lat = self.data.__getattribute__(lat_variable_name)[pixel_y]
