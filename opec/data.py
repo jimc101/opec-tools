@@ -144,11 +144,12 @@ class Data(object):
 
     def ensure_memory(self, variable_size):
         will_cache_overflow = self.max_cache_size <= self.current_memory + variable_size
-        while will_cache_overflow and len(self.cached_list) > 0 and self.get_current_cache_size() > variable_size:
+        while will_cache_overflow and len(self.cached_list) > 0:
             var_to_delete = self.find_item_to_delete()
             self.current_memory -= self.compute_variable_size(var_to_delete)
             logging.debug('Deleting variable \'%s\' from cache.' % var_to_delete)
             self.__delattr__(var_to_delete)
+            will_cache_overflow = self.max_cache_size <= self.current_memory + variable_size
         if not os.name == 'nt':
             logging.debug('Memory in use after \'ensure_memory\' called: %.2f MB' % (mem() / 1024))
 
@@ -162,7 +163,6 @@ class Data(object):
                 logging.debug('Memory in use before reading variable %s fully into cache: %.2f MB' % (variable_name, mem() / 1024))
             variable = ncfile.get_variable(variable_name)
             self.__setattr__(variable_name, variable[:])
-            # self.__current_storage.add(variable_name)
             self.cached_list.append(variable_name)
             self.current_memory += self.compute_variable_size(variable_name)
             if not os.name == 'nt':

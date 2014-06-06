@@ -29,31 +29,38 @@ class Data_test(unittest.TestCase):
         self.test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/test.nc"
         self.data = Data(self.test_file)
 
+
     def tearDown(self):
         self.data.close()
         logging.basicConfig(level=logging.WARNING)
+
 
     def test_model_vars(self):
         model_vars = self.data.model_vars()
         assert_array_equal(np.array(['chl', 'sst']), model_vars)
 
+
     def test_ref_vars(self):
         ref_vars = self.data.ref_vars()
         assert_array_equal(np.array(['chl_ref']), ref_vars)
 
+
     def test_reference_records_count(self):
         self.assertEqual(3, self.data.reference_records_count({'record_num'}))
+
 
     def test_gridded_reference_records_count(self):
         test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/ogs_test_smaller.nc"
         data = Data(test_file)
         self.assertEqual(41 * 80, data.reference_records_count({'latitude', 'longitude'}))
 
+
     def test_find_model_latitude_variable_name(self):
         self.assertEqual('lat', self.data.find_model_latitude_variable_name())
         test_file = os.path.dirname(os.path.realpath(__file__)) + "/../resources/ogs_test_smaller.nc"
         data = Data(test_file)
         self.assertEqual('latitude', data.find_model_latitude_variable_name())
+
 
     def test_find_model_longitude_variable_name(self):
         self.assertEqual('lon', self.data.find_model_longitude_variable_name())
