@@ -17,11 +17,16 @@ from netCDF4 import Dataset
 
 class NetCDFFacade(object):
 
-    def __init__(self, filename):
-        try:
-            self.data_set = Dataset(filename, 'r', format='NETCDF4_CLASSIC')
-        except RuntimeError as re:
-            raise ValueError('%s: %s' % (re.args[0], filename))
+    def __init__(self, filename=None, dataset=None):
+        if filename is not None:
+            try:
+                self.data_set = Dataset(filename, 'r', format='NETCDF4_CLASSIC')
+            except RuntimeError as re:
+                raise ValueError('%s: %s' % (re.args[0], filename))
+        elif dataset is not None:
+            self.data_set = dataset
+        else:
+            raise ValueError('Either filename or dataset must be provided')
 
 
     def get_dim_size(self, dimName):
