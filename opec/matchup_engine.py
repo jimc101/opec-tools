@@ -71,16 +71,22 @@ class MatchupEngine(object):
 
 
     def __find_position(self, dimension, target_value):
-        dim_size = self.data.model_dim_size(dimension)
-        if dimension in self.pixel_sizes:
-            pixel_size = self.pixel_sizes[dimension]
-        else:
-            self.__prepare_lat_lon_data()
-            pixel_size = self.data.__getattribute__(dimension)[1] - self.data.__getattribute__(dimension)[0]
+        self.__prepare_lat_lon_data()
+        dim_size = len(self.data.__getattribute__(dimension))
+
+        # Profile data
+        if dim_size == 1:
+            if fabs(target_value - self.data.__getattribute__(dimension)[0]) <= self.config.latlon_delta:
+                return 0
+            return None
+
+        # Spatial data
+        if dimension not in self.pixel_sizes:
+            self.pixel_sizes[dimension] = self.data.__getattribute__(dimension)[1] - self.data.__getattribute__(dimension)[0]
         index = target_value - self.data.__getattribute__(dimension)[0]
         if index < 0:
             return None
-        return normalise(index / pixel_size, dim_size - 1)
+        return normalise(index / self.pixel_sizes[dimension], dim_size - 1)
 
 
     def find_matchup_position(self, ref_lat, ref_lon):

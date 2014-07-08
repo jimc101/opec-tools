@@ -27,7 +27,7 @@ def add_section_header(properties_file, header_name):
 class Configuration(object):
 
     def __init__(self, alpha=None, beta=None, ddof=None, use_absolute_standard_deviation=None, time_delta=None, depth_delta=None,
-                 log_level=None, log_file=None, zip=None, show_negative_corrcoeff=None,
+                 latlon_delta=None, log_level=None, log_file=None, zip=None, show_negative_corrcoeff=None,
                  show_legends=None, target_dir=None, target_prefix=None, include_header=None, separator=None,
                  properties_file_name=None, write_taylor_diagrams=None, write_xhtml=None,
                  write_csv=None, write_density_plots=None, split_diagrams=None, write_target_diagram=None,
@@ -51,6 +51,7 @@ class Configuration(object):
         self.__set(ddof, 'opec.algo.stddev.ddof', int)
         self.__set(time_delta, 'opec.matchup.time_delta', int)
         self.__set(depth_delta, 'opec.matchup.depth_delta', float)
+        self.__set(latlon_delta, 'opec.matchup.latlon_delta', float)
         self.__set(log_level, 'opec.general.log_level', log_level_conv)
         self.__set(log_file, 'opec.general.log_file', log_file_conv)
         self.__set(zip, 'opec.output.zip', bool_conv)
@@ -127,6 +128,9 @@ class Configuration(object):
 
     def __depth_delta(self):
         return self.__dict['opec.matchup.depth_delta']
+
+    def __latlon_delta(self):
+        return self.__dict['opec.matchup.latlon_delta']
 
 
     def __log_level(self):
@@ -223,6 +227,7 @@ class Configuration(object):
     use_absolute_standard_deviation = property(__use_absolute_standard_deviation)
     time_delta = property(__time_delta)
     depth_delta = property(__depth_delta)
+    latlon_delta = property(__latlon_delta)
     log_level = property(__log_level)
     log_file = property(__log_file)
     zip = property(__zip)

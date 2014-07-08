@@ -90,6 +90,27 @@ class MatchupEngine_test(TestCase):
         self.assertAlmostEqual(0.0020015, matchup.reference_record.depth)
 
 
+    def test_find_matchups_in_1D_profile_data(self):
+        data = Data(self.path + 'resources/model_1D_test.nc')
+        config = Configuration(latlon_delta=0.25)
+        me = MatchupEngine(data, config)
+
+        valid_reference_record = ReferenceRecord(0, 55.25, 4.21, 1262433600, 0.0)
+        valid_matchups = me.find_matchups(valid_reference_record)
+        self.assertEqual(1, len(valid_matchups))
+        valid_matchup = valid_matchups[0]
+        self.assertIsNotNone(valid_matchup)
+        self.assertAlmostEqual(55.25, valid_matchup.reference_record.lat)
+        self.assertAlmostEqual(4.21, valid_matchup.reference_record.lon)
+        self.assertAlmostEqual(1262433600, valid_matchup.reference_record.time)
+        self.assertAlmostEqual(0.0, valid_matchup.reference_record.depth)
+        self.assertAlmostEqual(2.0, valid_matchup.get_model_value('chl', data))
+
+        invalid_reference_record = ReferenceRecord(0, 55.55, 4.21, 1262433600, 0.0)
+        invalid_matchups = me.find_matchups(invalid_reference_record)
+        self.assertEqual(0, len(invalid_matchups))
+
+
     def test_find_matchups_single_no_depth(self):
         data = Data(self.path + 'resources/test_without_depth.nc')
         config = Configuration(time_delta=10)
@@ -104,7 +125,6 @@ class MatchupEngine_test(TestCase):
         self.assertAlmostEqual(6.30048, matchup.reference_record.lon)
         self.assertAlmostEqual(1261447205, matchup.reference_record.time)
         self.assertIsNone(matchup.reference_record.depth)
-
 
     def test_find_ref_coordinate_names(self):
         ref_coord_variable_names = ['lat_ref', 'ref_lon', 'reftime']
@@ -159,3 +179,4 @@ class MatchupEngine_test(TestCase):
         matchups = me.find_all_matchups()
         self.assertIsNotNone(matchups)
         self.assertEqual(6560, len(matchups))
+
